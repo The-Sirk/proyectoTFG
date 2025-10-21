@@ -14,7 +14,7 @@ public class TmdbService {
     private final WebClient webClient;
     // ¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡NO SUBIR LA KEY A GitHub!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // Más adelante se puede subir la key como variable a Cloud Run
-    private final String apiKey = "key_api_privada"; // reemplaza con tu key de TMDb
+    private final String apiKey = "pon_tu_key_aqui"; // reemplaza con tu key de TMDb
     private static final String BASE_URL = "https://api.themoviedb.org/3";
 
     public TmdbService(WebClient.Builder webClientBuilder) {
