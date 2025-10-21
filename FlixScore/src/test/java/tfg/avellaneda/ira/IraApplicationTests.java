@@ -1,10 +1,10 @@
-package tfg.avellaneda.iea;
+package tfg.avellaneda.ira;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class IeaApplicationTests {
+class IraApplicationTests {
 
 	@Test
 	void contextLoads() {
