@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
  */
 
 
-
 /**
  * Modelo de crítica, se utiliza para que un usuario opine sobre una pelicula
  * y que en las búsquedas se puedan obtener los datos.
