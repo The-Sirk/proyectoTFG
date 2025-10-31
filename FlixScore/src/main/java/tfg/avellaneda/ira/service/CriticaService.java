@@ -36,6 +36,7 @@ public class CriticaService {
      */
     @Autowired
     CriticaRepository repo;
+    
     @Autowired
     ObjectMapper mapper;
 
@@ -94,6 +95,19 @@ public class CriticaService {
             return null;
         }
 
+    }
+
+    public String getAll() {
+        try {
+            List<ModeloCritica> criticas = repo.getAll()
+                    .get()
+                    .toObjects(ModeloCritica.class);
+            return mapper.writeValueAsString(criticas);
+
+        } catch (Exception e) {
+            System.out.println("Error al obtener las críticas: " + e.getMessage());
+            return null;
+        }
     }
 
 }

@@ -78,14 +78,22 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- Dependencia de Lombok para simplificar el código -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.18.42</version>
 		</dependency>
-	</dependencies>
 
+		<!-- Dependencia que permite la carga de variables del entorno -->
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>dotenv-java</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+	
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>

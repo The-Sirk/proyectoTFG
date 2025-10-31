@@ -6,6 +6,9 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QuerySnapshot;
+
+import org.springframework.stereotype.Repository;
+
 import com.google.api.core.ApiFuture;
 
 /**
@@ -18,6 +21,7 @@ import com.google.api.core.ApiFuture;
  * @author Israel
  */
 
+ @Repository
 public class CriticaRepository {
 
     private Firestore db = FirestoreClient.getFirestore();
@@ -40,5 +44,9 @@ public class CriticaRepository {
         return db.collection("criticas")
                 .whereEqualTo("peliculaID", PeliculaId)
                 .get();
+    }
+
+    public ApiFuture<QuerySnapshot> getAll() {
+        return db.collection("criticas").get();
     }
 }

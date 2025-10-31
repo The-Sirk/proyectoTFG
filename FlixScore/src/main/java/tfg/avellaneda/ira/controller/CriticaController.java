@@ -27,8 +27,16 @@ public class CriticaController {
     @Autowired
     CriticaService criticaService;
 
+    @GetMapping("")
+    public String getAll() {
+        try {
+            return criticaService.getAll();
+        } catch (Exception e) {
+            return "Error al obtener las críticas: " + e.getMessage();
+        }
+    }
     @GetMapping("{id}")
-    public String getAll(@PathVariable String CriticalID) {
+    public String getByCriticaID(@PathVariable String CriticalID) {
         try {
             return criticaService.getCriticaById(CriticalID);
         } catch (Exception e) {
