@@ -1,13 +1,20 @@
 package tfg.avellaneda.ira.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.google.cloud.firestore.annotation.DocumentId;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+/**
+ * Modelo de Usuario para la obtención de su contenido en Firebase
+ * 
+ * @author Israel
+ *         Creación del modelo
+ * @author Adrián
+ *         Corrección del modelo para la obtención de datos de los arrays
+ */
 
 @Data
 @NoArgsConstructor
@@ -15,18 +22,19 @@ import lombok.NoArgsConstructor;
 public class ModeloUsuario {
 
     @DocumentId
-    private String DocumentID;
+    private String documentID;
+
     private String correo;
-    @JsonAlias("imagen_perfil")
-    private String imagenPerfil;
+
+    private String imagen_perfil;
+
     private String nick;
-    @JsonAlias("peliculas_criticadas")
-    private List<String> peliculasCriticadas;
-    @JsonAlias("peliculas_favoritas")
-    private List<String> peliculasFavoritas;
-    @JsonAlias("peliculas_vistas")
-    private List<String> peliculasVistas;
-    
-    
-    
+
+    private List<String> amigos_id = new ArrayList<>();
+
+    private List<Long> peliculas_criticadas = new ArrayList<>();
+
+    private List<Long> peliculas_favoritas = new ArrayList<>();
+
+    private List<Long> peliculas_vistas = new ArrayList<>();
 }
