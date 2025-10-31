@@ -58,9 +58,9 @@ public class UsuarioService {
      * @return Un Optional que contiene ModeloUsuario si existe.
      * @throws RuntimeException si la operación falla.
      */
-    public Optional<ModeloUsuario> getUsuarioById(String usuarioId) {
+    public Optional<ModeloUsuario> getUsuarioById(String documentID) {
         try {
-            DocumentSnapshot document = repo.getUsuarioById(usuarioId).get();
+            DocumentSnapshot document = repo.getUsuarioById(documentID).get();
 
             if (document.exists()) {
                 return Optional.ofNullable(document.toObject(ModeloUsuario.class));
@@ -69,10 +69,10 @@ public class UsuarioService {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.error("Error (Interrupción) al obtener el usuario {}: {}", usuarioId, e.getMessage());
+            logger.error("Error (Interrupción) al obtener el usuario {}: {}", documentID , e.getMessage());
             throw new RuntimeException("Operación de base de datos interrumpida.", e);
         } catch (ExecutionException e) {
-            logger.error("Error (Ejecución) al obtener el usuario {}: {}", usuarioId, e.getMessage());
+            logger.error("Error (Ejecución) al obtener el usuario {}: {}", documentID, e.getMessage());
             throw new RuntimeException("Fallo en la comunicación con la base de datos.", e.getCause());
         }
     }
