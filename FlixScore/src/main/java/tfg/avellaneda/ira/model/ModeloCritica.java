@@ -28,6 +28,6 @@ public class ModeloCritica {
     private int puntuacion;
     private String comentario;
     @DocumentId
-    private String DocumentID;
+    private String documentID;
 
 }
