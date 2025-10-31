@@ -19,11 +19,8 @@ import java.util.NoSuchElementException;
 @RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
 
-    private final UsuarioService usuarioService;
-
-    public UsuarioController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
-    }
+    @Autowired
+    UsuarioService usuarioService;
 
     /**
      * Resuelve el error de Type Mismatch. Devuelve Flux<ModeloUsuario>.
