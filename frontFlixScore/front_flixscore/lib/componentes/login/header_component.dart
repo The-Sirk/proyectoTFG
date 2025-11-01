@@ -12,7 +12,7 @@ class HeaderWidget extends StatelessWidget {
             color: Colors.blueAccent,
             borderRadius: BorderRadius.circular(18),
           ),
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(6),
           child: Icon(Icons.local_movies_outlined, color: Colors.white, size: 36),
         ),
         const SizedBox(height: 18),

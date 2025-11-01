@@ -1,4 +1,5 @@
 
+import 'package:flixscore/paginas/home_page.dart';
 import 'package:flutter/material.dart';
 
 import 'paginas/login_page.dart';
@@ -12,9 +13,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    /**
-     * Envolvemos toda la app en un Safe Area para no ocupar ningun espacio del dispositivo
-     */
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData.dark().copyWith(

@@ -1,5 +1,4 @@
-
-
+import 'package:flixscore/componentes/common/tab_button.dart';
 import 'package:flutter/material.dart';
 
 class LoginCard extends StatefulWidget {
@@ -11,6 +10,7 @@ class LoginCard extends StatefulWidget {
 
 class _LoginCardState extends State<LoginCard> {
   bool isLogin = true;
+  int selectedTab = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class _LoginCardState extends State<LoginCard> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       margin: const EdgeInsets.all(32),
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(18),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,15 +27,18 @@ class _LoginCardState extends State<LoginCard> {
             Text(
               "Acceder a tu cuenta",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold, 
-                fontSize: 16, 
-                fontFamily: "Inter"
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontFamily: "Inter",
               ),
             ),
             const SizedBox(height: 8),
             Text(
               "Inicia sesión o crea una cuenta nueva",
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70, fontSize: 16),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 24),
             Container(
@@ -44,69 +47,35 @@ class _LoginCardState extends State<LoginCard> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Container(
-                margin: EdgeInsets.all(5),
+                width: double.infinity,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F2937),
+                  borderRadius: BorderRadius.circular(36),
+                ),
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: isLogin ? Colors.black26 : Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
-                          ),
-                        ),
-                        onPressed: () => setState(() => isLogin = true),
-                        child: Text(
-                          "Iniciar Sesión",
-                          style: TextStyle(
-                            color: isLogin ? Colors.white : Colors.white70,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      child: TabButton(
+                        icono: Icons.abc,
+                        etiqueta: "Iniciar Sesion",
+                        seleccionado: selectedTab == 0,
+                        onTap: () => setState(() => selectedTab = 0),
                       ),
                     ),
                     Expanded(
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: !isLogin ? Colors.black26 : Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.horizontal(right: Radius.circular(12)),
-                          ),
-                        ),
-                        onPressed: () => setState(() => isLogin = false),
-                        child: Text(
-                          "Registrarse",
-                          style: TextStyle(
-                            color: !isLogin ? Colors.white : Colors.white70,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      child: TabButton(
+                        icono: Icons.login,
+                        etiqueta: "Registrarse",
+                        seleccionado: selectedTab == 1,
+                        onTap: () => setState(() => selectedTab = 1),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            TextField(
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
-                hintText: "tu@email.com",
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text("Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
-                hintText: "••••••••",
-              ),
-            ),
-            const SizedBox(height: 24),
+            _construirCuerpo(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -115,7 +84,9 @@ class _LoginCardState extends State<LoginCard> {
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blueAccent,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: const Text("Iniciar Sesión"),
               ),
@@ -126,7 +97,10 @@ class _LoginCardState extends State<LoginCard> {
                 Expanded(child: Divider(color: Colors.white24)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text("O continúa con", style: TextStyle(color: Colors.white54)),
+                  child: Text(
+                    "O continúa con",
+                    style: TextStyle(color: Colors.white54),
+                  ),
                 ),
                 Expanded(child: Divider(color: Colors.white24)),
               ],
@@ -148,7 +122,9 @@ class _LoginCardState extends State<LoginCard> {
                   backgroundColor: Color.fromARGB(255, 0, 0, 0),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   side: BorderSide.none,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   textStyle: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -157,5 +133,71 @@ class _LoginCardState extends State<LoginCard> {
         ),
       ),
     );
+  }
+
+  Widget _construirCuerpo() {
+    switch (selectedTab) {
+      case 0:
+        return Column(
+          children: [
+            const SizedBox(height: 24),
+            Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            TextField(
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
+                hintText: "tu@email.com",
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text("Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
+                hintText: "••••••••",
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        );
+      case 1:
+        return Column(
+          children: [
+            const SizedBox(height: 24),
+            Text("Nombre de Usuario", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            TextField(
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.person, color: Colors.white54),
+                hintText: "nick",
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            TextField(
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
+                hintText: "tu@email.com",
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text("Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
+                hintText: "••••••••",
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        );
+      default:
+        return Container();
+    }
   }
 }
