@@ -1,0 +1,208 @@
+{
+	"info": {
+		"_postman_id": "8a409881-ef97-4ad8-8f28-cd36064c0732",
+		"name": "Api Firebase",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "usuario-controller",
+			"item": [
+				{
+					"name": "Post /usuarios",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var json = pm.response.json();\r",
+									"pm.environment.set(\"documentID\", json.documentID);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"correo\": \"Ricardo@ricardo.es\",\r\n  \"imagen_perfil\": \"Ricardo\",\r\n  \"nick\": \"Ricardo-Test\",\r\n  \"amigos_id\": [\r\n    \"Ricardo\",\r\n    \"Ricardo\",\r\n    \"Ricardo\"\r\n  ],\r\n  \"peliculas_criticadas\": [\r\n    0,\r\n    1,\r\n    2,\r\n    3\r\n  ],\r\n  \"peliculas_favoritas\": [\r\n    0,\r\n    1,\r\n    2\r\n  ],\r\n  \"peliculas_vistas\": [\r\n    0,\r\n    1,\r\n    2\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UrlBase}}/usuarios",
+							"host": [
+								"{{UrlBase}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get /usuarios/{{id}}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Tiempo de respuesta inferior a 200ms.\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"});\r",
+									"pm.test(\"Codigo de respuesta 200, acceso correcto.\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var json = pm.response.json();\r",
+									"pm.test(\"Se obtiene un elemento de usuario, id: \" + json.documentID , function(){\r",
+									"    if(typeof json.peliculas_vistas == \"array\"){\r",
+									"    pm.expect(typeof json.documentID).to.be.equal(\"string\");}\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{UrlBase}}/usuarios/{{documentID}}",
+							"host": [
+								"{{UrlBase}}"
+							],
+							"path": [
+								"usuarios",
+								"{{documentID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get /usuarios/nick/{{nick}}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Tiempo de respuesta inferior a 200ms.\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"});\r",
+									"pm.test(\"Codigo de respuesta 200, acceso correcto.\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var json = pm.response.json();\r",
+									"pm.test(\"Se obtiene objeto de usuario, nick: \" + json[0].nick , function(){\r",
+									"    if(typeof json[0].peliculas_vistas == \"array\"){\r",
+									"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");}\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{UrlBase}}/usuarios/nick/{{nick}}",
+							"host": [
+								"{{UrlBase}}"
+							],
+							"path": [
+								"usuarios",
+								"nick",
+								"{{nick}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get /usuarios",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Tiempo de respuesta inferior a 200ms.\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"});\r",
+									"pm.test(\"Codigo de respuesta 200, acceso correcto.\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var json = pm.response.json();\r",
+									"pm.test(\"Se obtiene almenos un elemento de usuario, id: \" + json[0].documentID , function(){\r",
+									"    if(typeof json[0].peliculas_vistas == \"array\"){\r",
+									"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");}\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{UrlBase}}/usuarios",
+							"host": [
+								"{{UrlBase}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete /usuarios/{{id}}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Tiempo de respuesta inferior a 200ms.\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Codigo de respuesta 204, No existe el usuario o eliminado pero reporta no content.\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{UrlBase}}/usuarios/{{documentID}}",
+							"host": [
+								"{{UrlBase}}"
+							],
+							"path": [
+								"usuarios",
+								"{{documentID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
