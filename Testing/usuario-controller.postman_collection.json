@@ -15,8 +15,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"Codigo de estado 201, usuario creado\", function () {\r",
+									"    if(pm.response == 201){\r",
+									"     pm.response.to.have.status(201);\r",
+									"    }\r",
+									"});\r",
+									"\r",
 									"var json = pm.response.json();\r",
-									"pm.environment.set(\"documentID\", json.documentID);"
+									"\r",
+									"pm.environment.set(\"documentID\", json.documentID);\r",
+									"pm.environment.set(\"nick\", json.nick);\r",
+									"pm.test(`Usuario creado - documentID: ${json.documentID} - nick: ${json.nick},`)"
 								],
 								"type": "text/javascript"
 							}
@@ -27,7 +36,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"correo\": \"Ricardo@ricardo.es\",\r\n  \"imagen_perfil\": \"Ricardo\",\r\n  \"nick\": \"Ricardo-Test\",\r\n  \"amigos_id\": [\r\n    \"Ricardo\",\r\n    \"Ricardo\",\r\n    \"Ricardo\"\r\n  ],\r\n  \"peliculas_criticadas\": [\r\n    0,\r\n    1,\r\n    2,\r\n    3\r\n  ],\r\n  \"peliculas_favoritas\": [\r\n    0,\r\n    1,\r\n    2\r\n  ],\r\n  \"peliculas_vistas\": [\r\n    0,\r\n    1,\r\n    2\r\n  ]\r\n}",
+							"raw": "{\r\n  \"correo\": \"{{correo}}\",\r\n  \"imagen_perfil\": \"{{imagen_perfil}}\",\r\n  \"nick\": \"{{nick}}\",\r\n  \"amigos_id\": [\"{{amigos_id}}\"\r\n  ],\r\n  \"peliculas_criticadas\": [\r\n    {{peliculas_criticadas}}\r\n  ],\r\n  \"peliculas_favoritas\": [\r\n   {{peliculas_favoritas}}\r\n  ],\r\n  \"peliculas_vistas\": [\r\n    {{peliculas_vistas}}\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
