@@ -66,6 +66,7 @@ public class CriticaService {
 
     public List<ModeloCritica> getCriticasByUserId(String userId) {
         try {
+            logger.info("Desde Service getCriticasByUserId {}", userId);
             return repo.getCriticaByUserId(userId)
             .get()
             .toObjects(ModeloCritica.class);
@@ -79,7 +80,7 @@ public class CriticaService {
         }
     }
 
-    public List<ModeloCritica> getCriticasByPeliculaId(String peliculaId) {
+    public List<ModeloCritica> getCriticasByPeliculaId(int peliculaId) {
         try {
             return repo.getCriticaByPeliculaId(peliculaId)
             .get()
