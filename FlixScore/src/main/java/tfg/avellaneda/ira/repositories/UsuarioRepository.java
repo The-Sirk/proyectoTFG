@@ -17,12 +17,12 @@ import tfg.avellaneda.ira.model.ModeloUsuario;
  * 
  * @author Israel
  * 
- * TODO: Añadir manejo de excepciones personalizado.
+ *         TODO: Añadir manejo de excepciones personalizado.
  */
 
 @Repository
 public class UsuarioRepository {
-    
+
     private Firestore db = FirestoreClient.getFirestore();
 
     public ApiFuture<DocumentReference> addUsuario(ModeloUsuario usuario) {
@@ -33,7 +33,7 @@ public class UsuarioRepository {
         return db.collection("usuarios").document(usuarioId).get();
     }
 
-    public ApiFuture<QuerySnapshot> getAll() {
+    public ApiFuture<QuerySnapshot> listarUsuarios() {
         return db.collection("usuarios").get();
     }
 
@@ -50,7 +50,5 @@ public class UsuarioRepository {
     public ApiFuture<WriteResult> deleteUsuario(String usuarioId) {
         return db.collection("usuarios").document(usuarioId).delete();
     }
-
-    
 
 }
