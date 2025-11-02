@@ -1,0 +1,1 @@
+newman run /Users/rherredon/Desktop/TFG/usuario-controller.postman_collection.json -e /Users/rherredon/Desktop/TFG/ENV-TFG.postman_environment.json -d /Users/rherredon/Desktop/TFG/CSV-Iterador-Test-50-usuarios.csv -r htmlextra --insecure 
