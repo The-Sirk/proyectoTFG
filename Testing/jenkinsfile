@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+    environment {
+        REPO_URL = 'https://github.com/The-Sirk/proyectoTFG.git'
+        BRANCH = 'Testing'
+        GIT_CREDENTIALS_ID = 'Ricardo-Jenkins-ID' // ID de las credenciales en Jenkins
+    }
+    stages {
+        stage('Clonar repositorio') {
+            steps {
+                git branch: "${BRANCH}", url: "${REPO_URL}"
+            }
+        }
+        stage('Detectar cambios') {
+            steps {
+                script {
+                    def lastCommit = bat(script: "git rev-parse HEAD", returnStdout: true).trim()
+                    echo lastCommit
+                    def previousCommit = ''
+                    echo previousCommit
+                    if (fileExists('last_commit.txt')) {
+                        previousCommit = readFile('last_commit.txt').trim()
+                         echo previousCommit
+                    }
+                    writeFile file: 'last_commit.txt', text: lastCommit
+                    // Guardar resultado en variable de entorno para usar en el siguiente stage
+                    if (lastCommit == previousCommit) {
+                        echo "No hay cambios en el commit."
+                        env.HAY_CAMBIOS = 'false'
+                    } else {
+                        echo "Hay cambios en el commit."
+                        env.HAY_CAMBIOS = 'true'
+                    }
+                }
+            }
+        }
+       
+
+        stage('Ejecutar comando si hay cambios') {
+            when {
+                expression {
+                    return env.HAY_CAMBIOS == 'true'
+                }
+            }
+            steps {
+                bat '/Users/rherredon/AppData/Roaming/npm/newman run usuario-controller.postman_collection.json -e ENV-TFG-Usuario-Controller.postman_environment.json -d CSV-Iterador-Test-50-usuarios.csv -r htmlExtra --insecure'
+                bat 'xcopy newman /Users/rherredon/Desktop/TFG /E /H'
+            }
+        }
+        
+         stage('Commit y Push') {
+            when {
+                    expression {
+                        return env.HAY_CAMBIOS == 'true'
+                    }
+                }
+            steps {
+                script {
+                    bat 'cd /Users/rherredon/Desktop/TFG'
+                    bat 'git config user.email "Ricardo.he.bl@gmail.com"'
+                    bat 'git config user.name "RicardoHB996"'
+                    bat 'git add \\newman '
+                    bat 'git commit -m "Cambios automáticos desde Jenkins" || echo "Nada que hacer commit"'
+                    withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIALS_ID, usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                        bat 'git push https://${GIT_USER}:${GIT_PASS}@github.com/The-Sirk/proyectoTFG.git HEAD:Testing'
+                    }
+                }
+            }
+        }
+        
+   }
+    
+        post {
+            always {
+                echo "Fin de jenkinsfile "
+            }
+        }
+    
+}
