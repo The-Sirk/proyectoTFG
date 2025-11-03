@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 
@@ -32,18 +31,9 @@ import tfg.avellaneda.ira.repositories.CriticaRepository;
 @Service
 public class CriticaService {
 
-    /**
-     * Inyectamos tanto el repositorio como el mapper para convertir objetos a JSON.
-     * OJO! El mapper funciona con los getters y setters de las clases modelo.
-     * En este caso Lombok los genera automáticamente.
-     */
     @Autowired
     CriticaRepository repo;
-
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
-
-    @Autowired
-    ObjectMapper mapper;
 
     public Optional<ModeloCritica> getCriticaById(String documentID) {
         try {
