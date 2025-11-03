@@ -1,6 +1,7 @@
 package tfg.avellaneda.ira.model;
 
 import com.google.cloud.firestore.annotation.DocumentId;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,12 +16,15 @@ import lombok.NoArgsConstructor;
  * Modelo de crítica, se utiliza para que un usuario opine sobre una pelicula
  * y que en las búsquedas se puedan obtener los datos.
  * 
+ * Se añade fechaCreacion al modelo para permitir la búsqueda de las criticas
+ * recientes.
+ * 
  * @author Adrián
  */
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(staticName = "of")
 public class ModeloCritica {
 
     private String usuarioUID;
@@ -29,5 +33,6 @@ public class ModeloCritica {
     private String comentario;
     @DocumentId
     private String documentID;
+    private Date fechaCreacion;
 
 }

@@ -1,4 +1,5 @@
 package tfg.avellaneda.ira.repositories;
+
 import com.google.firebase.cloud.FirestoreClient;
 import tfg.avellaneda.ira.model.ModeloCritica;
 import tfg.avellaneda.ira.service.UsuarioService;
@@ -6,6 +7,7 @@ import tfg.avellaneda.ira.service.UsuarioService;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query.Direction;
 import com.google.cloud.firestore.QuerySnapshot;
 
 import org.slf4j.Logger;
@@ -17,19 +19,23 @@ import com.google.api.core.ApiFuture;
 /**
  * Repositorio para la gestión de críticas en Firestore.
  * Proporciona métodos para crear y recuperar criticas por usuario o película.
- * El repositorio es lo mas limpio posible, sin logica ninguna pues es el Service quien tiene que hacerlo.
+ * El repositorio es lo mas limpio posible, sin logica ninguna pues es el
+ * Service quien tiene que hacerlo.
  * 
- * TODO: Hay que consensuar donde y como crear la db de Firestore para poder inyectarla aquí y no tener que crear una nueva instancia cada vez.
+ * TODO: Hay que consensuar donde y como crear la db de Firestore para poder
+ * inyectarla aquí y no tener que crear una nueva instancia cada vez.
  * TODO: Añadir manejo de excepciones personalizado.
+ * 
  * @author Israel
+ * 
+ * @author Adrián
+ *         Se añade la capacidad de ordenar las criticas por fecha
  */
 
- 
- @Repository
+@Repository
 public class CriticaRepository {
 
     private Firestore db = FirestoreClient.getFirestore();
-
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
@@ -40,7 +46,7 @@ public class CriticaRepository {
     public ApiFuture<DocumentSnapshot> getCriticaById(String documentID) {
         return db.collection("criticas").document(documentID).get();
     }
-    
+
     public ApiFuture<QuerySnapshot> getCriticaByUserId(String UserId) {
         logger.info("Desde Criticas Repositorio {}", UserId);
         return db.collection("criticas")
@@ -56,5 +62,23 @@ public class CriticaRepository {
 
     public ApiFuture<QuerySnapshot> getAll() {
         return db.collection("criticas").get();
+    }
+
+    /**
+     * Recupera las ultimas críticas grabadas en la base de datos. Se selecciona la
+     * cantidad en parámetro.
+     * 
+     * @param limite Cantidad de críticas que se desea recuperar.
+     * @return ApiFuture<QuerySnapshot> que representa el resultado de la consulta
+     *         asíncrona a Firestore.
+     */
+    public ApiFuture<QuerySnapshot> getRecientes(int limite) {
+        return db.collection("criticas")
+                // Ordena por el campo 'fechaCreacion' de forma descendente (más reciente
+                // primero)
+                .orderBy("fechaCreacion", Direction.DESCENDING)
+                // Limita el número de documentos
+                .limit(limite)
+                .get();
     }
 }
