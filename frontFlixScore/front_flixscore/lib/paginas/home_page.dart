@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Explora las películas más comentadas y populare en la comunidad",
+                    "Explora las películas más comentadas y populares en la comunidad",
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.white70,
                       fontSize: 14,

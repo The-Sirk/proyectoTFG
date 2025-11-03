@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       home: SafeArea(
           child: const Scaffold(
           backgroundColor: Color(0xFF000000),
-          body: Center(child: LoginScreen()),
+          body: Center(child: HomePage()),
         ),
       ),
     );

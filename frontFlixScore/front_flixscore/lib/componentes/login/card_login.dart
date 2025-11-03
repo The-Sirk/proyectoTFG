@@ -1,5 +1,6 @@
 import 'package:flixscore/componentes/common/tab_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginCard extends StatefulWidget {
   const LoginCard({super.key});
@@ -105,22 +106,23 @@ class _LoginCardState extends State<LoginCard> {
                 Expanded(child: Divider(color: Colors.white24)),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 15),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {},
-                icon: Image.asset(
-                  "assets/images/google_icon.png",
-                  width: 28,
-                  height: 28,
+                icon: SvgPicture.asset(
+                  "images/google-icon.svg",
+                  //"assets/images/google_icon.png",
+                  width: 35,
+                  height: 35,
                 ),
                 // icon: Icon(Icons.g_mobiledata, color: Colors.white, size: 28),
                 label: const Text("Continuar con Google"),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Color.fromARGB(255, 0, 0, 0),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -171,7 +173,7 @@ class _LoginCardState extends State<LoginCard> {
             TextField(
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.person, color: Colors.white54),
-                hintText: "nick",
+                hintText: "Nombre de Usuario",
               ),
             ),
             const SizedBox(height: 16),
@@ -190,6 +192,16 @@ class _LoginCardState extends State<LoginCard> {
               obscureText: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
+                hintText: "••••••••",
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text("Repetir Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.lock_reset, color: Colors.white54),
                 hintText: "••••••••",
               ),
             ),
