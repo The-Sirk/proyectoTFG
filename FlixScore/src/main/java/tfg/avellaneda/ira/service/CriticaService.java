@@ -1,15 +1,12 @@
 package tfg.avellaneda.ira.service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 
@@ -39,71 +36,59 @@ public class CriticaService {
      */
     @Autowired
     CriticaRepository repo;
-
-    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
-
+    
     @Autowired
     ObjectMapper mapper;
 
-    public Optional<ModeloCritica> getCriticaById(String documentID) {
+    public String getCriticaById(String criticaId) {
         try {
-            DocumentSnapshot document = repo.getCriticaById(documentID).get();
+            ModeloCritica critica = repo.getCriticaById(criticaId)
+                    .get()
+                    .toObject(ModeloCritica.class);
+            return mapper.writeValueAsString(critica);
 
-            if (document.exists()) {
-                return Optional.ofNullable(document.toObject(ModeloCritica.class));
-            } else {
-                return Optional.empty(); // Usuario no encontrado
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error("Error (Interrupción) al obtener la critica {}: {}", documentID, e.getMessage());
-            throw new RuntimeException("Operación de base de datos interrumpida.", e);
-        } catch (ExecutionException e) {
-            logger.error("Error (Ejecución) al obtener la critica {}: {}", documentID, e.getMessage());
-            throw new RuntimeException("Fallo en la comunicación con la base de datos.", e.getCause());
+        } catch (Exception e) {
+            System.out.println("Error al obtener la crítica: " + e.getMessage());
+            return null;
         }
     }
 
-    public List<ModeloCritica> getCriticasByUserId(String userId) {
+    public String getCriticasByUserId(String userId) {
         try {
-            return repo.getCriticaByUserId(userId)
-            .get()
-            .toObjects(ModeloCritica.class);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error("Error (Interrupción) al obtener las criticas por userId {}: {}", userId, e.getMessage());
-            throw new RuntimeException("Operación de base de datos interrumpida.", e);
-        } catch (ExecutionException e) {
-            logger.error("Error (Ejecución) al obtener las criticas por userId {}: {}", userId, e.getMessage());
-            throw new RuntimeException("Fallo en la comunicación con la base de datos.", e.getCause());
+            List<ModeloCritica> criticas = repo.getCriticaByUserId(userId)
+                    .get()
+                    .toObjects(ModeloCritica.class);
+            return mapper.writeValueAsString(criticas);
+
+        } catch (Exception e) {
+            System.out.println("Error al obtener las críticas del usuario: " + e.getMessage());
+            return null;
         }
     }
 
-    public List<ModeloCritica> getCriticasByPeliculaId(String peliculaId) {
+    public String getCriticasByPeliculaId(String peliculaId) {
         try {
-            return repo.getCriticaByPeliculaId(peliculaId)
-            .get()
-            .toObjects(ModeloCritica.class);
+            List<ModeloCritica> criticas = repo.getCriticaByPeliculaId(peliculaId)
+                    .get()
+                    .toObjects(ModeloCritica.class);
+            return mapper.writeValueAsString(criticas);
 
         } catch (Exception e) {
             System.out.println("Error al obtener las críticas de la película: " + e.getMessage());
             return null;
         }
     }
-
-    public ModeloCritica addCritica(ModeloCritica critica) {
+    public String addCritica(ModeloCritica critica) {
         try {
-            
-            DocumentReference docRef = repo.addCritica(critica).get();
-            
-            DocumentSnapshot document = docRef.get().get();
+            ApiFuture<DocumentReference> futureDocRef = repo.addCritica(critica);
+            DocumentReference docRef = futureDocRef.get();
+            ApiFuture<DocumentSnapshot> future = docRef.get();
+            DocumentSnapshot document = future.get();
             if (document.exists()) {
                 ModeloCritica creada = document.toObject(ModeloCritica.class);
-                logger.info("Critica creada correctamente con ID {}", creada.getDocumentID());
-                return creada;
+                return mapper.writeValueAsString(creada);
             } else {
-                logger.error("Critica añadida sin recuperar", critica);
-                throw new RuntimeException("Critica creada per sin recuperar");
+                return null;
             }
         } catch (Exception e) {
             System.out.println("Error al añadir la crítica: " + e.getMessage());
@@ -112,11 +97,12 @@ public class CriticaService {
 
     }
 
-    public List<ModeloCritica> getAll() {
+    public String getAll() {
         try {
-            return repo.getAll()
-            .get()
-            .toObjects(ModeloCritica.class);
+            List<ModeloCritica> criticas = repo.getAll()
+                    .get()
+                    .toObjects(ModeloCritica.class);
+            return mapper.writeValueAsString(criticas);
 
         } catch (Exception e) {
             System.out.println("Error al obtener las críticas: " + e.getMessage());

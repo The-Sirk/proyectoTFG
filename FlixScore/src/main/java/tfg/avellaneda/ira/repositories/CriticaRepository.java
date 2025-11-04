@@ -30,8 +30,8 @@ public class CriticaRepository {
         return db.collection("criticas").add(critica);
     }
 
-    public ApiFuture<DocumentSnapshot> getCriticaById(String documentID) {
-        return db.collection("criticas").document(documentID).get();
+    public ApiFuture<DocumentSnapshot> getCriticaById(String criticaId) {
+        return db.collection("criticas").document(criticaId).get();
     }
     
     public ApiFuture<QuerySnapshot> getCriticaByUserId(String UserId) {
