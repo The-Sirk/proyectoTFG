@@ -1,0 +1,1 @@
+ /Users/opahostil/Documents/ProyectoDAM/proyectoTFG/frontFlixScore/front_flixscore/.dart_tool/flutter_build/719f47490279c1b99d9c644c63bf54f5/native_assets.json: 
