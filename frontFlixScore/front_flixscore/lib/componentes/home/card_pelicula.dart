@@ -21,7 +21,7 @@ class PeliculaCard extends StatelessWidget {
             elevation: 4,
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: _gridLayout()
+              child: _tarjetaLayout()
             ),
           ),
         );
@@ -30,42 +30,24 @@ class PeliculaCard extends StatelessWidget {
   }
 
   // Layout para grid (desktop/tablet)
-  Widget _gridLayout() {
+  Widget _tarjetaLayout() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         // Imagen y puntuación
-        AspectRatio(
-          aspectRatio: 2.0,
-          child: Stack(
-            children: [
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFEC4899), Color(0xFFEF4444)],
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.movie,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        Row(children: [
+        Container(
+          width: 140,
+          height: 200,
+          color: Colors.red,
         ),
-        
-        const SizedBox(height: 16),
-        ResumenPelicula(),
+        const SizedBox(width: 16),
+        Expanded(child: ResumenPelicula()),
+
+
+        ],),
         const SizedBox(height: 12),
-        const SizedBox(height: 16),
         
         Container(
           width: double.infinity,
