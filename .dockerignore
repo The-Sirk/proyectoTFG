@@ -1,0 +1,12 @@
+target/
+.mvn/
+.gradle/
+.idea/
+.vscode/
+
+.git
+.gitignore
+.gitattributes
+
+*.log
+tmp/
