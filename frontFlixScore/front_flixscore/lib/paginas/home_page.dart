@@ -1,4 +1,5 @@
 import 'package:flixscore/componentes/common/tab_button.dart';
+import 'package:flixscore/componentes/home/card_pelicula.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -9,7 +10,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int selectedTab = 0;
+  int tabSeleccionada = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: 80,
-        backgroundColor: const Color(0xFF111827), // Color de fondo oscuro
+        backgroundColor: const Color(0xFF111827),
         title: Row(
           spacing: 15,
           children: [
@@ -45,7 +46,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        centerTitle: false, // Para alinear el título a la izquierda
+        centerTitle: false,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -67,76 +68,132 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      backgroundColor: const Color(
-        0xFF0A0E1A,
-      ), // Fondo oscuro para toda la página
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Descubre Películas",
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      fontFamily: "Inter",
+      backgroundColor: const Color(0xFF0A0E1A),
+      body: Center(
+        child: FractionallySizedBox(
+          widthFactor: 1.0,
+          child: Column(
+            children: [
+              // CONTENIDO FIJO - No scrollable
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Descubre Películas",
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontFamily: "Inter",
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Explora las películas más comentadas y populares en la comunidad",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white70,
-                      fontSize: 14,
+                    const SizedBox(height: 8),
+                    Text(
+                      "Explora las películas más comentadas y populares en la comunidad",
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 35),
-                  Container(
-                    width: double.infinity,
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1F2937),
-                      borderRadius: BorderRadius.circular(36)
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TabButton(
-                            icono: Icons.access_time, 
-                            etiqueta: "Últimas", 
-                            seleccionado: selectedTab == 0,
-                            onTap: () => setState(() => selectedTab = 0)),
+                    const SizedBox(height: 20),
+                    Container(
+                      width: double.infinity,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F2937),
+                        borderRadius: BorderRadius.circular(36)
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TabButton(
+                              icono: Icons.access_time, 
+                              etiqueta: "Últimas", 
+                              seleccionado: tabSeleccionada == 0,
+                              onTap: () => setState(() => tabSeleccionada = 0)
                             ),
-                        
-                        Expanded(
-                          child: TabButton(
-                            icono: Icons.trending_up, 
-                            etiqueta: "Popular", 
-                            seleccionado: selectedTab == 1,
-                            onTap: () => setState(() => selectedTab = 1)),
-                        ),
-                        Expanded(
-                          child: TabButton(
-                            icono: Icons.search, 
-                            etiqueta: "Buscar", 
-                            seleccionado: selectedTab == 2,
-                            onTap: () => setState(() => selectedTab = 2)),
-                        ),
-                      ],
-                    )
-                  )
-                ],
+                          ),
+                          Expanded(
+                            child: TabButton(
+                              icono: Icons.trending_up, 
+                              etiqueta: "Popular", 
+                              seleccionado: tabSeleccionada == 1,
+                              onTap: () => setState(() => tabSeleccionada = 1)
+                            ),
+                          ),
+                          Expanded(
+                            child: TabButton(
+                              icono: Icons.search, 
+                              etiqueta: "Buscar", 
+                              seleccionado: tabSeleccionada == 2,
+                              onTap: () => setState(() => tabSeleccionada = 2)
+                            ),
+                          ),
+                        ],
+                      )
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 30),
-            Expanded(
-              child: Text("Aqui iran las tarjetas de peliculas"))
-          ],
+              // CONTENIDO SCROLLABLE
+               Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Determinar si es móvil o desktop/web
+                    bool esMovil = constraints.maxWidth < 600;
+                    
+                    if (esMovil) {
+                      // MÓVIL: ListView vertical
+                      return ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        children: const [
+                          PeliculaCard(),
+                          SizedBox(height: 16),
+                          PeliculaCard(),
+                          SizedBox(height: 16),
+                          PeliculaCard(),
+                          SizedBox(height: 16),
+                          PeliculaCard(),
+                          SizedBox(height: 16),
+                          PeliculaCard(),
+                          SizedBox(height: 16),
+                          PeliculaCard(),
+                        ],
+                      );
+                    } else {
+                      // WEB/ESCRITORIO: GridView
+                      int columnas;
+                      
+                      if (constraints.maxWidth > 1000) {
+                        columnas = 3; // Pantallas grandes: 3 columnas
+                      } else {
+                        columnas = 2; // Pantallas medianas: 2 columnas
+                      }
+                      
+                      double anchoCard = (constraints.maxWidth - 60 - (20 * (columnas - 1))) / columnas;
+                      
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Wrap(
+                          spacing: 20,
+                          runSpacing: 20,
+                          children: List.generate(6, (index) {
+                            return SizedBox(
+                              width: anchoCard,
+                              child: const PeliculaCard(),
+                            );
+                          }),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
