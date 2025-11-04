@@ -1,5 +1,6 @@
 package tfg.avellaneda.ira.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,8 +10,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import tfg.avellaneda.ira.model.ModeloUsuario;
 import tfg.avellaneda.ira.service.UsuarioService;
-
-import java.util.NoSuchElementException;
 
 /**
  * Controller REST para gestionar los usuarios.
