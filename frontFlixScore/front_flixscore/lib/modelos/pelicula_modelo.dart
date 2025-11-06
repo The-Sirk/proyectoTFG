@@ -1,4 +1,4 @@
-class MovieSalida {
+class ModeloPelicula {
   final int id;
   final String titulo;
   final String tituloOriginal;
@@ -12,7 +12,7 @@ class MovieSalida {
   final String idiomaOriginal;
   final List<int> generosIds;
 
-  MovieSalida({
+  ModeloPelicula({
     required this.id,
     required this.titulo,
     required this.tituloOriginal,
@@ -27,8 +27,8 @@ class MovieSalida {
     required this.generosIds,
   });
 
-  factory MovieSalida.fromJson(Map<String, dynamic> json) {
-    return MovieSalida(
+  factory ModeloPelicula.fromJson(Map<String, dynamic> json) {
+    return ModeloPelicula(
       id: json['id'] as int,
       titulo: json['titulo'] as String,
       tituloOriginal: json['tituloOriginal'] as String,
