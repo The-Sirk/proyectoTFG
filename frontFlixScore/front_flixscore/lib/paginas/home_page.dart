@@ -1,5 +1,8 @@
 import 'package:flixscore/componentes/common/tab_button.dart';
-import 'package:flixscore/componentes/home/card_pelicula.dart';
+
+import 'package:flixscore/componentes/home/bucar_layout.dart';
+import 'package:flixscore/componentes/home/popular_layout.dart';
+import 'package:flixscore/componentes/home/ultimas_layout.dart';
 import 'package:flixscore/paginas/perfil_usuario_page.dart';
 import 'package:flutter/material.dart';
 
@@ -8,9 +11,11 @@ class HomePage extends StatefulWidget {
 
   @override
   State<HomePage> createState() => _HomePageState();
+
 }
 
 class _HomePageState extends State<HomePage> {
+
   int tabSeleccionada = 0;
 
   @override
@@ -178,58 +183,13 @@ class _HomePageState extends State<HomePage> {
               ),
               // CONTENIDO SCROLLABLE
                Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Determinar si es móvil o desktop/web
-                    bool esMovil = constraints.maxWidth < 600;
-                    
-                    if (esMovil) {
-                      // MÓVIL: ListView vertical
-                      return ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        children: const [
-                          PeliculaCard(),
-                          SizedBox(height: 16),
-                          PeliculaCard(),
-                          SizedBox(height: 16),
-                          PeliculaCard(),
-                          SizedBox(height: 16),
-                          PeliculaCard(),
-                          SizedBox(height: 16),
-                          PeliculaCard(),
-                          SizedBox(height: 16),
-                          PeliculaCard(),
-                        ],
-                      );
-                    } else {
-                      // WEB/ESCRITORIO: GridView
-                      int columnas;
-                      
-                      if (constraints.maxWidth > 1000) {
-                        columnas = 3; // Pantallas grandes: 3 columnas
-                      } else {
-                        columnas = 2; // Pantallas medianas: 2 columnas
-                      }
-                      
-                      double anchoCard = (constraints.maxWidth - 60 - (20 * (columnas - 1))) / columnas;
-                      
-                      return SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Wrap(
-                          spacing: 20,
-                          runSpacing: 20,
-                          children: List.generate(6, (index) {
-                            return SizedBox(
-                              width: anchoCard,
-                              child: const PeliculaCard(),
-                            );
-                          }),
-                        ),
-                      );
-                    }
+                  child: switch(tabSeleccionada) {
+                    0 => UltimasLayout(),
+                    1 => PopularLayout(),
+                    2 => BuscarLayout(),
+                    _ => UltimasLayout(),
                   },
                 ),
-              ),
             ],
           ),
         ),
@@ -237,3 +197,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+
+                
