@@ -1,4 +1,4 @@
-import 'package:flixscore/componentes/home/card_pelicula.dart';
+
 import 'package:flutter/material.dart';
 class UltimasLayout extends StatefulWidget {
   const UltimasLayout({super.key});
