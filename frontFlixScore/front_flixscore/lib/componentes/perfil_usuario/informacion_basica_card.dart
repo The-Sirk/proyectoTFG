@@ -56,7 +56,7 @@ class InformacionBasicaCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           const Text(
-            "Consulta o actualiza tu información personal",
+            "Consulta tu información personal",
             style: TextStyle(
               color: _subtitleColor,
               fontSize: 14,
@@ -65,13 +65,13 @@ class InformacionBasicaCard extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Campo Nombre
-          _TextoEditable(
+          _TextoNoEditable(
             titulo: "Nick",
             hintText: nombreRecibido, 
             icono: Icons.person_outline,
-            esEditable: true,
+            textoAyuda: "Da este Nick a tus amigos para ser agregado",
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
 
           // Campo Email
           _TextoNoEditable(
@@ -89,12 +89,12 @@ class InformacionBasicaCard extends StatelessWidget {
             icono: Icons.calendar_month_outlined,
             textoAyuda: "Fecha en la que te registraste",
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 15),
 
           // Botón para eliminar la cuenta
           ElevatedButton.icon(
             onPressed: () {
-              // Aquí va la lógica para borrar el registro
+              // Aquí va la lógica para borrar el registro del usuario
               mostrarSnackBarExito(context, "Su cuenta se ha eliminado, gracias por haber compartido sus opiniones con nosotros");
             },
             icon: const Icon(Icons.delete),

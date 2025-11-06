@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flixscore/service/api_service.dart';
+import 'package:flixscore/modelos/usuario_modelo.dart';
+import 'package:flixscore/modelos/amigo_modelo.dart';
 import 'package:flixscore/componentes/common/tab_button.dart';
 import 'package:flixscore/componentes/perfil_usuario/estadisticas_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/lista_amigos_card.dart';
@@ -15,49 +18,62 @@ class PerfilUsuario extends StatefulWidget {
 }
 
 class _PerfilUsuarioState extends State<PerfilUsuario> {
-  // Definimos un punto de quiebre para el diseño de dos columnas
   final double _kTabletBreakpoint = 700.0;
   int tabSeleccionada = 0;
+  
+  final String userId = 
+    'fyQdILnR3X6jd20OqDgr';
+    //'Jq0Y3sToCUVG2BHPrQDH'; 
 
-  // Aquí se introducirán los datos del usuario para no tener que cargarlos por cada widget
-  // Deberán cargarse al inicio para no hacer cargas parciales por cada tarjeta
-  String nombreUsuario = "Perico";
-  String emailUsuario = "perico@eldelospalot.es";
-  String fechaRegistroUsuario = "06/11/2025 08:50";
-  String urlFotoPerfil = "https://img.freepik.com/free-photo/goth-student-attending-school_23-2150576778.jpg?size=338&ext=jpg";
-  int peliculasValoradasUsuario = 14;
-  int numeroAmigosUsuario = 4; 
-  var puntuacionMediaUsuario = 6.8;
-  List<Amigo> listaDeAmigos = [
-    Amigo(nombre: "FilipinosPowah", amigosEnComun: 5),
-    Amigo(nombre: "El rey del pollo frito", amigosEnComun: 8),
-    Amigo(nombre: "SSSIIIIUUUUuuuu", amigosEnComun: 3),
-    Amigo(nombre: "Pikmin69", amigosEnComun: 12),
-    Amigo(nombre: "FilipinosPowah", amigosEnComun: 5),
-    Amigo(nombre: "El rey del pollo frito", amigosEnComun: 8),
-    Amigo(nombre: "SSSIIIIUUUUuuuu", amigosEnComun: 3),
-    Amigo(nombre: "Pikmin69", amigosEnComun: 12),
-    Amigo(nombre: "FilipinosPowah", amigosEnComun: 5),
-    Amigo(nombre: "El rey del pollo frito", amigosEnComun: 8),
-    Amigo(nombre: "SSSIIIIUUUUuuuu", amigosEnComun: 3),
-    Amigo(nombre: "Pikmin69", amigosEnComun: 12),
-    Amigo(nombre: "FilipinosPowah", amigosEnComun: 5),
-    Amigo(nombre: "El rey del pollo frito", amigosEnComun: 8),
-    Amigo(nombre: "SSSIIIIUUUUuuuu", amigosEnComun: 3),
-    Amigo(nombre: "Pikmin69", amigosEnComun: 12),
-    Amigo(nombre: "FilipinosPowah", amigosEnComun: 5),
-    Amigo(nombre: "El rey del pollo frito", amigosEnComun: 8),
-    Amigo(nombre: "SSSIIIIUUUUuuuu", amigosEnComun: 3),
-    Amigo(nombre: "Pikmin69", amigosEnComun: 12),
-    Amigo(nombre: "FilipinosPowah", amigosEnComun: 5),
-    Amigo(nombre: "El rey del pollo frito", amigosEnComun: 8),
-    Amigo(nombre: "SSSIIIIUUUUuuuu", amigosEnComun: 3),
-    Amigo(nombre: "Pikmin69", amigosEnComun: 12),
-    Amigo(nombre: "FilipinosPowah", amigosEnComun: 5),
-    Amigo(nombre: "El rey del pollo frito", amigosEnComun: 8),
-    Amigo(nombre: "SSSIIIIUUUUuuuu", amigosEnComun: 3),
-    Amigo(nombre: "Pikmin69", amigosEnComun: 12),
-  ];
+  late Future<Map<String, dynamic>> _datosCompletosFuture; 
+  final ApiService _apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    // 🆕 Iniciamos la función de carga en cascada
+    _datosCompletosFuture = _cargarDatosCompletos();
+  }
+
+  Future<Map<String, dynamic>> _cargarDatosCompletos() async {
+    // Obtener el usuario principal
+    final ModeloUsuario usuario = await _apiService.getUsuarioByID(userId);
+    
+    // Crear una lista de Futures para obtener los objetos completos de los amigos
+    final List<Future<ModeloUsuario>> futurosAmigos = usuario.amigosId.map((amigoId) {
+      // Usamos el endpoint para obtener el objeto completo por ID
+      return _apiService.getUsuarioByID(amigoId);
+    }).toList();
+
+    // Esperar a que TODAS las peticiones de amigos terminen en paralelo
+    final List<ModeloUsuario> objetosAmigos = await Future.wait(futurosAmigos);
+
+    // Devolver un mapa con el usuario principal y la lista de objetos amigos
+    return {
+      'usuarioPrincipal': usuario,
+      'amigosObj': objetosAmigos, // Lista de ModeloUsuario de los amigos
+    };
+  }
+  
+  // Función _handleUserSearch para la búsqueda
+  void _handleUserSearch(String nick) async {
+    mostrarSnackBarExito(context, "Buscando a '$nick'...");
+    try {
+      final List<ModeloUsuario> usuariosEncontrados = 
+          await _apiService.getByNick(nick);
+      if (usuariosEncontrados.isEmpty) {
+        mostrarSnackBarError(context, "No se encontró ningún usuario con el nick '$nick'.");
+      } else {
+        final ModeloUsuario usuarioEncontrado = usuariosEncontrados.first;
+        mostrarSnackBarExito(
+          context, 
+          "Usuario '${usuarioEncontrado.nick}' encontrado. ¿Deseas agregarlo?"
+        );
+      }
+    } catch (e) {
+      mostrarSnackBarError(context, "Error en la búsqueda: ${e.toString().split(':')[1].trim()}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,19 +82,15 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
         automaticallyImplyLeading: true,
         toolbarHeight: 80,
         backgroundColor: const Color(0xFF111827),
-        title: const Row(
-          children: [
-            Text(
-              "Mi Perfil",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.normal,
-                fontFamily: "Inter",
-              ),
+        title: const Text(
+            "Mi Perfil",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.normal,
+              fontFamily: "Inter",
             ),
-          ],
-        ),
+          ),
         centerTitle: false,
         actions: [
           Padding(
@@ -111,148 +123,136 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
           ),
         ],
       ),
-
       backgroundColor: const Color(0xFF0A0E1A),
-      // Para que sea responsive
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          // Determina si el ancho es mayor que el punto de quiebre (Smartphone/Desktop)
-          final bool isLargeScreen = constraints.maxWidth > _kTabletBreakpoint;
+      
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _datosCompletosFuture,
+        builder: (context, snapshot) {
+          
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // Contenido principal de la página, envuelto en SingleChildScrollView para el scroll
-          return SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                // Reduce el padding horizontal en pantallas grandes para usar mejor el espacio
-                horizontal: isLargeScreen ? constraints.maxWidth * 0.05 : 0.0,
-                vertical: 10.0,
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error al cargar el usuario: ${snapshot.error}',
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+                textAlign: TextAlign.center,
               ),
-              // Si es pantalla grande, usa Row (2 columnas); si es pequeña, usa Column (1 columna)
-              child: isLargeScreen
-                  ? _buildTwoColumnLayout(context)
-                  : _buildOneColumnLayout(context),
-            ),
-          );
+            );
+          }
+          
+          if (snapshot.hasData) {
+            // Desempaquetamos los datos
+            final ModeloUsuario usuario = snapshot.data!['usuarioPrincipal'];
+            final List<ModeloUsuario> amigosObj = snapshot.data!['amigosObj'];
+            
+            final List<Amigo> listaDeAmigosReal = amigosObj.map((amigo) => 
+              Amigo(
+                nombre: amigo.nick, // Acceso correcto al nick
+                amigosEnComun: 5 // MOCK, hay que trabajar en ello
+              )
+            ).toList();
+
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final bool isLargeScreen = constraints.maxWidth > _kTabletBreakpoint;
+
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isLargeScreen ? constraints.maxWidth * 0.05 : 0.0,
+                      vertical: 10.0,
+                    ),
+                    child: isLargeScreen
+                        ? _buildTwoColumnLayout(context, usuario, listaDeAmigosReal)
+                        : _buildOneColumnLayout(context, usuario, listaDeAmigosReal),
+                  ),
+                );
+              },
+            );
+          }
+          
+          return const Center(child: Text("Usuario no encontrado o no disponible.", style: TextStyle(color: Colors.white)));
         },
       ),
     );
   }
 
-  // --- Funciones para construir las estructuras de diseño ---
+  // --- Métodos de Construcción ---
 
-  Widget _buildOneColumnLayout(BuildContext context) {
-    // Diseño para móvil (una sola columna)
+  Widget _buildOneColumnLayout(BuildContext context, ModeloUsuario usuario, List<Amigo> listaAmigos) {
     return Column(
       children: [
-        // Selector de pestañas
-         _buildTabSelector(),
-
-        // Tarjeta de foto de perfil
+        _buildTabSelector(),
         PerfilUsuarioCard(
-          nickUsuario: nombreUsuario,
-          emailUsuario: emailUsuario,
-          urlImagen: urlFotoPerfil,
+          nickUsuario: usuario.nick,
+          emailUsuario: usuario.correo,
+          urlImagen: usuario.imagenPerfil ?? "url_default.jpg", 
         ),
-
         const SizedBox(height: 10),
-
-        //Tarjeta información básica
         InformacionBasicaCard(
-          nombreRecibido: nombreUsuario,
-          emailRecibido: emailUsuario,
-          fechaRegistro: fechaRegistroUsuario,
-          ),
-
+          nombreRecibido: usuario.nick,
+          emailRecibido: usuario.correo,
+          fechaRegistro: "N/A",
+        ),
         const SizedBox(height: 10),
-
-        // Tarjeta de estadísticas
         EstadisticasCard(
-          peliculasValoradas: peliculasValoradasUsuario,
-          numeroAmigos: numeroAmigosUsuario, 
-          puntuacionMedia: puntuacionMediaUsuario,
+          peliculasValoradas: usuario.peliculasCriticadas.length,
+          numeroAmigos: usuario.amigosId.length, // Usamos el tamaño de la lista de IDs como el número de amigos
+          puntuacionMedia: 3.6,
         ),
-
         const SizedBox(height: 10),
-        
-        //Tarjeta de lista de amigos
         ListaAmigosCard(
-          amigos: listaDeAmigos
+          amigos: listaAmigos
         ),
-
         const SizedBox(height: 10),
-
-        // Tarjeta que permite la búsqueda de nuevos amigos y su agregación
         BuscarUsuarioCard(
-          onSearch: (nick) {
-          // TODO: Implementar la lógica para buscar el 'nick' en la base de datos
-          print('Buscando usuario: $nick');
-          },
+          onSearch: _handleUserSearch, 
         ),
-
         const SizedBox(height: 10),
       ],
     );
   }
 
-  Widget _buildTwoColumnLayout(BuildContext context) {
-    // Diseño para Desktop/Web (dos columnas usando Row y Expanded)
+  Widget _buildTwoColumnLayout(BuildContext context, ModeloUsuario usuario, List<Amigo> listaAmigos) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start, // Alinea las columnas desde arriba
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        //-----------------------------------------------------
-        // Columna 1: Información Principal (60% del ancho)
-        //-----------------------------------------------------
         Expanded(
-          flex: 6, //Esto determina el porcentaje de ancho que ocupa esa columnna
+          flex: 6,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Selector de Pestañas
               _buildTabSelector(),
-
-              // Tarjeta de foto de perfil
               PerfilUsuarioCard(
-                nickUsuario: nombreUsuario,
-                emailUsuario: emailUsuario,
-                urlImagen: urlFotoPerfil,
+                nickUsuario: usuario.nick,
+                emailUsuario: usuario.correo,
+                urlImagen: usuario.imagenPerfil ?? "url_default.jpg",
               ),
-
-              // Tarjeta de información básica
-              InformacionBasicaCard(nombreRecibido: nombreUsuario,
-              emailRecibido: emailUsuario,
-              fechaRegistro: fechaRegistroUsuario,
-              )
+              InformacionBasicaCard(
+                nombreRecibido: usuario.nick,
+                emailRecibido: usuario.correo,
+                fechaRegistro: "N/A",
+              ),
             ],
           ),
         ),
-        
-        //--------------------------------------
-        // Columna 2: Auxiliares (40% del ancho)
-        //--------------------------------------
         Expanded(
           flex: 4,
           child: Column(
             children: [
-
-              // Tarjeta de estadísticas
               EstadisticasCard(
-                peliculasValoradas: peliculasValoradasUsuario,
-                numeroAmigos: numeroAmigosUsuario, 
-                puntuacionMedia: puntuacionMediaUsuario,
+                peliculasValoradas: usuario.peliculasCriticadas.length,
+                numeroAmigos: usuario.amigosId.length,
+                puntuacionMedia: 3.6,
               ),
-
-              // Tarjeta de lista de amigos
               ListaAmigosCard(
-                amigos: listaDeAmigos
+                amigos: listaAmigos
               ),
-
-              // Tarjeta que permite la búsqueda de nuevos amigos y su agregación
               BuscarUsuarioCard(
-                onSearch: (nick) {
-                // TODO: Implementar la lógica para buscar el 'nick' en la base de datos
-                print('Buscando usuario: $nick');
-                },
+                onSearch: _handleUserSearch,
               ),
             ],
           ),
@@ -261,8 +261,6 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     );
   }
 
-
-  // Widget solo para la clase, prepara el selector por pestañas
   Widget _buildTabSelector() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),

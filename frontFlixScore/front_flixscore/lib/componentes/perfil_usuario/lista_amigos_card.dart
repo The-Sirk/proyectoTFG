@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
 import 'comunes/amigo_item.dart';
 import 'package:flixscore/componentes/common/snack_bar.dart';
-
-// Modelo de datos simple para un amigo
-class Amigo {
-  final String nombre;
-  final int amigosEnComun;
-  Amigo({required this.nombre, required this.amigosEnComun});
-}
+import 'package:flixscore/modelos/amigo_modelo.dart';
 
 // Tarjeta que contiene el listado de amigos
 class ListaAmigosCard extends StatelessWidget {
