@@ -1,17 +1,16 @@
-
 import 'package:flixscore/componentes/home/components/resumen_pelicula.dart';
+import 'package:flixscore/modelos/pelicula_model.dart';
 import 'package:flutter/material.dart';
 
 class PeliculaCard extends StatelessWidget {
-  const PeliculaCard({super.key});
+  final Pelicula pelicula;
 
+  const PeliculaCard({super.key, required this.pelicula});
 
   @override
   Widget build(BuildContext context) {
-    
     return LayoutBuilder(
       builder: (context, constraints) {
-        
         return IntrinsicHeight(
           child: Card(
             color: const Color(0xFF1F2937),
@@ -21,7 +20,7 @@ class PeliculaCard extends StatelessWidget {
             elevation: 4,
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: _tarjetaLayout()
+              child: _tarjetaLayout(),
             ),
           ),
         );
@@ -36,19 +35,28 @@ class PeliculaCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Imagen y puntuación
-        Row(children: [
-        Container(
-          width: 140,
-          height: 200,
-          color: Colors.red,
+        Row(
+          children: [
+            Container(
+              width: 140, 
+              height: 200, 
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.grey,
+              ),
+              child: Image.network(
+                pelicula.rutaPoster,
+                fit: BoxFit.cover),
+              ),
+            const SizedBox(width: 16),
+            Expanded(child: ResumenPelicula(
+              titulo: pelicula.titulo,
+              resumen: pelicula.resumen,
+              fechaEstreno: pelicula.fechaEstreno
+            )),
+          ],
         ),
-        const SizedBox(width: 16),
-        Expanded(child: ResumenPelicula()),
-
-
-        ],),
         const SizedBox(height: 12),
-        
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
