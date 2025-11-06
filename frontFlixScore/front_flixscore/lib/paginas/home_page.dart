@@ -1,5 +1,6 @@
 import 'package:flixscore/componentes/common/tab_button.dart';
 import 'package:flixscore/componentes/home/card_pelicula.dart';
+import 'package:flixscore/paginas/perfil_usuario_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -20,7 +21,6 @@ class _HomePageState extends State<HomePage> {
         toolbarHeight: 80,
         backgroundColor: const Color(0xFF111827),
         title: Row(
-          spacing: 15,
           children: [
             Container(
               width: 50,
@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
                 size: 28,
               ),
             ),
+            const SizedBox(width: 15),
             const Text(
               "FlixScore",
               style: TextStyle(
@@ -48,20 +49,57 @@ class _HomePageState extends State<HomePage> {
         ),
         centerTitle: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: const Color(0xFF0A0E1A),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color.fromARGB(255, 40, 241, 231),
-                    width: 2,
+          GestureDetector(
+            // Navegamos a la página del perfil
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PerfilUsuario(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: CircleAvatar(
+                radius: 25,
+                backgroundColor: const Color(0xFF0A0E1A),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color.fromARGB(255, 40, 241, 231),
+                      width: 2,
+                    ),
                   ),
+                  // Imagen de Asset Local (Solo para tener algo dentro durante el desarrollo)
+                  child: ClipOval(
+                    child: Image.asset(
+                      '/images/liquen.webp',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  
+                  // Código para cargar la imagen de firebase en producción
+                  /*
+                  child: ClipOval(
+                    child: FadeInImage(
+                      placeholder: const AssetImage('/images/f.webp'),
+                      image: NetworkImage(
+                        'URL_DE_LA_IMAGEN_DE_CLOUD_STORAGE', 
+                      ),
+                      fit: BoxFit.cover,
+                      imageErrorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                        );
+                      },
+                    ),
+                  ),
+                  */
                 ),
               ),
             ),
