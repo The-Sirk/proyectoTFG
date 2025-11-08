@@ -3,7 +3,6 @@ pipeline {
     environment {
         REPO_URL = 'https://github.com/The-Sirk/proyectoTFG.git'
         BRANCH = 'Testing'
-        GIT_CREDENTIALS_ID = 'Ricardo-Jenkins-ID' // ID de las credenciales en Jenkins
     }
     stages {
         stage('Clonar repositorio') {
@@ -11,65 +10,30 @@ pipeline {
                 git branch: "${BRANCH}", url: "${REPO_URL}"
             }
         }
-        stage('Detectar cambios') {
+
+        stage('Ejecutar Test Usuario') {
             steps {
-                script {
-                    def lastCommit = bat(script: "git rev-parse HEAD", returnStdout: true).trim()
-                    echo lastCommit
-                    def previousCommit = ''
-                    echo previousCommit
-                    if (fileExists('last_commit.txt')) {
-                        previousCommit = readFile('last_commit.txt').trim()
-                         echo previousCommit
-                    }
-                    writeFile file: 'last_commit.txt', text: lastCommit
-                    // Guardar resultado en variable de entorno para usar en el siguiente stage
-                    if (lastCommit == previousCommit) {
-                        echo "No hay cambios en el commit."
-                        env.HAY_CAMBIOS = 'false'
-                    } else {
-                        echo "Hay cambios en el commit."
-                        env.HAY_CAMBIOS = 'true'
-                    }
-                }
+                bat '\\Users\\RICK\\AppData\\Roaming\\npm\\newman run Testing\\Usuario.postman_collection.json -e Testing\\ENV-TFG-Usuario.postman_environment.json -d Testing\\CSV-Iterador-Test-usuario.csv -r htmlExtra --insecure --reporter-htmlExtra-export Testing\\newman\\Usuario\\ --suppress-exit-code'
             }
         }
-       
-
-        stage('Ejecutar comando si hay cambios') {
-            when {
-                expression {
-                    return env.HAY_CAMBIOS == 'true'
-                }
-            }
+        stage('Ejecutar Test Criticas') {
             steps {
-                bat '/Users/rherredon/AppData/Roaming/npm/newman run usuario-controller.postman_collection.json -e ENV-TFG-Usuario-Controller.postman_environment.json -d CSV-Iterador-Test-50-usuarios.csv -r htmlExtra --insecure'
-                bat 'xcopy newman /Users/rherredon/Desktop/TFG /E /H'
+                bat '\\Users\\RICK\\AppData\\Roaming\\npm\\newman run Testing\\criticas.postman_collection.json -e Testing\\ENV-TFG-criticas.postman_environment.json -r htmlExtra --insecure --reporter-htmlExtra-export Testing\\newman\\critica\\ --suppress-exit-code'
+            }
+        }
+        stage('Ejecutar Test TMDB') {
+            steps {
+                bat '\\Users\\RICK\\AppData\\Roaming\\npm\\newman run Testing\\TMDB.postman_collection.json -e Testing\\ENV-TFG-TMDB.postman_environment.json -r htmlExtra --insecure --reporter-htmlExtra-export Testing\\newman\\TMDB\\ --suppress-exit-code'
             }
         }
         
-         stage('Commit y Push') {
-            when {
-                    expression {
-                        return env.HAY_CAMBIOS == 'true'
-                    }
-                }
+        stage('Ejecutar copia de informes') {
             steps {
-                script {
-                    bat 'cd /Users/rherredon/Desktop/TFG'
-                    bat 'git config user.email "Ricardo.he.bl@gmail.com"'
-                    bat 'git config user.name "RicardoHB996"'
-                    bat 'git add \\newman '
-                    bat 'git commit -m "Cambios automáticos desde Jenkins" || echo "Nada que hacer commit"'
-                    withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIALS_ID, usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-                        bat 'git push https://${GIT_USER}:${GIT_PASS}@github.com/The-Sirk/proyectoTFG.git HEAD:Testing'
-                    }
-                }
+                bat 'xcopy Testing\\newman C:\\TFG\\proyectoTFG\\Testing\\newman/E /H /Y'
             }
         }
         
    }
-    
         post {
             always {
                 echo "Fin de jenkinsfile "
