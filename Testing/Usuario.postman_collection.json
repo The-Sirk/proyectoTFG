@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "b1f2bdef-3c19-4c47-ab41-9f712263caaa",
-		"name": "usuario-controller",
+		"name": "Usuario",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "49749285",
 		"_collection_link": "https://ricardo-he-bl-9902449.postman.co/workspace/Ricardo-Herradon's-Workspace~2c92c116-53b2-4c58-8735-a4dc6e15d3a1/collection/49749285-b1f2bdef-3c19-4c47-ab41-9f712263caaa?action=share&source=collection_link&creator=49749285"

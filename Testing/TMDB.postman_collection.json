@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "6a28a40f-8fd0-49f5-b974-307333bd40c3",
-		"name": "Busquedas TMDB",
+		"name": "TMDB",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "49749285",
 		"_collection_link": "https://ricardo-he-bl-9902449.postman.co/workspace/Ricardo-Herradon's-Workspace~2c92c116-53b2-4c58-8735-a4dc6e15d3a1/collection/49749285-6a28a40f-8fd0-49f5-b974-307333bd40c3?action=share&source=collection_link&creator=49749285"
