@@ -1,0 +1,806 @@
+{
+	"info": {
+		"_postman_id": "3616a892-1392-410e-990b-e636f139f5b8",
+		"name": "critcas-controller",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49749285",
+		"_collection_link": "https://ricardo-he-bl-9902449.postman.co/workspace/Ricardo-Herradon's-Workspace~2c92c116-53b2-4c58-8735-a4dc6e15d3a1/collection/49749285-3616a892-1392-410e-990b-e636f139f5b8?action=share&source=collection_link&creator=49749285"
+	},
+	"item": [
+		{
+			"name": "CrearCritica exito",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de estado 200, critica creada\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"var json = pm.response.json()\r",
+							"\r",
+							"pm.environment.set(\"documentID\", json.documentID)\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"usuarioUID\": \"{{usuarioUID}}\",\r\n  \"peliculaID\": {{peliculaid}},\r\n  \"puntuacion\": {{puntuacion}},\r\n  \"comentario\": \"{{comentario}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{UrlBase}}/criticas/",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CrearCritica nulls",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de estado 200, critica creada\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"var json = pm.response.json()\r",
+							"\r",
+							"pm.environment.set(\"documentID\", json.documentID)\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"usuarioUID\": null,\r\n  \"peliculaID\": null,\r\n  \"puntuacion\": null,\r\n  \"comentario\": null\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{UrlBase}}/criticas/",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CrearCritica eror sin cuerpo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de estado 400, error sin cuerpo\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"var json = pm.response.json()\r",
+							"\r",
+							"pm.environment.set(\"documentID\", json.documentID)\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{UrlBase}}/criticas/",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta todas las criticas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].documentID , function(){\r",
+							"    if(typeof json[0].peliculas_vistas == \"array\"){\r",
+							"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");}\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta filtrado por peliculaId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].documentID , function(){\r",
+							"    if(typeof json[0].peliculas_vistas == \"array\"){\r",
+							"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");}\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?peliculaId=123",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "peliculaId",
+							"value": "123"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta filtrado por peliculaId valor null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 500, internal server error\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?peliculaId=null",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "peliculaId",
+							"value": "null"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta filtrado por peliculaId valor vacio",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 500, internal server error\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?peliculaId=",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "peliculaId",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta filtrado por userid",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].documentID , function(){\r",
+							"    if(typeof json[0].peliculas_vistas == \"array\"){\r",
+							"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");}\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?userId=Prueba",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "Prueba"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta filtrado por userid valor null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 500, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?userId=null",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "null"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta filtrado por userid valor vacio",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 500, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?userId=",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta Recientes sin cantidad",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 400, bad request\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/recientes",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"recientes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta RecientesYDistintas sin cantidad",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 400, bad request\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/recientesYDistintas",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"recientesYDistintas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta Ranking sin cantidad",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 400, bad request\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/ranking",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"ranking"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta Recientes cantidad 5",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200,consulta correcta\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].documentID , function(){\r",
+							"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/recientes?cantidad=5",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"recientes"
+					],
+					"query": [
+						{
+							"key": "cantidad",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta Ranking cantidad 5",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200,consulta correcta\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].peliculaID , function(){\r",
+							"    pm.expect(typeof json[0].peliculaID).to.be.equal(\"number\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/ranking?cantidad=5",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"ranking"
+					],
+					"query": [
+						{
+							"key": "cantidad",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta RecientesYDistintas cantidad 5",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200,consulta correcta\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].documentID , function(){\r",
+							"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/recientesYDistintas?cantidad=5",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"recientesYDistintas"
+					],
+					"query": [
+						{
+							"key": "cantidad",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta Recientes cantidad null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?cantidad=null",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "cantidad",
+							"value": "null"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta Ranking cantidad null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].peliculaID , function(){\r",
+							"    pm.expect(typeof json[0].peliculaID).to.be.equal(\"number\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?cantidad=null",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "cantidad",
+							"value": "null"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta RecientesYDistintas cantidad null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 500, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/?cantidad=null",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						""
+					],
+					"query": [
+						{
+							"key": "cantidad",
+							"value": "null"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

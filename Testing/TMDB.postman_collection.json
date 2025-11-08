@@ -1,0 +1,379 @@
+{
+	"info": {
+		"_postman_id": "6a28a40f-8fd0-49f5-b974-307333bd40c3",
+		"name": "Busquedas TMDB",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49749285",
+		"_collection_link": "https://ricardo-he-bl-9902449.postman.co/workspace/Ricardo-Herradon's-Workspace~2c92c116-53b2-4c58-8735-a4dc6e15d3a1/collection/49749285-6a28a40f-8fd0-49f5-b974-307333bd40c3?action=share&source=collection_link&creator=49749285"
+	},
+	"item": [
+		{
+			"name": "Consulta por nombre",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].documentID , function(){\r",
+							"    if(typeof json[0].peliculas_vistas == \"array\"){\r",
+							"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");}\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/peliculasPorNombre?nombre=deadpool",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"peliculasPorNombre"
+					],
+					"query": [
+						{
+							"key": "nombre",
+							"value": "deadpool"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta por nombre que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta vacia.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/peliculasPorNombre?nombre=pepepalote",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"peliculasPorNombre"
+					],
+					"query": [
+						{
+							"key": "nombre",
+							"value": "pepepalote"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta por nombre null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var json = pm.response.json();\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].documentID , function(){\r",
+							"    if(typeof json[0].peliculas_vistas == \"array\"){\r",
+							"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");}\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/peliculasPorNombre?nombre=null",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"peliculasPorNombre"
+					],
+					"query": [
+						{
+							"key": "nombre",
+							"value": "null"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta por nombre vacio",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, consulta correcta vacia.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/peliculasPorNombre?nombre=",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"peliculasPorNombre"
+					],
+					"query": [
+						{
+							"key": "nombre",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta por id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 200, Elemento encontrado\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/peliculasPorId?id=1386628",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"peliculasPorId"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1386628"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta por id que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 404, Elemento no encontrado\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/peliculasPorID?id=11111111111111111",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"peliculasPorID"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "11111111111111111"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta por id vacio",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 404, Elemento no encontrado\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/peliculasPorID?id=",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"peliculasPorID"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta por id null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de respuesta 404, Elemento no encontrado\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/peliculasPorID?id=null",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"peliculasPorID"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "null"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
