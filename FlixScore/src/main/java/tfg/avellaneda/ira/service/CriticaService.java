@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Comparator;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
@@ -104,12 +103,50 @@ public class CriticaService {
     }
 
     public ModeloCritica addCritica(ModeloCritica critica) {
-        try {
+        // Nueva Validación de campos obligatorios:
+        // Lanzar excepción si cualquiera de los campos obligatorios está
+        // ausente/inválido.
+        if (critica.getPeliculaID() == 0 ||
+                (critica.getUsuarioUID() == null || critica.getUsuarioUID().trim().isEmpty()) ||
+                critica.getPuntuacion() == 0 ||
+                (critica.getComentario() == null || critica.getComentario().trim().isEmpty())) {
 
+            // Creamos un mensaje de error más específico
+            String mensajeError = "Los siguientes campos de la crítica son obligatorios y faltan: ";
+            boolean tieneError = false;
+
+            if (critica.getPeliculaID() == 0) {
+                mensajeError += "ID de Película, ";
+                tieneError = true;
+            }
+            if (critica.getUsuarioUID() == null || critica.getUsuarioUID().trim().isEmpty()) {
+                mensajeError += "ID de Usuario, ";
+                tieneError = true;
+            }
+            if (critica.getPuntuacion() == 0) {
+                mensajeError += "Puntuación, ";
+                tieneError = true;
+            }
+            if (critica.getComentario() == null || critica.getComentario().trim().isEmpty()) {
+                mensajeError += "Comentario, ";
+                tieneError = true;
+            }
+
+            // Si hay errores, lanza la excepción con el mensaje específico
+            if (tieneError) {
+                mensajeError = mensajeError.substring(0, mensajeError.length() - 2) + ".";
+                logger.error("Intento de crear crítica con campos obligatorios vacíos: {}", mensajeError);
+                throw new IllegalArgumentException(mensajeError);
+            }
+        }
+
+        try {
+            // Asigna la fecha de creación
             critica.setFechaCreacion(new Date());
 
             DocumentReference docRef = repo.addCritica(critica).get();
 
+            // Recupera el documento creado para devolverlo
             DocumentSnapshot document = docRef.get().get();
             if (document.exists()) {
                 ModeloCritica creada = document.toObject(ModeloCritica.class);
@@ -117,13 +154,19 @@ public class CriticaService {
                 return creada;
             } else {
                 logger.error("Critica añadida sin recuperar", critica);
-                throw new RuntimeException("Critica creada per sin recuperar");
+                throw new RuntimeException("Crítica creada pero no se pudo recuperar inmediatamente.");
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Error (Interrupción) al añadir la crítica: {}", e.getMessage());
+            throw new RuntimeException("Operación de base de datos interrumpida.", e);
+        } catch (ExecutionException e) {
+            logger.error("Error (Ejecución) al añadir la crítica: {}", e.getMessage());
+            throw new RuntimeException("Fallo en la comunicación con la base de datos.", e.getCause());
         } catch (Exception e) {
-            System.out.println("Error al añadir la crítica: " + e.getMessage());
-            return null;
+            throw (e instanceof RuntimeException) ? (RuntimeException) e
+                    : new RuntimeException("Error inesperado al añadir la crítica.", e);
         }
-
     }
 
     public List<ModeloCritica> getAll() {
@@ -140,12 +183,19 @@ public class CriticaService {
 
     /**
      * Obtiene las críticas más recientes.
+     * * @param cantidad Cantidad de criticas que se desea recibir. Debe ser > 0.
      * 
-     * @param cantidad Cantidad de criticas que se desea recibir
      * @return Lista de ModeloCritica.
-     * @throws RuntimeException si la operación falla.
+     * @throws IllegalArgumentException si la cantidad es menor o igual a cero.
+     * @throws RuntimeException         si la operación falla.
      */
     public List<ModeloCritica> getCriticasRecientes(int cantidad) {
+
+        if (cantidad <= 0) {
+            logger.error("Intento de obtener críticas recientes con cantidad inválida: {}", cantidad);
+            throw new IllegalArgumentException("La cantidad de críticas a obtener debe ser mayor que cero.");
+        }
+
         try {
             // Llama al método del repositorio con un límite dado
             return repo.getRecientes(cantidad)
@@ -238,4 +288,51 @@ public class CriticaService {
         return streamResultados.collect(Collectors.toList());
     }
 
+    /**
+     * Actualiza únicamente el comentario y/o la puntuación de una crítica.
+     *
+     * @param documentId ID de la crítica a actualizar.
+     * @param comentario Nuevo texto del comentario (null si no se desea cambiar).
+     * @param puntuacion Nueva puntuación (null si no se desea cambiar). Debe estar
+     *                   entre 1 y 10.
+     * @throws RuntimeException si la crítica no existe, si los datos son inválidos
+     *                          o si hay un error de base de datos.
+     */
+    public void editarCritica(String documentId, String comentario, Integer puntuacion) {
+        try {
+            // Recuperar la crítica
+            DocumentSnapshot doc = repo.getCriticaById(documentId).get();
+            if (!doc.exists()) {
+                logger.warn("Intento de editar crítica inexistente: {}", documentId);
+                throw new RuntimeException("Crítica no encontrada con ID: " + documentId);
+            }
+
+            ModeloCritica critica = doc.toObject(ModeloCritica.class);
+
+            // Validar y actualizar campos si se proporcionan
+            if (comentario != null) {
+                if (comentario.trim().isEmpty()) {
+                    throw new RuntimeException("El comentario no puede estar vacío.");
+                }
+                critica.setComentario(comentario.trim());
+            }
+
+            if (puntuacion != null) {
+                if (puntuacion < 1 || puntuacion > 10) {
+                    throw new RuntimeException("La puntuación debe estar entre 1 y 10.");
+                }
+                critica.setPuntuacion(puntuacion);
+            }
+
+            // Persistir los cambios
+            repo.updateCritica(documentId, critica).get();
+            logger.info("Crítica {} actualizada: comentario={}, puntuacion={}", documentId, comentario, puntuacion);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Operación de base de datos interrumpida.", e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Error al actualizar la crítica en la base de datos.", e.getCause());
+        }
+    }
 }

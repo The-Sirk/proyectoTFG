@@ -4,7 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,137 +43,217 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Críticas", description = "Gestión de críticas y puntuaciones de películas")
 public class CriticaController {
 
-    @Autowired
-    CriticaService criticaService;
+        @Autowired
+        CriticaService criticaService;
 
-    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
+        private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
-    @Operation(summary = "Busca críticas por ID de TMDb, usuario, película, o devuelve todas", description = "Permite buscar una crítica específica por su ID, todas las críticas de un usuario o todas las de una película. Si no se especifica ningún parámetro, devuelve todas las críticas.", responses = {
-            @ApiResponse(responseCode = "200", description = "Operación exitosa. Devuelve la lista de críticas o la crítica individual.", content = @Content(schema = @Schema(implementation = ModeloCritica.class))),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor durante la comunicación con la base de datos.")
-    })
-    @GetMapping
-    public Flux<ModeloCritica> getCriticas(
-            @Parameter(description = "ID del documento de la crítica a buscar (excluyente con userId y peliculaId)") @RequestParam(required = false) String id,
-            @Parameter(description = "UID del usuario cuyas críticas se quieren recuperar") @RequestParam(required = false) String userId,
-            @Parameter(description = "ID de la película cuyas críticas se quieren recuperar") @RequestParam(required = false) String peliculaId) {
+        @Operation(summary = "Busca críticas por ID de TMDb, usuario, película, o devuelve todas", description = "Permite buscar una crítica específica por su ID, todas las críticas de un usuario o todas las de una película. Si no se especifica ningún parámetro, devuelve todas las críticas.", responses = {
+                        @ApiResponse(responseCode = "200", description = "Operación exitosa. Devuelve la lista de críticas o la crítica individual.", content = @Content(schema = @Schema(implementation = ModeloCritica.class))),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor durante la comunicación con la base de datos.")
+        })
+        @GetMapping
+        public Flux<ModeloCritica> getCriticas(
+                        @Parameter(description = "ID del documento de la crítica a buscar (excluyente con userId y peliculaId)") @RequestParam(required = false) String id,
+                        @Parameter(description = "UID del usuario cuyas críticas se quieren recuperar") @RequestParam(required = false) String userId,
+                        @Parameter(description = "ID de la película cuyas críticas se quieren recuperar") @RequestParam(required = false) String peliculaId) {
 
-        if (id != null) {
-            return Mono.fromCallable(() -> criticaService.getCriticaById(id))
-                    .filter(java.util.Optional::isPresent)
-                    .map(java.util.Optional::get)
-                    .flux()
-                    .onErrorResume(RuntimeException.class, e -> {
-                        return Flux.error(new ResponseStatusException(
-                                HttpStatus.INTERNAL_SERVER_ERROR, "Error al obtener critica", e));
-                    });
-        } else if (userId != null) {
-            logger.info("Desde Controller {}", userId);
-            return Mono.fromCallable(() -> criticaService.getCriticasByUserId(userId))
-                    .flatMapMany(Flux::fromIterable)
-                    .onErrorResume(RuntimeException.class, e -> {
-                        return Flux.error(new ResponseStatusException(
-                                HttpStatus.INTERNAL_SERVER_ERROR, "Error al obtener criticas de usuario", e));
-                    });
-        } else if (peliculaId != null) {
-            return Mono.fromCallable(() -> criticaService.getCriticasByPeliculaId(Integer.parseInt(peliculaId)))
-                    .flatMapMany(Flux::fromIterable)
-                    .onErrorResume(RuntimeException.class, e -> {
-                        return Flux.error(new ResponseStatusException(
-                                HttpStatus.INTERNAL_SERVER_ERROR, "Error al obtener criticas de pelicula", e));
-                    });
-        } else {
-            return Mono.fromCallable(() -> criticaService.getAll())
-                    .flatMapMany(Flux::fromIterable)
-                    .onErrorResume(RuntimeException.class, e -> {
-                        return Flux.error(new ResponseStatusException(
-                                HttpStatus.INTERNAL_SERVER_ERROR, "Error al obtener todos los usuarios", e));
-                    });
+                if (id != null) {
+                        return Mono.fromCallable(() -> criticaService.getCriticaById(id))
+                                        .filter(java.util.Optional::isPresent)
+                                        .map(java.util.Optional::get)
+                                        .flux()
+                                        .onErrorResume(RuntimeException.class, e -> {
+                                                return Flux.error(new ResponseStatusException(
+                                                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                                                "Error al obtener critica", e));
+                                        });
+                } else if (userId != null) {
+                        logger.info("Desde Controller {}", userId);
+                        return Mono.fromCallable(() -> criticaService.getCriticasByUserId(userId))
+                                        .flatMapMany(Flux::fromIterable)
+                                        .onErrorResume(RuntimeException.class, e -> {
+                                                return Flux.error(new ResponseStatusException(
+                                                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                                                "Error al obtener criticas de usuario", e));
+                                        });
+                } else if (peliculaId != null) {
+                        return Mono.fromCallable(
+                                        () -> criticaService.getCriticasByPeliculaId(Integer.parseInt(peliculaId)))
+                                        .flatMapMany(Flux::fromIterable)
+                                        .onErrorResume(RuntimeException.class, e -> {
+                                                return Flux.error(new ResponseStatusException(
+                                                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                                                "Error al obtener criticas de pelicula", e));
+                                        });
+                } else {
+                        return Mono.fromCallable(() -> criticaService.getAll())
+                                        .flatMapMany(Flux::fromIterable)
+                                        .onErrorResume(RuntimeException.class, e -> {
+                                                return Flux.error(new ResponseStatusException(
+                                                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                                                "Error al obtener todos los usuarios", e));
+                                        });
+                }
         }
-    }
 
-    @Operation(summary = "Crea una nueva crítica", description = "Añade una nueva crítica a la base de datos. La fecha de creación es generada automáticamente por el sistema.", responses = {
-            @ApiResponse(responseCode = "200", description = "Crítica creada y devuelta exitosamente.", content = @Content(schema = @Schema(implementation = ModeloCritica.class))),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor al intentar guardar la crítica.")
-    })
-    @PostMapping
-    public Mono<ModeloCritica> addCritica(@RequestBody ModeloCritica critica) {
-        return Mono.fromCallable(() -> criticaService.addCritica(critica))
-                .onErrorResume(RuntimeException.class, e -> {
-                    return Mono.error(new ResponseStatusException(
-                            HttpStatus.INTERNAL_SERVER_ERROR, "Error al añadir usuario", e));
-                });
-    }
+        @Operation(summary = "Crea una nueva crítica", description = "Añade una nueva crítica a la base de datos. La fecha de creación es generada automáticamente por el sistema.", responses = {
+                        @ApiResponse(responseCode = "200", description = "Crítica creada y devuelta exitosamente.", content = @Content(schema = @Schema(implementation = ModeloCritica.class))),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor al intentar guardar la crítica.")
+        })
+        @PostMapping
+        public Mono<ModeloCritica> addCritica(@RequestBody ModeloCritica critica) {
+                return Mono.fromCallable(() -> criticaService.addCritica(critica))
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        return Mono.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR, "Error al añadir usuario",
+                                                        e));
+                                });
+        }
 
-    /**
-     * Endpoint para obtener las ultimas películas valoradas.
-     * 
-     * @return Flux de ModeloCritica, ordenado por fecha de creación (más reciente a
-     *         mas antigua).
-     */
-    @Operation(summary = "Obtiene las críticas más recientes (pueden repetirse películas)", description = "Devuelve una lista de las últimas críticas creadas, ordenadas por fecha. Se puede limitar la cantidad de resultados.", responses = {
-            @ApiResponse(responseCode = "200", description = "Lista de críticas recientes obtenida con éxito.", content = @Content(schema = @Schema(implementation = ModeloCritica.class))),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
-    })
-    @GetMapping("/recientes")
-    public Flux<ModeloCritica> getCriticasRecientes(
-            @Parameter(description = "Cantidad máxima de críticas a devolver.") @RequestParam(required = true) int cantidad) {
-        return Mono.fromCallable(() -> criticaService.getCriticasRecientes(cantidad))
-                .flatMapMany(Flux::fromIterable)
-                .onErrorResume(RuntimeException.class, e -> {
-                    return Flux.error(new ResponseStatusException(
-                            HttpStatus.INTERNAL_SERVER_ERROR,
-                            "Error al obtener las " + cantidad + " críticas más recientes.", e));
-                });
-    }
+        /**
+         * Endpoint para obtener las ultimas películas valoradas.
+         * 
+         * @return Flux de ModeloCritica, ordenado por fecha de creación (más reciente a
+         *         mas antigua).
+         */
+        @Operation(summary = "Obtiene las críticas más recientes (pueden repetirse películas)", description = "Devuelve una lista de las últimas críticas creadas, ordenadas por fecha. Se puede limitar la cantidad de resultados.", responses = {
+                        @ApiResponse(responseCode = "200", description = "Lista de críticas recientes obtenida con éxito.", content = @Content(schema = @Schema(implementation = ModeloCritica.class))),
+                        @ApiResponse(responseCode = "400", description = "El parámetro de cantidad no es válido (debe ser mayor que cero)."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @GetMapping("/recientes")
+        public Flux<ModeloCritica> getCriticasRecientes(
+                        @Parameter(description = "Cantidad máxima de críticas a devolver. Debe ser mayor a 0.") @RequestParam(required = true) Integer cantidad) {
 
-    /**
-     * Endpoint para obtener las críticas más recientes, sin repetir película.
-     * * @param cantidad Cantidad máxima de críticas a devolver.
-     * 
-     * @return Flux de ModeloCritica, con una sola crítica (la más reciente) por
-     *         cada película.
-     */
-    @Operation(summary = "Obtiene la crítica más reciente por cada película", description = "Devuelve una lista de críticas, donde solo aparece la crítica más reciente para cada película. La lista está ordenada por fecha.", responses = {
-            @ApiResponse(responseCode = "200", description = "Lista de críticas recientes por película obtenida con éxito.", content = @Content(schema = @Schema(implementation = ModeloCritica.class))),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
-    })
-    @GetMapping("/recientesYDistintas")
-    public Flux<ModeloCritica> getCriticasRecientesDistintas(
-            @Parameter(description = "Cantidad máxima de resultados (películas distintas) a devolver. Por defecto es 0 (devuelve todas).") @RequestParam(required = true) int cantidad) {
+                // Validamos el caso NULL (si viniera por algún error de configuración, aunque
+                // required=true)
+                // y el caso de que el valor sea <= 0
+                if (cantidad == null || cantidad <= 0) {
+                        String mensaje = (cantidad == null) ? "El parámetro 'cantidad' es obligatorio."
+                                        : "El parámetro 'cantidad' debe ser un número entero positivo.";
 
-        return Mono.fromCallable(() -> criticaService.getCriticasRecientesDistintaPelicula(cantidad))
-                .flatMapMany(Flux::fromIterable)
-                .onErrorResume(RuntimeException.class, e -> {
-                    return Flux.error(new ResponseStatusException(
-                            HttpStatus.INTERNAL_SERVER_ERROR,
-                            "Error al obtener las críticas recientes distintas por película.", e));
-                });
-    }
+                        return Flux.error(new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST, mensaje));
+                }
 
-    /**
-     * Endpoint para obtener las películas ordenadas por su puntuación media, con un
-     * límite de cantidad.
-     * * @param cantidad Cantidad de películas del ranking a devolver.
-     * 
-     * @return Flux de ModeloPeliculaMedia, ordenado por puntuación media
-     *         descendente.
-     */
-    @Operation(summary = "Obtiene el ranking de películas por puntuación media", description = "Calcula la puntuación media de todas las críticas por película y devuelve el ranking ordenado de mayor a menor media. Se puede limitar la cantidad de resultados.", responses = {
-            @ApiResponse(responseCode = "200", description = "Ranking obtenido con éxito.", content = @Content(schema = @Schema(implementation = ModeloPeliculaMedia.class))),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor al calcular el ranking.")
-    })
-    @GetMapping("/ranking")
-    public Flux<ModeloPeliculaMedia> getRankingPeliculas(
-            @Parameter(description = "Cantidad máxima de películas del ranking a devolver.") @RequestParam(required = true) int cantidad) {
+                // Si la validación pasa, llamamos al servicio con el valor int
+                return Mono.fromCallable(() -> criticaService.getCriticasRecientes(cantidad))
+                                .flatMapMany(Flux::fromIterable)
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        return Flux.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                                        "Error al obtener las " + cantidad + " críticas más recientes.",
+                                                        e));
+                                });
+        }
 
-        return Mono.fromCallable(() -> criticaService.getPuntuacionesMediasOrdenadas(cantidad))
-                .flatMapMany(Flux::fromIterable)
-                .onErrorResume(RuntimeException.class, e -> {
-                    return Flux.error(new ResponseStatusException(
-                            HttpStatus.INTERNAL_SERVER_ERROR,
-                            "Error al calcular y obtener el ranking de películas por puntuación media.", e));
-                });
-    }
+        /**
+         * Endpoint para obtener las críticas más recientes, sin repetir película.
+         * * @param cantidad Cantidad máxima de críticas a devolver.
+         * 
+         * @return Flux de ModeloCritica, con una sola crítica (la más reciente) por
+         *         cada película.
+         */
+        @Operation(summary = "Obtiene la crítica más reciente por cada película", description = "Devuelve una lista de críticas, donde solo aparece la crítica más reciente para cada película. La lista está ordenada por fecha.", responses = {
+                        @ApiResponse(responseCode = "200", description = "Lista de críticas recientes por película obtenida con éxito.", content = @Content(schema = @Schema(implementation = ModeloCritica.class))),
+                        @ApiResponse(responseCode = "400", description = "El parámetro de cantidad no es válido (debe ser un número entero positivo)."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @GetMapping("/recientesYDistintas")
+        public Flux<ModeloCritica> getCriticasRecientesDistintas(
+                        @Parameter(description = "Cantidad máxima de resultados (películas distintas) a devolver. Debe ser mayor que 0.") @RequestParam(required = true) Integer cantidad) {
 
+                if (cantidad == null || cantidad <= 0) {
+                        String mensaje = (cantidad == null) ? "El parámetro 'cantidad' es obligatorio."
+                                        : "El parámetro 'cantidad' debe ser un número entero positivo (mayor que 0).";
+                        return Flux.error(new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST, mensaje));
+                }
+
+                return Mono.fromCallable(() -> criticaService.getCriticasRecientesDistintaPelicula(cantidad))
+                                .flatMapMany(Flux::fromIterable)
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        return Flux.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                                        "Error al obtener las críticas recientes distintas por película.",
+                                                        e));
+                                });
+        }
+
+        /**
+         * Endpoint para obtener las películas ordenadas por su puntuación media, con un
+         * límite de cantidad.
+         * * @param cantidad Cantidad de películas del ranking a devolver.
+         * 
+         * @return Flux de ModeloPeliculaMedia, ordenado por puntuación media
+         *         descendente.
+         */
+        @Operation(summary = "Obtiene el ranking de películas por puntuación media", description = "Calcula la puntuación media de todas las críticas por película y devuelve el ranking ordenado de mayor a menor media. Se debe limitar la cantidad de resultados.", responses = {
+                        @ApiResponse(responseCode = "200", description = "Ranking obtenido con éxito.", content = @Content(schema = @Schema(implementation = ModeloPeliculaMedia.class))),
+                        @ApiResponse(responseCode = "400", description = "El parámetro de cantidad no es válido (debe ser un número entero positivo)."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor al calcular el ranking.")
+        })
+        @GetMapping("/ranking")
+        public Flux<ModeloPeliculaMedia> getRankingPeliculas(
+                        @Parameter(description = "Cantidad máxima de películas del ranking a devolver.") @RequestParam(required = true) Integer cantidad) {
+
+                if (cantidad == null || cantidad <= 0) {
+                        String mensaje = (cantidad == null) ? "El parámetro 'cantidad' es obligatorio."
+                                        : "El parámetro 'cantidad' debe ser un número entero positivo (mayor que 0).";
+                        return Flux.error(new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST, mensaje));
+                }
+
+                return Mono.fromCallable(() -> criticaService.getPuntuacionesMediasOrdenadas(cantidad))
+                                .flatMapMany(Flux::fromIterable)
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        return Flux.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                                        "Error al calcular y obtener el ranking de películas por puntuación media.",
+                                                        e));
+                                });
+        }
+
+        /**
+         * Permite actualizar únicamente el comentario y/o la puntuación de una crítica
+         * existente.
+         *
+         * @param documentId ID de la crítica a actualizar.
+         * @param comentario Nuevo texto del comentario (opcional).
+         * @param puntuacion Nueva puntuación (1-10) (opcional).
+         * @return Mono<ResponseEntity<Void>>
+         *         204 si se actualizó.
+         *         404 si la crítica no existe.
+         *         400 si los datos son inválidos.
+         *         500 si hay un error interno.
+         */
+        @Operation(summary = "Editar comentario y/o puntuación de una crítica", description = "Actualiza solo los campos proporcionados (comentario y/o puntuación) de una crítica identificada por su documentId.", responses = {
+                        @ApiResponse(responseCode = "204", description = "Crítica actualizada exitosamente."),
+                        @ApiResponse(responseCode = "404", description = "Crítica no encontrada."),
+                        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @PatchMapping("editarCritica/{documentId}")
+        public Mono<ResponseEntity<Void>> editarCritica(
+                        @Parameter(description = "ID del documento de la crítica a editar") @PathVariable String documentId,
+                        @RequestParam(value = "comentario", required = false) String comentario,
+                        @RequestParam(value = "puntuacion", required = false) Integer puntuacion) {
+
+                return Mono.fromCallable(() -> {
+                        criticaService.editarCritica(documentId, comentario, puntuacion);
+                        return ResponseEntity.noContent().<Void>build();
+                })
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        if (e.getMessage() != null
+                                                        && e.getMessage().contains("Crítica no encontrada")) {
+                                                return Mono.just(ResponseEntity.notFound().build());
+                                        }
+                                        if (e.getMessage() != null && e.getMessage().contains("inválidos")) {
+                                                return Mono.just(ResponseEntity.badRequest().build());
+                                        }
+                                        return Mono.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
+                                });
+        }
 }

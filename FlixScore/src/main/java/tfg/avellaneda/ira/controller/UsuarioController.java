@@ -222,4 +222,160 @@ public class UsuarioController {
                                                         HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
                                 });
         }
+
+        /**
+         * Calcula el número de amigos que tienen en común dos usuarios.
+         * * @param usuarioPrincipalId El ID del primer usuario.
+         * 
+         * @param usuarioAmigoId El ID del segundo usuario a comparar.
+         * @return Un Mono que envuelve un ResponseEntity con el número de amigos
+         *         comunes.
+         *         Devuelve HTTP 200 OK con el conteo si ambos usuarios existen.
+         *         Devuelve HTTP 404 NOT FOUND si alguno de los usuarios no existe.
+         *         Devuelve HTTP 500 INTERNAL SERVER ERROR si ocurre un fallo interno.
+         */
+        @Operation(summary = "Cuenta amigos en común", description = "Devuelve el número de amigos en común entre dos usuarios. Excluye a los dos usuarios de la cuenta.", responses = {
+                        @ApiResponse(responseCode = "200", description = "Conteo de amigos en común exitoso.", content = @Content(schema = @Schema(implementation = Integer.class))),
+                        @ApiResponse(responseCode = "404", description = "Uno o ambos usuarios no fueron encontrados."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @GetMapping("/amigosEnComun/{usuarioPrincipalId}/{usuarioAmigoId}")
+        public Mono<ResponseEntity<Integer>> contarAmigosComun(
+                        @Parameter(description = "ID del usuario principal.") @PathVariable String usuarioPrincipalId,
+                        @Parameter(description = "ID del amigo para buscar amigos en común.") @PathVariable String usuarioAmigoId) {
+
+                return Mono.fromCallable(() -> usuarioService.contarAmigosEnComun(usuarioPrincipalId, usuarioAmigoId))
+                                .map(optionalCount -> {
+                                        if (optionalCount.isPresent()) {
+                                                // Si ambos usuarios existen se devuelve 200 OK
+                                                return ResponseEntity.ok(optionalCount.get());
+                                        } else {
+                                                return ResponseEntity.notFound().<Integer>build();
+                                        }
+                                })
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        // Manejo de errores generales (500 Internal Server Error)
+                                        return Mono.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                                        "Error al calcular amigos en común: " + e.getMessage(), e));
+                                });
+        }
+
+        /**
+         * Añade un usuario a la lista de amigos de otro.
+         * * @param usuarioPrincipalId El ID del usuario que envía la solicitud/añade el
+         * amigo.
+         * 
+         * @param usuarioAmigoId El ID del usuario que será añadido como amigo.
+         * @return Un Mono que envuelve un ResponseEntity vacío.
+         *         Devuelve HTTP 204 NO CONTENT si la relación es creada/actualizada con
+         *         éxito.
+         *         Devuelve HTTP 404 NOT FOUND si alguno de los usuarios no existe.
+         *         Devuelve HTTP 409 CONFLICT si la amistad ya existe.
+         *         Devuelve HTTP 500 INTERNAL SERVER ERROR si ocurre un fallo interno.
+         */
+        @Operation(summary = "Añadir un amigo", description = "Crea la relación de amistad entre dos usuarios. Si ya existe, devuelve 204.", responses = {
+                        @ApiResponse(responseCode = "204", description = "Amistad agregada o ya existente (No Content)."),
+                        @ApiResponse(responseCode = "404", description = "Uno o ambos usuarios no fueron encontrados."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @PostMapping("/agregarAmigo/{usuarioPrincipalId}/{usuarioAmigoId}")
+        @ResponseStatus(HttpStatus.NO_CONTENT)
+        public Mono<ResponseEntity<Void>> addAmigo(
+                        @Parameter(description = "ID del usuario principal.") @PathVariable String usuarioPrincipalId,
+                        @Parameter(description = "ID del usuario a añadir como amigo.") @PathVariable String usuarioAmigoId) {
+
+                return Mono.fromCallable(() -> {
+                        usuarioService.addAmigo(usuarioPrincipalId, usuarioAmigoId);
+                        return ResponseEntity.noContent().<Void>build();
+                })
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        if (e.getMessage() != null
+                                                        && e.getMessage().contains("Usuario no encontrado")) {
+                                                return Mono.just(ResponseEntity.notFound().build());
+                                        }
+                                        // Manejo de otros posibles errores, como si ya son amigos (que idealmente el
+                                        // servicio manejaría sin error si se considera idempotente).
+                                        return Mono.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                                        "Error al añadir amigo: " + e.getMessage(), e));
+                                });
+        }
+
+        /**
+         * Elimina un usuario de la lista de amigos de otro.
+         * * @param usuarioPrincipalId El ID del usuario del que se eliminará el amigo.
+         * 
+         * @param usuarioAmigoId El ID del usuario que será eliminado de la lista.
+         * @return Un Mono que envuelve un ResponseEntity vacío.
+         *         Devuelve HTTP 204 NO CONTENT si la relación fue eliminada con éxito.
+         *         Devuelve HTTP 404 NOT FOUND si alguno de los usuarios no existe o la
+         *         amistad no existía.
+         *         Devuelve HTTP 500 INTERNAL SERVER ERROR si ocurre un fallo interno.
+         */
+        @Operation(summary = "Eliminar un amigo", description = "Elimina la relación de amistad entre dos usuarios.", responses = {
+                        @ApiResponse(responseCode = "204", description = "Amistad eliminada exitosamente (No Content)."),
+                        @ApiResponse(responseCode = "404", description = "Uno o ambos usuarios no fueron encontrados, o la amistad no existía."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @DeleteMapping("/eliminarAmigo/{usuarioPrincipalId}/{usuarioAmigoId}")
+        @ResponseStatus(HttpStatus.NO_CONTENT)
+        public Mono<ResponseEntity<Void>> removeAmigo(
+                        @Parameter(description = "ID del usuario principal.") @PathVariable String usuarioPrincipalId,
+                        @Parameter(description = "ID del amigo a eliminar.") @PathVariable String usuarioAmigoId) {
+
+                return Mono.fromCallable(() -> {
+                        usuarioService.removeAmigo(usuarioPrincipalId, usuarioAmigoId);
+                        return ResponseEntity.noContent().<Void>build();
+                })
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        if (e.getMessage() != null && (e.getMessage().contains("Usuario no encontrado")
+                                                        || e.getMessage().contains("Amistad no existente"))) {
+                                                return Mono.just(ResponseEntity.notFound().build());
+                                        }
+                                        return Mono.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                                        "Error al eliminar amigo: " + e.getMessage(), e));
+                                });
+        }
+
+        /**
+         * Permite cambiar únicamente el nick de un usuario.
+         *
+         * @param documentId ID del usuario cuyo nick se quiere actualizar.
+         * @param nuevoNick  Nuevo nick que se desea asignar.
+         * @return Mono<ResponseEntity<Void>>
+         *         204 si se actualizó.
+         *         409 si el nick ya está en uso.
+         *         404 si el usuario no existe.
+         *         500 si hay un error interno.
+         */
+        @Operation(summary = "Cambiar el nick de un usuario", description = "Actualiza el nick de un usuario validando que no esté duplicado.", responses = {
+                        @ApiResponse(responseCode = "204", description = "Nick actualizado exitosamente."),
+                        @ApiResponse(responseCode = "404", description = "Usuario no encontrado."),
+                        @ApiResponse(responseCode = "409", description = "El nuevo nick ya está en uso."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @PatchMapping("/{documentId}/nick")
+        public Mono<ResponseEntity<Void>> cambiarNick(
+                        @Parameter(description = "ID del usuario") @PathVariable String documentId,
+                        @RequestParam("Nick") String nuevoNick) {
+
+                return Mono.fromCallable(() -> {
+                        usuarioService.cambiarNick(documentId, nuevoNick);
+                        return ResponseEntity.noContent().<Void>build();
+                })
+                                .onErrorResume(RuntimeException.class, e -> {
+                                        if (e.getMessage() != null
+                                                        && e.getMessage().contains("El nick ya está en uso")) {
+                                                return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).build());
+                                        }
+                                        if (e.getMessage() != null
+                                                        && e.getMessage().contains("Usuario no encontrado")) {
+                                                return Mono.just(ResponseEntity.notFound().build());
+                                        }
+                                        return Mono.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
+                                });
+        }
 }

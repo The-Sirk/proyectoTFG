@@ -39,14 +39,32 @@ public class CriticaRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
+    /**
+     * Persiste una nueva crítica en la colección "criticas".
+     *
+     * @param critica datos de la crítica a guardar
+     * @return ApiFuture con la referencia al documento recién creado
+     */
     public ApiFuture<DocumentReference> addCritica(ModeloCritica critica) {
         return db.collection("criticas").add(critica);
     }
 
+    /**
+     * Obtiene una crítica a partir de su documentId.
+     *
+     * @param documentID identificador único de la crítica
+     * @return ApiFuture con el snapshot del documento solicitado
+     */
     public ApiFuture<DocumentSnapshot> getCriticaById(String documentID) {
         return db.collection("criticas").document(documentID).get();
     }
 
+    /**
+     * Devuelve todas las críticas realizadas por un usuario concreto.
+     *
+     * @param UserId UID del usuario cuyas críticas se desean
+     * @return ApiFuture con el conjunto de documentos que coinciden
+     */
     public ApiFuture<QuerySnapshot> getCriticaByUserId(String UserId) {
         logger.info("Desde Criticas Repositorio {}", UserId);
         return db.collection("criticas")
@@ -54,12 +72,25 @@ public class CriticaRepository {
                 .get();
     }
 
+    /**
+     * Devuelve todas las críticas asociadas a una película determinada.
+     *
+     * @param PeliculaId ID de la película (TMDb) sobre la que se han escrito
+     *                   críticas
+     * @return ApiFuture con el conjunto de documentos que coinciden
+     */
     public ApiFuture<QuerySnapshot> getCriticaByPeliculaId(int PeliculaId) {
         return db.collection("criticas")
                 .whereEqualTo("peliculaID", PeliculaId)
                 .get();
     }
 
+    /**
+     * Devuelve la totalidad de las críticas existentes en la base de datos.
+     *
+     * @return ApiFuture con el conjunto completo de documentos de la colección
+     *         "criticas"
+     */
     public ApiFuture<QuerySnapshot> getAll() {
         return db.collection("criticas").get();
     }
@@ -80,5 +111,16 @@ public class CriticaRepository {
                 // Limita el número de documentos
                 .limit(limite)
                 .get();
+    }
+
+    /**
+     * Actualiza una crítica.
+     * 
+     * @param documentID id del documento a sobrescribir
+     * @param critica    objeto con los datos nuevos (incluido el mismo documentID)
+     * @return ApiFuture<WriteResult> resultado de la escritura
+     */
+    public ApiFuture<com.google.cloud.firestore.WriteResult> updateCritica(String documentID, ModeloCritica critica) {
+        return db.collection("criticas").document(documentID).set(critica);
     }
 }

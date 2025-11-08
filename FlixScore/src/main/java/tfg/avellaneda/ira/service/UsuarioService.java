@@ -1,12 +1,18 @@
 package tfg.avellaneda.ira.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
 import com.google.cloud.firestore.DocumentSnapshot;
+
 import tfg.avellaneda.ira.model.ModeloUsuario;
 import tfg.avellaneda.ira.repositories.UsuarioRepository;
 
@@ -222,6 +228,193 @@ public class UsuarioService {
             logger.error("Error (Ejecución) al actualizar el usuario {}: {}", usuarioId, e.getMessage());
             throw new RuntimeException("Error de base de datos: Fallo al actualizar el usuario con ID " + usuarioId,
                     e.getCause());
+        }
+    }
+
+    /**
+     * Calcula el número de amigos que tienen en común dos usuarios (documentIDs).
+     *
+     * @param usuarioPrincipalId El ID del primer usuario (documentID).
+     * @param usuarioAmigoId     El ID del amigo con el que se compara (documentID).
+     * @return Optional que emite un Integer con el número de amigos mutuos si ambos
+     *         usuarios existen.
+     */
+    public Optional<Integer> contarAmigosEnComun(String usuarioPrincipalId, String usuarioAmigoId) {
+        Optional<ModeloUsuario> optionalPrincipal = getUsuarioById(usuarioPrincipalId);
+        Optional<ModeloUsuario> optionalAmigo = getUsuarioById(usuarioAmigoId);
+        return optionalPrincipal.flatMap(principal -> optionalAmigo.map(amigo -> {
+
+            // Obtener las listas de amigos
+            List<String> principalFriendsList = (principal.getAmigos_id() != null)
+                    ? principal.getAmigos_id()
+                    : List.of();
+
+            List<String> amigoFriendsList = (amigo.getAmigos_id() != null)
+                    ? amigo.getAmigos_id()
+                    : List.of();
+
+            // Convertir a Set para una intersección eficiente
+            Set<String> principalSet = new HashSet<>(principalFriendsList);
+            Set<String> amigoSet = new HashSet<>(amigoFriendsList);
+
+            // Encontrar amigos en común
+            principalSet.retainAll(amigoSet);
+
+            // Excluir a los dos usuarios que estamos comparando de la cuenta final
+            principalSet.remove(usuarioPrincipalId);
+            principalSet.remove(usuarioAmigoId);
+
+            // Devolver la cantidad de amigos mutuos restantes
+            return principalSet.size();
+
+        }));
+
+    }
+
+    /**
+     * Añade un usuario a la lista de amigos de otro.
+     * 
+     * @param usuarioPrincipalId El ID del usuario que añade el amigo.
+     * @param usuarioAmigoId     El ID del usuario que será añadido como amigo.
+     * @throws RuntimeException si alguno de los usuarios no existe.
+     */
+    public void addAmigo(String usuarioPrincipalId, String usuarioAmigoId) {
+        if (usuarioPrincipalId.equals(usuarioAmigoId)) {
+            logger.warn("El usuario {} intentó añadirse a sí mismo como amigo.", usuarioPrincipalId);
+            throw new IllegalArgumentException("No puedes añadirte a ti mismo como amigo.");
+        }
+
+        // Obtener ambos usuarios. Lanza excepción si no se encuentran
+        ModeloUsuario principal = getUsuarioById(usuarioPrincipalId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioPrincipalId));
+        ModeloUsuario amigo = getUsuarioById(usuarioAmigoId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioAmigoId));
+
+        // Modificar lista y actualizar
+        try {
+            ensureAmigoAdded(usuarioPrincipalId, principal, usuarioAmigoId);
+            logger.info("Amistad agregada (o ya existente) entre {} y {}.", usuarioPrincipalId, usuarioAmigoId);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Error de interrupción al añadir amigo.", e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Error de ejecución al añadir amigo.", e.getCause());
+        }
+    }
+
+    /**
+     * Lógica interna para asegurar que un amigo está en la lista y actualizar
+     * Firestore.
+     */
+    private void ensureAmigoAdded(String userId, ModeloUsuario user, String friendId)
+            throws InterruptedException, ExecutionException {
+        List<String> currentFriends = user.getAmigos_id() != null ? user.getAmigos_id() : List.of();
+
+        if (currentFriends.contains(friendId)) {
+            return; // Ya son amigos
+        }
+
+        List<String> updatedFriends = new java.util.ArrayList<>(currentFriends);
+        updatedFriends.add(friendId);
+
+        ModeloUsuario updatedUser = new ModeloUsuario(user);
+        updatedUser.setAmigos_id(updatedFriends);
+
+        repo.updateUsuario(userId, updatedUser).get();
+    }
+
+    /**
+     * Elimina un usuario de la lista de amigos de otro.
+     * 
+     * @throws RuntimeException si la amistad no existía o el usuario no existe.
+     */
+    public void removeAmigo(String usuarioPrincipalId, String usuarioAmigoId) {
+
+        // Obtener ambos usuarios. Lanza excepción si no se encuentran.
+        ModeloUsuario principal = getUsuarioById(usuarioPrincipalId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioPrincipalId));
+        ModeloUsuario amigo = getUsuarioById(usuarioAmigoId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioAmigoId));
+
+        // Modificar la lista de amigos
+        try {
+            boolean removedPrincipal = ensureAmigoRemoved(usuarioPrincipalId, principal, usuarioAmigoId);
+
+            if (!removedPrincipal) {
+                // Si la amistad no existía, lanzamos error para que el Controller lo mapee a
+                // 404
+                throw new RuntimeException("Amistad no existente entre " + usuarioPrincipalId + " y " + usuarioAmigoId);
+            }
+            logger.info("Amistad eliminada entre {} y {}.", usuarioPrincipalId, usuarioAmigoId);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Error de interrupción al eliminar amigo.", e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Error de ejecución al eliminar amigo.", e.getCause());
+        }
+    }
+
+    /**
+     * Lógica interna para asegurar que un amigo no está en la lista y actualizar
+     * Firestore.
+     */
+    private boolean ensureAmigoRemoved(String userId, ModeloUsuario user, String friendId)
+            throws InterruptedException, ExecutionException {
+        List<String> currentFriends = user.getAmigos_id() != null ? user.getAmigos_id() : List.of();
+
+        if (!currentFriends.contains(friendId)) {
+            return false; // No estaba en la lista
+        }
+
+        List<String> updatedFriends = currentFriends.stream()
+                .filter(id -> !id.equals(friendId))
+                .collect(Collectors.toList());
+
+        ModeloUsuario updatedUser = new ModeloUsuario(user);
+        updatedUser.setAmigos_id(updatedFriends);
+
+        repo.updateUsuario(userId, updatedUser).get();
+        return true; // Eliminado exitosamente
+    }
+
+    /**
+     * Cambia únicamente el nick de un usuario si no existe otro usuario con el
+     * mismo nick.
+     *
+     * @param usuarioId ID del usuario a actualizar.
+     * @param nuevoNick Nuevo nick deseado.
+     * @throws RuntimeException si el usuario no existe, si el nick ya lo tiene otro
+     *                          usuario, o si hay un error de base de datos.
+     */
+    public void cambiarNick(String usuarioId, String nuevoNick) {
+        try {
+            // Comprobar que el usuario existe
+            DocumentSnapshot doc = repo.getUsuarioById(usuarioId).get();
+            if (!doc.exists()) {
+                logger.warn("Intento de cambiar nick a usuario inexistente: {}", usuarioId);
+                throw new RuntimeException("Usuario no encontrado con ID: " + usuarioId);
+            }
+
+            // Comprobar que el nuevo nick no esté ya en uso por otro usuario
+            List<ModeloUsuario> usuariosMismoNick = getUsuarioByNick(nuevoNick);
+            boolean ocupadoPorOtro = usuariosMismoNick.stream()
+                    .anyMatch(u -> !u.getDocumentID().equals(usuarioId));
+            if (ocupadoPorOtro) {
+                logger.warn("Intento de cambiar nick duplicado: {}", nuevoNick);
+                throw new RuntimeException("Conflicto: El nick '" + nuevoNick + "' ya está en uso.");
+            }
+
+            // Obtener el usuario actual y cambiar el nick
+            ModeloUsuario usuario = doc.toObject(ModeloUsuario.class);
+            usuario.setNick(nuevoNick);
+            repo.updateUsuario(usuarioId, usuario).get();
+
+            logger.info("Nick actualizado para el usuario {}: {}", usuarioId, nuevoNick);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Operación de base de datos interrumpida.", e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Error al actualizar el nick en la base de datos.", e.getCause());
         }
     }
 }
