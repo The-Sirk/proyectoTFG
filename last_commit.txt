@@ -1,2 +1,0 @@
-C:\ProgramData\Jenkins\.jenkins\workspace\pruebas>git rev-parse HEAD 
-59434b034401da480f0fba7adf96713a575effd1
