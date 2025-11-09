@@ -417,4 +417,33 @@ public class UsuarioService {
             throw new RuntimeException("Error al actualizar el nick en la base de datos.", e.getCause());
         }
     }
+
+    /**
+     * Actualiza únicamente el campo imagen_perfil de un usuario.
+     *
+     * @param usuarioId ID del usuario a actualizar
+     * @param urlImagen nueva URL (null o vacío para dejarla en blanco)
+     * @throws RuntimeException si el usuario no existe o hay error de base de datos
+     */
+    public void cambiarImagenPerfil(String usuarioId, String urlImagen) {
+        try {
+            DocumentSnapshot doc = repo.getUsuarioById(usuarioId).get();
+            if (!doc.exists()) {
+                logger.warn("Intento de cambiar imagen a usuario inexistente: {}", usuarioId);
+                throw new RuntimeException("Usuario no encontrado con ID: " + usuarioId);
+            }
+
+            ModeloUsuario usuario = doc.toObject(ModeloUsuario.class);
+            usuario.setImagen_perfil(urlImagen == null || urlImagen.isBlank() ? null : urlImagen.trim());
+
+            repo.updateUsuario(usuarioId, usuario).get();
+            logger.info("Imagen de perfil actualizada para el usuario {}", usuarioId);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Operación de base de datos interrumpida.", e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Error al actualizar la imagen en la base de datos.", e.getCause());
+        }
+    }
 }

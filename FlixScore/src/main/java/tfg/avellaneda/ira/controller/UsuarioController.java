@@ -345,10 +345,10 @@ public class UsuarioController {
          * @param documentId ID del usuario cuyo nick se quiere actualizar.
          * @param nuevoNick  Nuevo nick que se desea asignar.
          * @return Mono<ResponseEntity<Void>>
-         *         204 si se actualizó.
-         *         409 si el nick ya está en uso.
-         *         404 si el usuario no existe.
-         *         500 si hay un error interno.
+         *         Devuelve HTTP 204 si se actualizó.
+         *         Devuelve HTTP 409 si el nick ya está en uso.
+         *         Devuelve HTTP 404 si el usuario no existe.
+         *         Devuelve HTTP 500 si hay un error interno.
          */
         @Operation(summary = "Cambiar el nick de un usuario", description = "Actualiza el nick de un usuario validando que no esté duplicado.", responses = {
                         @ApiResponse(responseCode = "204", description = "Nick actualizado exitosamente."),
@@ -370,6 +370,40 @@ public class UsuarioController {
                                                         && e.getMessage().contains("El nick ya está en uso")) {
                                                 return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).build());
                                         }
+                                        if (e.getMessage() != null
+                                                        && e.getMessage().contains("Usuario no encontrado")) {
+                                                return Mono.just(ResponseEntity.notFound().build());
+                                        }
+                                        return Mono.error(new ResponseStatusException(
+                                                        HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
+                                });
+        }
+
+        /**
+         * Permite actualizar únicamente la URL de la imagen de perfil de un usuario.
+         *
+         * @param documentId ID del usuario a actualizar
+         * @param urlImagen  nueva URL de imagen (puede ser null o vacía para borrarla)
+         * @return Mono<ResponseEntity<Void>>
+         *         Devuelve HTTP 204 si se actualizó.
+         *         Devuelve HTTP 404 si el usuario no existe.
+         *         Devuelve HTTP 500 si hay error interno.
+         */
+        @Operation(summary = "Cambiar imagen de perfil", description = "Actualiza solo el campo imagen_perfil de un usuario.", responses = {
+                        @ApiResponse(responseCode = "204", description = "Imagen actualizada exitosamente."),
+                        @ApiResponse(responseCode = "404", description = "Usuario no encontrado."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @PatchMapping("/{documentId}/urlImagen")
+        public Mono<ResponseEntity<Void>> cambiarImagenPerfil(
+                        @Parameter(description = "ID del usuario") @PathVariable String documentId,
+                        @RequestParam(value = "urlImagen", required = false) String urlImagen) {
+
+                return Mono.fromCallable(() -> {
+                        usuarioService.cambiarImagenPerfil(documentId, urlImagen);
+                        return ResponseEntity.noContent().<Void>build();
+                })
+                                .onErrorResume(RuntimeException.class, e -> {
                                         if (e.getMessage() != null
                                                         && e.getMessage().contains("Usuario no encontrado")) {
                                                 return Mono.just(ResponseEntity.notFound().build());
