@@ -20,58 +20,191 @@ class PerfilUsuario extends StatefulWidget {
 class _PerfilUsuarioState extends State<PerfilUsuario> {
   final double _kTabletBreakpoint = 700.0;
   int tabSeleccionada = 0;
-  
-  final String userId = 
-    'fyQdILnR3X6jd20OqDgr';
-    //'Jq0Y3sToCUVG2BHPrQDH'; 
 
-  late Future<Map<String, dynamic>> _datosCompletosFuture; 
+  final String userId = 'fyQdILnR3X6jd20OqDgr';
+
+  late Future<Map<String, dynamic>> _datosCompletosFuture;
   final ApiService _apiService = ApiService();
+
+  String? _nickActual;
+  ModeloUsuario? _usuarioActual;
+
+  List<ModeloUsuario> _amigosObj = [];
+  List<Amigo> _amigosConComunes = [];
+
+  final GlobalKey<BuscarUsuarioCardState> _buscarKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    // 🆕 Iniciamos la función de carga en cascada
     _datosCompletosFuture = _cargarDatosCompletos();
   }
 
   Future<Map<String, dynamic>> _cargarDatosCompletos() async {
-    // Obtener el usuario principal
     final ModeloUsuario usuario = await _apiService.getUsuarioByID(userId);
-    
-    // Crear una lista de Futures para obtener los objetos completos de los amigos
+
     final List<Future<ModeloUsuario>> futurosAmigos = usuario.amigosId.map((amigoId) {
-      // Usamos el endpoint para obtener el objeto completo por ID
       return _apiService.getUsuarioByID(amigoId);
     }).toList();
 
-    // Esperar a que TODAS las peticiones de amigos terminen en paralelo
     final List<ModeloUsuario> objetosAmigos = await Future.wait(futurosAmigos);
+    final listaDeAmigosReal = await _cargarAmigosConComunes(objetosAmigos);
+    final criticasCount = await _contarCriticasUsuario(usuario.documentID!);
+    final puntuacionMedia = await _calcularPuntuacionMedia(usuario.documentID!);
 
-    // Devolver un mapa con el usuario principal y la lista de objetos amigos
+    _amigosObj = objetosAmigos;
+    _amigosConComunes = listaDeAmigosReal;
+
     return {
       'usuarioPrincipal': usuario,
-      'amigosObj': objetosAmigos, // Lista de ModeloUsuario de los amigos
+      'amigosObj': objetosAmigos,
+      'amigosConComunes': listaDeAmigosReal,
+      'criticasCount': criticasCount,
+      'puntuacionMedia': puntuacionMedia,
     };
   }
-  
-  // Función _handleUserSearch para la búsqueda
-  void _handleUserSearch(String nick) async {
-    mostrarSnackBarExito(context, "Buscando a '$nick'...");
+
+  Future<List<Amigo>> _cargarAmigosConComunes(List<ModeloUsuario> amigosObj) async {
+    final List<Amigo> lista = [];
+
+    for (final amigo in amigosObj) {
+      try {
+        if (amigo.documentID == null) {
+          lista.add(Amigo(nombre: amigo.nick, amigosEnComun: 0));
+          continue;
+        }
+        final enComun = await _apiService.contarAmigosEnComun(userId, amigo.documentID!);
+        lista.add(Amigo(nombre: amigo.nick, amigosEnComun: enComun));
+      } catch (e) {
+        lista.add(Amigo(nombre: amigo.nick, amigosEnComun: 0));
+      }
+    }
+
+    return lista;
+  }
+
+  Future<int> _contarCriticasUsuario(String usuarioId) async {
     try {
-      final List<ModeloUsuario> usuariosEncontrados = 
-          await _apiService.getByNick(nick);
-      if (usuariosEncontrados.isEmpty) {
-        mostrarSnackBarError(context, "No se encontró ningún usuario con el nick '$nick'.");
-      } else {
-        final ModeloUsuario usuarioEncontrado = usuariosEncontrados.first;
-        mostrarSnackBarExito(
-          context, 
-          "Usuario '${usuarioEncontrado.nick}' encontrado. ¿Deseas agregarlo?"
-        );
+      final criticas = await _apiService.getCriticasByUserId(usuarioId);
+      return criticas.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<double> _calcularPuntuacionMedia(String usuarioId) async {
+    try {
+      final criticas = await _apiService.getCriticasByUserId(usuarioId);
+      if (criticas.isEmpty) return 0.0;
+
+      final total = criticas.fold<int>(0, (sum, c) => sum + c.puntuacion);
+      return (total / criticas.length).toDouble();
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
+  void _agregarAmigoLocal(ModeloUsuario nuevoAmigo) async {
+    if (nuevoAmigo.documentID == null) return;
+
+    _usuarioActual?.amigosId.add(nuevoAmigo.documentID!);
+
+    final futuros = _usuarioActual!.amigosId.map((id) => _apiService.getUsuarioByID(id)).toList();
+    final nuevosObjetos = await Future.wait(futuros);
+    final nuevosConComunes = await _cargarAmigosConComunes(nuevosObjetos);
+
+    setState(() {
+      _amigosObj = nuevosObjetos;
+      _amigosConComunes = nuevosConComunes;
+    });
+  }
+
+  void _eliminarAmigoLocal(String amigoNombre) async {
+    try {
+      final amigosEncontrados = await _apiService.getByNick(amigoNombre);
+      if (amigosEncontrados.isNotEmpty) {
+        final amigoUsuario = amigosEncontrados.first;
+        if (amigoUsuario.documentID != null) {
+          _usuarioActual?.amigosId.remove(amigoUsuario.documentID);
+
+          final futuros = _usuarioActual!.amigosId.map((id) => _apiService.getUsuarioByID(id)).toList();
+          final nuevosObjetos = await Future.wait(futuros);
+          final nuevosConComunes = await _cargarAmigosConComunes(nuevosObjetos);
+
+          setState(() {
+            _amigosObj = nuevosObjetos;
+            _amigosConComunes = nuevosConComunes;
+          });
+        }
       }
     } catch (e) {
-      mostrarSnackBarError(context, "Error en la búsqueda: ${e.toString().split(':')[1].trim()}");
+      // Silencioso
+    }
+  }
+
+  void _handleUserSearch(String nick) async {
+    if (nick.trim().isEmpty) {
+      mostrarSnackBarError(context, "El nick no puede estar vacío");
+      return;
+    }
+
+    try {
+      final usuariosEncontrados = await _apiService.getByNick(nick);
+
+      if (usuariosEncontrados.isEmpty) {
+        mostrarSnackBarError(context, "No se encontró ningún usuario con el nick '$nick'.");
+        return;
+      }
+
+      final usuarioEncontrado = usuariosEncontrados.first;
+
+      final confirmar = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: const Color(0xFF1A1C25),
+          title: const Text(
+            '¿Agregar amigo?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            '¿Deseas agregar a ${usuarioEncontrado.nick} como amigo?',
+            style: const TextStyle(color: Color(0xFFAAAAAA)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar', style: TextStyle(color: Color(0xFFAAAAAA))),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Agregar', style: TextStyle(color: Colors.cyanAccent)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmar != true) return;
+
+      if (usuarioEncontrado.documentID == null) {
+        mostrarSnackBarError(context, "El usuario encontrado no tiene ID válido.");
+        return;
+      }
+
+      // Comprobar duplicado antes de agregar
+      if (_usuarioActual?.amigosId.contains(usuarioEncontrado.documentID!) ?? false) {
+        mostrarSnackBarError(context, "${usuarioEncontrado.nick} ya es tu amigo");
+        return;
+      }
+
+      await _apiService.agregarAmigo(userId, usuarioEncontrado.documentID!);
+      _agregarAmigoLocal(usuarioEncontrado);
+
+      // Vaciar campo de búsqueda
+      _buscarKey.currentState?.clearText();
+
+      mostrarSnackBarExito(context, "${usuarioEncontrado.nick} agregado a tu lista de amigos");
+    } catch (e) {
+      mostrarSnackBarError(context, "Error al agregar amigo: ${e.toString().split(':').last.trim()}");
     }
   }
 
@@ -83,52 +216,20 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
         toolbarHeight: 80,
         backgroundColor: const Color(0xFF111827),
         title: const Text(
-            "Mi Perfil",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.normal,
-              fontFamily: "Inter",
-            ),
+          "Mi Perfil",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.normal,
+            fontFamily: "Inter",
           ),
+        ),
         centerTitle: false,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.cyan.shade600,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 17),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-              onPressed: () {
-                mostrarSnackBarExito(context, "Cambios guardados con éxito.");
-              },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.save, size: 18),
-                  SizedBox(width: 8),
-                  Text("Guardar Cambios"),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
       backgroundColor: const Color(0xFF0A0E1A),
-      
       body: FutureBuilder<Map<String, dynamic>>(
         future: _datosCompletosFuture,
         builder: (context, snapshot) {
-          
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -142,18 +243,14 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
               ),
             );
           }
-          
+
           if (snapshot.hasData) {
-            // Desempaquetamos los datos
             final ModeloUsuario usuario = snapshot.data!['usuarioPrincipal'];
-            final List<ModeloUsuario> amigosObj = snapshot.data!['amigosObj'];
-            
-            final List<Amigo> listaDeAmigosReal = amigosObj.map((amigo) => 
-              Amigo(
-                nombre: amigo.nick, // Acceso correcto al nick
-                amigosEnComun: 5 // MOCK, hay que trabajar en ello
-              )
-            ).toList();
+            final int criticasCount = snapshot.data!['criticasCount'] as int;
+            final double puntuacionMedia = snapshot.data!['puntuacionMedia'] as double;
+
+            _nickActual ??= usuario.nick;
+            _usuarioActual = usuario;
 
             return LayoutBuilder(
               builder: (context, constraints) {
@@ -166,57 +263,70 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                       vertical: 10.0,
                     ),
                     child: isLargeScreen
-                        ? _buildTwoColumnLayout(context, usuario, listaDeAmigosReal)
-                        : _buildOneColumnLayout(context, usuario, listaDeAmigosReal),
+                        ? _buildTwoColumnLayout(context, usuario, _amigosConComunes, criticasCount, puntuacionMedia)
+                        : _buildOneColumnLayout(context, usuario, _amigosConComunes, criticasCount, puntuacionMedia),
                   ),
                 );
               },
             );
           }
-          
-          return const Center(child: Text("Usuario no encontrado o no disponible.", style: TextStyle(color: Colors.white)));
+
+          return const Center(
+            child: Text(
+              "Usuario no encontrado o no disponible.",
+              style: TextStyle(color: Colors.white),
+            ),
+          );
         },
       ),
     );
   }
 
-  // --- Métodos de Construcción ---
-
-  Widget _buildOneColumnLayout(BuildContext context, ModeloUsuario usuario, List<Amigo> listaAmigos) {
+  Widget _buildOneColumnLayout(BuildContext context, ModeloUsuario usuario, List<Amigo> listaAmigos, int criticasCount, double puntuacionMedia) {
     return Column(
       children: [
         _buildTabSelector(),
         PerfilUsuarioCard(
-          nickUsuario: usuario.nick,
+          key: ValueKey(_nickActual),
+          nickUsuario: _nickActual ?? '',
           emailUsuario: usuario.correo,
-          urlImagen: usuario.imagenPerfil ?? "url_default.jpg", 
+          urlImagen: usuario.imagenPerfil ?? "url_default.jpg",
         ),
         const SizedBox(height: 10),
         InformacionBasicaCard(
-          nombreRecibido: usuario.nick,
+          nombreRecibido: _nickActual ?? '',
           emailRecibido: usuario.correo,
           fechaRegistro: "N/A",
+          usuarioId: userId,
+          onNickActualizado: (nuevoNick) {
+            setState(() {
+              _nickActual = nuevoNick;
+            });
+          },
         ),
         const SizedBox(height: 10),
         EstadisticasCard(
-          peliculasValoradas: usuario.peliculasCriticadas.length,
-          numeroAmigos: usuario.amigosId.length, // Usamos el tamaño de la lista de IDs como el número de amigos
-          puntuacionMedia: 3.6,
+          peliculasValoradas: criticasCount,
+          numeroAmigos: _usuarioActual?.amigosId.length ?? 0,
+          puntuacionMedia: puntuacionMedia,
         ),
         const SizedBox(height: 10),
         ListaAmigosCard(
-          amigos: listaAmigos
+          amigos: listaAmigos,
+          usuarioId: userId,
+          onAmigoEliminado: (amigoNombre) => _eliminarAmigoLocal(amigoNombre),
         ),
         const SizedBox(height: 10),
         BuscarUsuarioCard(
-          onSearch: _handleUserSearch, 
+          key: _buscarKey,
+          onSearch: _handleUserSearch,
         ),
         const SizedBox(height: 10),
       ],
     );
   }
 
-  Widget _buildTwoColumnLayout(BuildContext context, ModeloUsuario usuario, List<Amigo> listaAmigos) {
+  Widget _buildTwoColumnLayout(BuildContext context, ModeloUsuario usuario, List<Amigo> listaAmigos, int criticasCount, double puntuacionMedia) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -227,14 +337,21 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             children: [
               _buildTabSelector(),
               PerfilUsuarioCard(
-                nickUsuario: usuario.nick,
+                key: ValueKey(_nickActual),
+                nickUsuario: _nickActual ?? '',
                 emailUsuario: usuario.correo,
                 urlImagen: usuario.imagenPerfil ?? "url_default.jpg",
               ),
               InformacionBasicaCard(
-                nombreRecibido: usuario.nick,
+                nombreRecibido: _nickActual ?? '',
                 emailRecibido: usuario.correo,
                 fechaRegistro: "N/A",
+                usuarioId: userId,
+                onNickActualizado: (nuevoNick) {
+                  setState(() {
+                    _nickActual = nuevoNick;
+                  });
+                },
               ),
             ],
           ),
@@ -244,16 +361,20 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
           child: Column(
             children: [
               EstadisticasCard(
-                peliculasValoradas: usuario.peliculasCriticadas.length,
-                numeroAmigos: usuario.amigosId.length,
-                puntuacionMedia: 3.6,
+                peliculasValoradas: criticasCount,
+                numeroAmigos: _usuarioActual?.amigosId.length ?? 0,
+                puntuacionMedia: puntuacionMedia,
               ),
               ListaAmigosCard(
-                amigos: listaAmigos
+                amigos: listaAmigos,
+                usuarioId: userId,
+                onAmigoEliminado: (amigoNombre) => _eliminarAmigoLocal(amigoNombre),
               ),
               BuscarUsuarioCard(
+                key: _buscarKey,
                 onSearch: _handleUserSearch,
               ),
+              const SizedBox(height: 10),
             ],
           ),
         ),
@@ -269,28 +390,28 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
         height: 45,
         decoration: BoxDecoration(
           color: const Color(0xFF1F2937),
-          borderRadius: BorderRadius.circular(36)
+          borderRadius: BorderRadius.circular(36),
         ),
         child: Row(
           children: [
             Expanded(
               child: TabButton(
-                icono: Icons.access_time, 
-                etiqueta: "Información", 
+                icono: Icons.access_time,
+                etiqueta: "Información",
                 seleccionado: tabSeleccionada == 0,
-                onTap: () => setState(() => tabSeleccionada = 0)
+                onTap: () => setState(() => tabSeleccionada = 0),
               ),
             ),
             Expanded(
               child: TabButton(
-                icono: Icons.trending_up, 
-                etiqueta: "Mis críticas", 
+                icono: Icons.trending_up,
+                etiqueta: "Mis críticas",
                 seleccionado: tabSeleccionada == 1,
-                onTap: () => setState(() => tabSeleccionada = 1)
+                onTap: () => setState(() => tabSeleccionada = 1),
               ),
             ),
           ],
-        )
+        ),
       ),
     );
   }

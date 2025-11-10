@@ -1,33 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:flixscore/componentes/common/snack_bar.dart';
+import 'package:flixscore/service/api_service.dart';
 
 const Color _primaryTextColor = Colors.white;
 const Color _subtitleColor = Color(0xFF9CA3AF);
-const Color _textoEditable = Color.fromARGB(255, 174, 176, 179);
 const Color _textoNoEditable = Color(0xFF5D5F63);
 const Color _cardBackgroundColor = Color(0xFF1A1C25);
 const Color _inputBackgroundColor = Color(0xFF1F2937);
+const Color _accentColor = Color(0xFFEF4444);
 
-const Color secondaryTextColor = Color(0xFFAAAAAA);
-const Color dividerColor = Color(0xFF333333);
-const Color countBadgeColor = Color(0xFF1F2937);
-const Color accentColor = Color(0xFFEF4444);
-
-class InformacionBasicaCard extends StatelessWidget {
+class InformacionBasicaCard extends StatefulWidget {
   final String nombreRecibido;
   final String emailRecibido;
   final String fechaRegistro;
+  final String usuarioId;
+  final Function(String) onNickActualizado;
 
   const InformacionBasicaCard({
     super.key,
     required this.nombreRecibido,
     required this.emailRecibido,
     required this.fechaRegistro,
+    required this.usuarioId,
+    required this.onNickActualizado,
   });
 
   @override
-  Widget build(BuildContext context) {
+  State<InformacionBasicaCard> createState() => _InformacionBasicaCardState();
+}
 
+class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
+  late TextEditingController _nickController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nickController = TextEditingController(text: widget.nombreRecibido);
+  }
+
+  @override
+  void dispose() {
+    _nickController.dispose();
+    super.dispose();
+  }
+
+  // Lógica del botón de guardar cambios (Nick)
+  Future<void> _guardarCambios() async {
+    final nuevoNick = _nickController.text.trim();
+    if (nuevoNick.isEmpty) {
+      mostrarSnackBarError(context, "El nick no puede estar vacío");
+      return;
+    }
+
+    try {
+      await ApiService().cambiarNick(widget.usuarioId, nuevoNick);
+      mostrarSnackBarExito(context, "Nick actualizado con éxito");
+      widget.onNickActualizado(nuevoNick);
+    } catch (e) {
+      mostrarSnackBarError(context, "Error al actualizar nick: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
@@ -45,7 +80,6 @@ class InformacionBasicaCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título y Subtítulo
           const Text(
             "Información Básica",
             style: TextStyle(
@@ -64,48 +98,63 @@ class InformacionBasicaCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Campo Nombre
-          _TextoNoEditable(
+          _TextoEditable(
             titulo: "Nick",
-            hintText: nombreRecibido, 
+            controller: _nickController,
             icono: Icons.person_outline,
             textoAyuda: "Da este Nick a tus amigos para ser agregado",
           ),
           const SizedBox(height: 10),
 
-          // Campo Email
           _TextoNoEditable(
             titulo: "Email",
-            hintText: emailRecibido, 
+            hintText: widget.emailRecibido,
             icono: Icons.email_outlined,
             textoAyuda: "El email no puede ser modificado",
           ),
           const SizedBox(height: 10),
 
-          // Campo Fecha de registro
           _TextoNoEditable(
             titulo: "Fecha de registro",
-            hintText: fechaRegistro, 
+            hintText: widget.fechaRegistro,
             icono: Icons.calendar_month_outlined,
             textoAyuda: "Fecha en la que te registraste",
           ),
           const SizedBox(height: 15),
 
-          // Botón para eliminar la cuenta
-          ElevatedButton.icon(
-            onPressed: () {
-              // Aquí va la lógica para borrar el registro del usuario
-              mostrarSnackBarExito(context, "Su cuenta se ha eliminado, gracias por haber compartido sus opiniones con nosotros");
-            },
-            icon: const Icon(Icons.delete),
-            label: const Text("Eliminar mi cuenta"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accentColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  mostrarSnackBarExito(
+                    context,
+                    "Su cuenta se ha eliminado, gracias por haber compartido sus opiniones con nosotros",
+                  );
+                },
+                icon: const Icon(Icons.delete),
+                label: const Text("Eliminar mi cuenta"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accentColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
               ),
-            ),
+              ElevatedButton.icon(
+                onPressed: _guardarCambios,
+                icon: const Icon(Icons.save),
+                label: const Text("Guardar cambios"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -114,20 +163,18 @@ class InformacionBasicaCard extends StatelessWidget {
 }
 
 // ==============================================================================
-// _TitledInputField (Campo de entrada de una sola línea)
+// _TextoEditable con controller
 // ==============================================================================
 class _TextoEditable extends StatelessWidget {
   final String titulo;
-  final String hintText;
+  final TextEditingController controller;
   final IconData icono;
-  final bool esEditable;
   final String? textoAyuda;
 
   const _TextoEditable({
     required this.titulo,
-    required this.hintText,
+    required this.controller,
     required this.icono,
-    this.esEditable = true,
     this.textoAyuda,
   });
 
@@ -146,12 +193,9 @@ class _TextoEditable extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
-          readOnly: !esEditable,
+          controller: controller,
           style: const TextStyle(color: _primaryTextColor),
           decoration: InputDecoration(
-            // El texto de sugerencia (hintText) es el valor inicial/placeholder
-            hintText: hintText, 
-            hintStyle: TextStyle(color: _textoEditable),
             prefixIcon: Icon(icono, color: _subtitleColor),
             fillColor: _inputBackgroundColor,
             filled: true,
@@ -183,14 +227,12 @@ class _TextoNoEditable extends StatelessWidget {
   final String titulo;
   final String hintText;
   final IconData icono;
-  final bool esEditable;
   final String? textoAyuda;
 
   const _TextoNoEditable({
     required this.titulo,
     required this.hintText,
     required this.icono,
-    this.esEditable = false,
     this.textoAyuda,
   });
 
@@ -209,12 +251,11 @@ class _TextoNoEditable extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
-          readOnly: !esEditable,
+          readOnly: true,
           style: const TextStyle(color: _primaryTextColor),
           decoration: InputDecoration(
-            // El texto de sugerencia (hintText) es el valor inicial/placeholder
-            hintText: hintText, 
-            hintStyle: TextStyle(color: _textoNoEditable),
+            hintText: hintText,
+            hintStyle: const TextStyle(color: _textoNoEditable),
             prefixIcon: Icon(icono, color: _subtitleColor),
             fillColor: _inputBackgroundColor,
             filled: true,
