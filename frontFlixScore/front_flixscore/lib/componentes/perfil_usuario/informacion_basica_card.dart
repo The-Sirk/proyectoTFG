@@ -32,6 +32,48 @@ class InformacionBasicaCard extends StatefulWidget {
 class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
   late TextEditingController _nickController;
 
+  Future<void> _confirmarYEliminarCuenta(BuildContext context) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1C25),
+        title: const Text(
+          '¿Eliminar cuenta?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar tu cuenta?',
+          style: TextStyle(color: Color(0xFFAAAAAA)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado != true) return;
+
+    try {
+      await ApiService().deleteUsuario(widget.usuarioId);
+
+      if (!mounted) return;
+
+      mostrarSnackBarExito(context, "Cuenta eliminada con éxito.");
+
+      // Navegar a la pantalla de login
+      Navigator.pushReplacementNamed(context, '/login');
+    } catch (e) {
+      mostrarSnackBarError(context, "Error al eliminar cuenta: $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -126,12 +168,7 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ElevatedButton.icon(
-                onPressed: () {
-                  mostrarSnackBarExito(
-                    context,
-                    "Su cuenta se ha eliminado, gracias por haber compartido sus opiniones con nosotros",
-                  );
-                },
+                onPressed: () => _confirmarYEliminarCuenta(context),
                 icon: const Icon(Icons.delete),
                 label: const Text("Eliminar mi cuenta"),
                 style: ElevatedButton.styleFrom(

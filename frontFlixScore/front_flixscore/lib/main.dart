@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flixscore/paginas/home_page.dart';
 import 'package:flixscore/firebase_options.dart';
+import 'package:flixscore/paginas/perfil_usuario_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -30,6 +31,12 @@ class MyApp extends StatelessWidget {
       locale: const Locale('es'),
       supportedLocales: const [Locale('es')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates, 
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const HomePage(),
+        '/perfil': (context) => const PerfilUsuario(),
+      },
       theme: ThemeData.dark().copyWith(
         colorScheme: ColorScheme.dark(
           primary: Colors.blueAccent,
@@ -49,8 +56,8 @@ class MyApp extends StatelessWidget {
       home: SafeArea(
           child: const Scaffold(
           backgroundColor: Color(0xFF000000),
-          //body: Center(child: LoginScreen()),
-          body: Center(child: HomePage()),
+          body: Center(child: LoginScreen()),
+          //body: Center(child: HomePage()),
         ),
       ),
     );
