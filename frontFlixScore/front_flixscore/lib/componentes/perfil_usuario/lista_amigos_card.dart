@@ -137,12 +137,12 @@ class _ListaAmigosCardState extends State<ListaAmigosCard> {
                 return AmigoListItem(
                   nombre: amigo.nombre,
                   amigosEnComun: amigo.amigosEnComun,
+                  imagenPerfil: amigo.imagenPerfil, // ✅ Nueva línea
                   onQuitarAmigo: () async {
                     final confirmado = await _mostrarDialogoConfirmacion(context, amigo.nombre);
                     if (confirmado != true) return;
 
                     try {
-                      // Buscar ID del amigo por nick
                       final amigosEncontrados = await _apiService.getByNick(amigo.nombre);
                       if (amigosEncontrados.isEmpty) {
                         mostrarSnackBarError(context, "No se encontró al usuario");
@@ -154,15 +154,12 @@ class _ListaAmigosCardState extends State<ListaAmigosCard> {
                         return;
                       }
 
-                      // Eliminar amigo
                       await _apiService.eliminarAmigo(widget.usuarioId, amigoUsuario.documentID!);
 
-                      // Actualizar lista local
                       setState(() {
                         widget.amigos.removeAt(index);
                       });
 
-                      // Notificar al padre para actualizar estadísticas
                       widget.onAmigoEliminado(amigo.nombre);
 
                       mostrarSnackBarExito(context, "${amigo.nombre} eliminado de tus amigos");

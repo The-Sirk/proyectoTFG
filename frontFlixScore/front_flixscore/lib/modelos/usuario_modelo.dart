@@ -46,4 +46,26 @@ class ModeloUsuario {
       'peliculas_vistas': peliculasVistas,
     };
   }
+
+  ModeloUsuario copyWith({
+    String? documentID,
+    String? correo,
+    String? imagenPerfil,
+    String? nick,
+    List<String>? amigosId,
+    List<int>? peliculasCriticadas,
+    List<int>? peliculasFavoritas,
+    List<int>? peliculasVistas,
+  }) {
+    return ModeloUsuario(
+      documentID: documentID ?? this.documentID,
+      correo: correo ?? this.correo,
+      imagenPerfil: imagenPerfil ?? this.imagenPerfil,
+      nick: nick ?? this.nick,
+      amigosId: amigosId ?? this.amigosId,
+      peliculasCriticadas: peliculasCriticadas ?? this.peliculasCriticadas,
+      peliculasFavoritas: peliculasFavoritas ?? this.peliculasFavoritas,
+      peliculasVistas: peliculasVistas ?? this.peliculasVistas,
+    );
+  }
 }

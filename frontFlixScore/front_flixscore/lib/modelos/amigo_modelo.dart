@@ -1,5 +1,11 @@
 class Amigo {
   final String nombre;
   final int amigosEnComun;
-  Amigo({required this.nombre, required this.amigosEnComun});
+  final String? imagenPerfil;
+
+  Amigo({
+    required this.nombre,
+    required this.amigosEnComun,
+    this.imagenPerfil,
+  });
 }

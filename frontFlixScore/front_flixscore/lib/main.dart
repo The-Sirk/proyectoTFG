@@ -1,10 +1,22 @@
-
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flixscore/paginas/home_page.dart';
+import 'package:flixscore/firebase_options.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'paginas/login_page.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint('Firebase inicializado correctamente');
+  } catch (e, st) {
+    debugPrint('ERROR al inicializar Firebase: $e');
+    debugPrint('Stack: $st');
+  }
   runApp(const MyApp());
 }
 
@@ -15,6 +27,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FlixScore',
+      locale: const Locale('es'),
+      supportedLocales: const [Locale('es')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates, 
       theme: ThemeData.dark().copyWith(
         colorScheme: ColorScheme.dark(
           primary: Colors.blueAccent,

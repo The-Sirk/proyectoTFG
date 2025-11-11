@@ -1,4 +1,3 @@
-import 'package:flixscore/componentes/common/snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -25,7 +24,8 @@ class PerfilUsuarioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String safeUrl = urlImagen ?? "https://placeholder.com/100x100?text=Avatar";
+    // Esta ruta no se va a utilizar nunca, pero se requiere añadir una para el CachedNetworkImage
+    final String safeUrl = urlImagen ?? "https://dummyimage.com/100x100/333333/aaaaaa.png&text=F";
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -56,7 +56,7 @@ class PerfilUsuarioCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            "Tu avatar se genera automáticamente basado en tu nick",
+            "Cambia aquí como te ven tus amigos.",
             style: TextStyle(
               color: secondaryTextColor,
               fontSize: 14,
@@ -72,9 +72,7 @@ class PerfilUsuarioCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               GestureDetector( 
-                onTap: () { 
-                  mostrarSnackBarError(context, "Aquí se abriría el menú de selección"); 
-                },
+                onTap: onImageTap, // Usamos el callback proporcionado
                 child: SizedBox(
                   // Tamaño fijo para el área sensible al tacto
                   width: avatarRadius * 2 + 4, 
@@ -107,8 +105,8 @@ class PerfilUsuarioCard extends StatelessWidget {
                               ),
                               errorWidget: (context, url, error) => Center(
                                 child: Text(
-                                    nickUsuario.isNotEmpty ? nickUsuario[0].toUpperCase() : '?',
-                                    style: const TextStyle(fontSize: 55, fontWeight: FontWeight.bold, color: primaryTextColor)
+                                  nickUsuario.isNotEmpty ? nickUsuario[0].toUpperCase() : '?',
+                                  style: const TextStyle(fontSize: 55, fontWeight: FontWeight.bold, color: primaryTextColor)
                                 ),
                               ),
                             ),
@@ -116,7 +114,7 @@ class PerfilUsuarioCard extends StatelessWidget {
                         ),
                       ),
                       
-                      // Icono del Lápiz
+                      // Icono del Lápiz (indicador de editabilidad)
                       Positioned(
                         bottom: 5,
                         right: 5,
