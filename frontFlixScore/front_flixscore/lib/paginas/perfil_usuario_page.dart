@@ -9,6 +9,7 @@ import 'package:flixscore/componentes/common/snack_bar.dart';
 import 'package:flixscore/componentes/perfil_usuario/foto_perfil_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/informacion_basica_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/buscar_usuario_card.dart';
+import 'package:flixscore/componentes/perfil_usuario/mis_criticas_card.dart';
 
 class PerfilUsuario extends StatefulWidget {
   const PerfilUsuario({super.key});
@@ -349,34 +350,40 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
       children: [
         Expanded(
           flex: 6,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: tabSeleccionada == 0
+            ? Column(
+              children: [
+                _buildTabSelector(),
+                FotoPerfilUsuarioCard(
+                  nickUsuario: _nickActual ?? '',
+                  emailUsuario: usuario.correo,
+                  urlImagenInicial: _imagenPerfilActual,
+                  usuarioId: userId,
+                  onImagenActualizada: (nuevaUrl) {
+                    setState(() {
+                      _imagenPerfilActual = nuevaUrl;
+                    });
+                  },
+                ),
+                InformacionBasicaCard(
+                  nombreRecibido: _nickActual ?? '',
+                  emailRecibido: usuario.correo,
+                  fechaRegistro: "N/A",
+                  usuarioId: userId,
+                  onNickActualizado: (nuevoNick) {
+                    setState(() {
+                      _nickActual = nuevoNick;
+                    });
+                  },
+                ),
+              ],
+            )
+          : Column(
             children: [
               _buildTabSelector(),
-              FotoPerfilUsuarioCard(
-                nickUsuario: _nickActual ?? '',
-                emailUsuario: usuario.correo,
-                urlImagenInicial: _imagenPerfilActual,
-                usuarioId: userId,
-                onImagenActualizada: (nuevaUrl) {
-                  setState(() {
-                    _imagenPerfilActual = nuevaUrl;
-                  });
-                },
-              ),
-              InformacionBasicaCard(
-                nombreRecibido: _nickActual ?? '',
-                emailRecibido: usuario.correo,
-                fechaRegistro: "N/A",
-                usuarioId: userId,
-                onNickActualizado: (nuevoNick) {
-                  setState(() {
-                    _nickActual = nuevoNick;
-                  });
-                },
-              ),
+              MisCriticasCard(usuarioId: userId),
             ],
-          ),
+          )
         ),
         Expanded(
           flex: 4,

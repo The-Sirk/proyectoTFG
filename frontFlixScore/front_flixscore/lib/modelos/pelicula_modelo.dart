@@ -40,7 +40,9 @@ class ModeloPelicula {
       rutaPoster: json['rutaPoster'] as String?, 
       rutaFondo: json['rutaFondo'] as String?,
       idiomaOriginal: json['idiomaOriginal'] as String,
-      generosIds: List<int>.from(json['generosIds'] as List),
+      generosIds: json['generosIds'] != null
+        ? List<int>.from(json['generosIds'] as List)
+        : <int>[],
     );
   }
 }

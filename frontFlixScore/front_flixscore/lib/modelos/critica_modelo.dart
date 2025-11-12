@@ -4,6 +4,7 @@ class ModeloCritica {
   final int puntuacion;
   final String comentario;
   final String? documentID;
+  final int? fechaCreacion;
 
   ModeloCritica({
     required this.usuarioUID,
@@ -11,6 +12,7 @@ class ModeloCritica {
     required this.puntuacion,
     required this.comentario,
     this.documentID,
+    this.fechaCreacion,
   });
 
   factory ModeloCritica.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class ModeloCritica {
       puntuacion: json['puntuacion'] as int,
       comentario: json['comentario'] as String,
       documentID: json['documentID'] as String?,
+      fechaCreacion: json['fechaCreacion'] as int?,
     );
   }
 
@@ -30,6 +33,7 @@ class ModeloCritica {
       'peliculaID': peliculaID,
       'puntuacion': puntuacion,
       'comentario': comentario,
+      'fechaCreacion': fechaCreacion,
     };
   }
 }

@@ -165,17 +165,27 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ElevatedButton.icon(
+              ElevatedButton(
                 onPressed: _confirmarYEliminarCuenta,
-                icon: const Icon(Icons.delete),
-                label: const Text("Eliminar mi cuenta"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _accentColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
                   ),
+                  padding: const EdgeInsets.all(12),
                 ),
+                // Con esto conseguimos que solo se vea el icono si es una pantalla pequeña
+                child: MediaQuery.of(context).size.width < 700
+                    ? const Icon(Icons.delete)
+                    : const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.delete),
+                          SizedBox(width: 8),
+                          Text("Eliminar mi cuenta"),
+                        ],
+                      ),
               ),
               ElevatedButton.icon(
                 onPressed: _guardarCambios,
