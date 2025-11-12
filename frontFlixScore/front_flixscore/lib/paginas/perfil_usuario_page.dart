@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flixscore/modelos/amigo_modelo.dart';
 import 'package:flutter/material.dart';
 import 'package:flixscore/service/api_service.dart';
@@ -10,10 +9,6 @@ import 'package:flixscore/componentes/common/snack_bar.dart';
 import 'package:flixscore/componentes/perfil_usuario/foto_perfil_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/informacion_basica_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/buscar_usuario_card.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 class PerfilUsuario extends StatefulWidget {
   const PerfilUsuario({super.key});
@@ -26,15 +21,10 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
   final double _kTabletBreakpoint = 700.0;
   int tabSeleccionada = 0;
 
-  final String userId = '2yiZnZWkLjr8WY3DaINR';
-                        //'U9iIJTLZPrA2zdvVVDiz'; //Señor del jabón de la carcel
-                        //'Jq0Y3sToCUVG2BHPrQDH'; // OpaHostil
-                        //'fyQdILnR3X6jd20OqDgr'; // Sirk
+  final String userId = 'fyQdILnR3X6jd20OqDgr';
 
   late Future<Map<String, dynamic>> _datosCompletosFuture;
   final ApiService _apiService = ApiService();
-  
-  final ImagePicker _picker = ImagePicker();
 
   String? _nickActual;
   String? _imagenPerfilActual;
@@ -229,211 +219,6 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     }
   }
 
-  // Lógica para la carga y edición de imágenes 
-  Future<Map<String, dynamic>?> _selectImage() async {
-    try {
-      final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
-      );
-
-      if (pickedFile == null) return null;
-
-      Uint8List bytes;
-      
-      if (kIsWeb) {
-        bytes = await pickedFile.readAsBytes();
-      } else {
-        bytes = await pickedFile.readAsBytes();
-      }
-
-      final size = bytes.lengthInBytes;
-      
-      String extension = 'jpg';
-      if (pickedFile.name.contains('.')) {
-        extension = pickedFile.name.split('.').last.toLowerCase();
-      }
-
-      const int maxSizeBytes = 1024 * 1024; // 1 MB
-      const List<String> allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-      if (size > maxSizeBytes) {
-        if (mounted) {
-          mostrarSnackBarError(context, "La imagen excede el tamaño máximo de 1MB.");
-        }
-        return null;
-      }
-
-      if (!allowedExtensions.contains(extension)) {
-        if (mounted) {
-          mostrarSnackBarError(context, "Extensión no permitida. Solo se admiten JPG, JPEG, PNG, GIF o WEBP.");
-        }
-        return null;
-      }
-
-      return {
-        'bytes': bytes,
-        'fileName': 'avatar_$userId.$extension',
-        'extension': extension,
-      };
-    } catch (e) {
-      debugPrint("Error al seleccionar imagen: $e");
-      if (mounted) {
-        mostrarSnackBarError(context, "Error al seleccionar la imagen. Inténtalo de nuevo.");
-      }
-      return null;
-    }
-  }
-  
-  Future<String> _uploadFile(Map<String, dynamic> fileData) async {
-    try {
-      final storage = FirebaseStorage.instanceFor(
-        app: Firebase.app(),
-        bucket: Firebase.app().options.storageBucket,
-      );
-      final storageRef = storage.ref();
-      
-      final path = 'profile_images/$userId/${fileData['fileName']}';
-      
-      debugPrint("Subiendo imagen a: $path");
-      
-      final uploadTask = storageRef.child(path).putData(
-        fileData['bytes'] as Uint8List,
-        SettableMetadata(
-          contentType: 'image/${fileData['extension']}',
-          cacheControl: 'public, max-age=3600',
-        ),
-      );
-      
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        final progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        debugPrint('Progreso de subida: ${progress.toStringAsFixed(2)}%');
-      });
-      
-      final snapshot = await uploadTask;
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      
-      debugPrint("Imagen subida exitosamente: $downloadUrl");
-      return downloadUrl;
-      
-    } catch (e, st) {
-      debugPrint('Error en _uploadFile: $e  ($st)');
-      String code = '';
-      String msg  = e.toString();
-
-      if (e is FirebaseException) {
-        code = e.code;
-        msg  = e.message ?? code;
-      }
-
-      if (code == 'unauthorized') {
-        throw 'No tienes permisos. Revisa las reglas de Storage.';
-      } else if (code == 'canceled') {
-        throw 'Subida cancelada.';
-      } else if (code == 'unknown' || msg.contains('network')) {
-        throw 'Error de red o CORS. Comprueba tu conexión.';
-      } else {
-        throw 'Error al subir imagen: $msg';
-      }
-    }
-  }
-
-  String _obtenerMensajeError(dynamic error) {
-    if (error is FirebaseException) {
-      switch (error.code) {
-        case 'unauthorized':
-          return 'No tienes permisos. Verifica las reglas de Firebase.';
-        case 'canceled':
-          return 'La operación fue cancelada.';
-        case 'unknown':
-          return 'Error de conexión. Verifica tu red y la configuración CORS.';
-        case 'object-not-found':
-          return 'El archivo no existe.';
-        case 'quota-exceeded':
-          return 'Se excedió la cuota de almacenamiento.';
-        default:
-          return 'Error de Firebase: ${error.message ?? error.code}';
-      }
-    }
-    
-    final errorStr = error.toString();
-    if (errorStr.contains('CORS')) {
-      return 'Error de CORS. Configura el acceso en Firebase Storage.';
-    }
-    if (errorStr.contains('Network')) {
-      return 'Error de red. Verifica tu conexión.';
-    }
-    
-    return 'Error inesperado. Inténtalo de nuevo.';
-  }
-
-  void _handleImageSelection() async {
-    if (_usuarioActual?.documentID == null) {
-      mostrarSnackBarError(context, "Error: ID de usuario no disponible.");
-      return;
-    }
-    
-    final fileData = await _selectImage();
-    if (fileData == null) {
-      return;
-    }
-    
-    OverlayEntry? loadingEntry;
-    
-    try {
-      if (mounted) {
-        loadingEntry = OverlayEntry(
-          builder: (context) => Container(
-            color: Colors.black54,
-            child: const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: Colors.cyanAccent),
-                  SizedBox(height: 16),
-                  Text(
-                    'Subiendo imagen...',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-        Overlay.of(context).insert(loadingEntry);
-      }
-      
-      debugPrint("Iniciando subida de imagen...");
-      final String newUrl = await _uploadFile(fileData);
-      debugPrint("Imagen subida, actualizando base de datos...");
-      
-      await _apiService.cambiarImagenPerfil(_usuarioActual!.documentID!, newUrl);
-      debugPrint("Base de datos actualizada");
-
-      setState(() {
-        _imagenPerfilActual = newUrl;
-      });
-      
-      if (mounted) {
-        mostrarSnackBarExito(context, "Foto de perfil actualizada con éxito.");
-      }
-
-    } catch (e) {
-      debugPrint("Error completo al actualizar imagen: $e");
-      
-      if (mounted) {
-        final mensaje = _obtenerMensajeError(e);
-        mostrarSnackBarError(context, mensaje);
-      }
-    } finally {
-      if (loadingEntry != null && loadingEntry.mounted) {
-        loadingEntry.remove();
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -513,12 +298,16 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     return Column(
       children: [
         _buildTabSelector(),
-        PerfilUsuarioCard(
-          key: ValueKey(_imagenPerfilActual),
+        FotoPerfilUsuarioCard(
           nickUsuario: _nickActual ?? '',
           emailUsuario: usuario.correo,
-          urlImagen: _imagenPerfilActual,
-          onImageTap: _handleImageSelection,
+          urlImagenInicial: _imagenPerfilActual,
+          usuarioId: userId,
+          onImagenActualizada: (nuevaUrl) {
+            setState(() {
+              _imagenPerfilActual = nuevaUrl;
+            });
+          },
         ),
         const SizedBox(height: 10),
         InformacionBasicaCard(
@@ -564,12 +353,16 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTabSelector(),
-              PerfilUsuarioCard(
-                key: ValueKey(_imagenPerfilActual),
+              FotoPerfilUsuarioCard(
                 nickUsuario: _nickActual ?? '',
                 emailUsuario: usuario.correo,
-                urlImagen: _imagenPerfilActual,
-                onImageTap: _handleImageSelection,
+                urlImagenInicial: _imagenPerfilActual,
+                usuarioId: userId,
+                onImagenActualizada: (nuevaUrl) {
+                  setState(() {
+                    _imagenPerfilActual = nuevaUrl;
+                  });
+                },
               ),
               InformacionBasicaCard(
                 nombreRecibido: _nickActual ?? '',

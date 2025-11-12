@@ -32,18 +32,48 @@ class InformacionBasicaCard extends StatefulWidget {
 class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
   late TextEditingController _nickController;
 
-  Future<void> _confirmarYEliminarCuenta(BuildContext context) async {
+  @override
+  void initState() {
+    super.initState();
+    _nickController = TextEditingController(text: widget.nombreRecibido);
+  }
+
+  @override
+  void dispose() {
+    _nickController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _guardarCambios() async {
+    final nuevoNick = _nickController.text.trim();
+    if (nuevoNick.isEmpty) {
+      mostrarSnackBarError(context, "El nick no puede estar vacío");
+      return;
+    }
+
+    try {
+      await ApiService().cambiarNick(widget.usuarioId, nuevoNick);
+      if (!mounted) return;
+      mostrarSnackBarExito(context, "Nick actualizado con éxito");
+      widget.onNickActualizado(nuevoNick);
+    } catch (e) {
+      if (!mounted) return;
+      mostrarSnackBarError(context, "Error al actualizar nick: $e");
+    }
+  }
+
+  Future<void> _confirmarYEliminarCuenta() async {
     final confirmado = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1C25),
+      builder: (_) => AlertDialog(
+        backgroundColor: _cardBackgroundColor,
         title: const Text(
           '¿Eliminar cuenta?',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: const Text(
-          'Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar tu cuenta?',
-          style: TextStyle(color: Color(0xFFAAAAAA)),
+          'Esta acción no se puede deshacer. ¿Estás seguro?',
+          style: TextStyle(color: _subtitleColor),
         ),
         actions: [
           TextButton(
@@ -62,44 +92,12 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
 
     try {
       await ApiService().deleteUsuario(widget.usuarioId);
-
       if (!mounted) return;
-
       mostrarSnackBarExito(context, "Cuenta eliminada con éxito.");
-
-      // Navegar a la pantalla de login
       Navigator.pushReplacementNamed(context, '/login');
     } catch (e) {
+      if (!mounted) return;
       mostrarSnackBarError(context, "Error al eliminar cuenta: $e");
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _nickController = TextEditingController(text: widget.nombreRecibido);
-  }
-
-  @override
-  void dispose() {
-    _nickController.dispose();
-    super.dispose();
-  }
-
-  // Lógica del botón de guardar cambios (Nick)
-  Future<void> _guardarCambios() async {
-    final nuevoNick = _nickController.text.trim();
-    if (nuevoNick.isEmpty) {
-      mostrarSnackBarError(context, "El nick no puede estar vacío");
-      return;
-    }
-
-    try {
-      await ApiService().cambiarNick(widget.usuarioId, nuevoNick);
-      mostrarSnackBarExito(context, "Nick actualizado con éxito");
-      widget.onNickActualizado(nuevoNick);
-    } catch (e) {
-      mostrarSnackBarError(context, "Error al actualizar nick: $e");
     }
   }
 
@@ -168,7 +166,7 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ElevatedButton.icon(
-                onPressed: () => _confirmarYEliminarCuenta(context),
+                onPressed: _confirmarYEliminarCuenta,
                 icon: const Icon(Icons.delete),
                 label: const Text("Eliminar mi cuenta"),
                 style: ElevatedButton.styleFrom(
@@ -199,9 +197,10 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
   }
 }
 
-// ==============================================================================
-// _TextoEditable con controller
-// ==============================================================================
+// =========================================================
+// Widgets auxiliares
+// =========================================================
+
 class _TextoEditable extends StatelessWidget {
   final String titulo;
   final TextEditingController controller;
@@ -257,9 +256,6 @@ class _TextoEditable extends StatelessWidget {
   }
 }
 
-// ==============================================================================
-// _TextoNoEditable
-// ==============================================================================
 class _TextoNoEditable extends StatelessWidget {
   final String titulo;
   final String hintText;
