@@ -29,6 +29,15 @@ public class UsuarioRepository {
         return db.collection("usuarios").add(usuario);
     }
 
+    /*
+     * Establece o sobrescribe un documento con un ID específico.
+     * Si el ID existe, lo actualiza (reemplaza). Si no existe, lo crea.
+     * Este método se usa cuando el documentId viene en la request.
+     */
+    public ApiFuture<WriteResult> setUsuario(String documentId, ModeloUsuario usuario) {
+        return db.collection("usuarios").document(documentId).set(usuario);
+    }
+
     public ApiFuture<DocumentSnapshot> getUsuarioById(String usuarioId) {
         return db.collection("usuarios").document(usuarioId).get();
     }

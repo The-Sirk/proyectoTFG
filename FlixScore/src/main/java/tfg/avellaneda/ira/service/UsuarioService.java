@@ -139,46 +139,54 @@ public class UsuarioService {
     }
 
     /**
-     * Añade un nuevo usuario.
+     * Añade un nuevo usuario, usando el documentID proporcionado si no es
+     * null/vacío,
+     * o dejando que Firestore lo genere automáticamente.
      * * @param entity El ModeloUsuario a añadir.
      * 
-     * @return El ModeloUsuario creado (incluyendo el ID generado por la DB).
-     * @throws RuntimeException si la operación falla o si el nick ya existe.
+     * @return El ModeloUsuario creado (incluyendo el ID generado/proporcionado).
+     * @throws RuntimeException si la operación falla.
      */
     public ModeloUsuario addUsuario(ModeloUsuario entity) {
+        String documentId = entity.getDocumentID();
+
         try {
-            // Usamos el método existente para buscar el nick.
-            List<ModeloUsuario> usuariosExistentes = getUsuarioByNick(entity.getNick());
+            if (documentId != null && !documentId.trim().isEmpty()) {
+                // Se ha proporcionado un documentId
+                // Usamos un método set con el ID específico
+                repo.setUsuario(documentId, entity).get();
 
-            if (!usuariosExistentes.isEmpty()) {
-                logger.warn("Intento de registro con nick duplicado: {}", entity.getNick());
-                throw new RuntimeException("Conflicto: El nick '" + entity.getNick() + "' ya se encuentra registrado.");
-            }
+                // El usuario ya tiene el documentID, no necesitamos leerlo de nuevo
+                logger.info("Usuario añadido correctamente con ID proporcionado: {}", documentId);
+                return entity;
 
-            // Proceso de registro solo si el nick es único
-            // Obtiene la referencia al documento recién creado
-            var docRef = repo.addUsuario(entity).get();
-
-            // Lee el documento de vuelta para obtener el objeto completo, incluyendo el
-            // documentId
-            var document = docRef.get().get();
-
-            if (document.exists()) {
-                ModeloUsuario creado = document.toObject(ModeloUsuario.class);
-                logger.info("Usuario añadido correctamente con ID: {}", creado.getDocumentID());
-                return creado;
             } else {
-                logger.error("Usuario añadido pero no se pudo recuperar el documento: {}", entity);
-                throw new RuntimeException(
-                        "Error al crear usuario: el documento se creó, pero no se pudo recuperar de Firestore.");
+                // No se ha proporcionado un documentId
+                // Usamos un método de add para que Firestore lo genere
+                var docRef = repo.addUsuario(entity).get();
+
+                // Lee el documento de vuelta para obtener el objeto completo, incluyendo el ID
+                // generado
+                var document = docRef.get().get();
+
+                if (document.exists()) {
+                    ModeloUsuario creado = document.toObject(ModeloUsuario.class);
+                    creado.setDocumentID(document.getId());
+
+                    logger.info("Usuario añadido correctamente con ID generado: {}", creado.getDocumentID());
+                    return creado;
+                } else {
+                    logger.error("Usuario añadido pero no se pudo recuperar el documento: {}", entity);
+                    throw new RuntimeException("El usuario fue añadido, pero el documento no se pudo recuperar.");
+                }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("Error (Interrupción) al añadir el usuario: {}", e.getMessage());
-            throw new RuntimeException("Error en el servidor: Operación de base de datos interrumpida.", e);
+            throw new RuntimeException("Operación de base de datos interrumpida.", e);
         } catch (ExecutionException e) {
             logger.error("Error (Ejecución) al añadir el usuario: {}", e.getMessage());
-            throw new RuntimeException("Error de base de datos: Fallo al añadir el usuario.", e.getCause());
+            throw new RuntimeException("Fallo al añadir el usuario.", e.getCause());
         }
     }
 
