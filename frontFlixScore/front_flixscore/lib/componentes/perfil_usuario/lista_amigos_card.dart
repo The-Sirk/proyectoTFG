@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'comunes/amigo_item.dart';
+import 'components/amigo_item.dart';
 import 'package:flixscore/componentes/common/snack_bar.dart';
 import 'package:flixscore/modelos/amigo_modelo.dart';
 import 'package:flixscore/service/api_service.dart';

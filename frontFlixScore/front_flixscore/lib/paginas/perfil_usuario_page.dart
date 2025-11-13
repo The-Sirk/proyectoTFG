@@ -156,7 +156,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     }
   }
 
-  void _handleUserSearch(String nick) async {
+  void _manejoBusquedaUsuario(String nick) async {
     if (nick.trim().isEmpty) {
       mostrarSnackBarError(context, "El nick no puede estar vacío");
       return;
@@ -295,51 +295,57 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     );
   }
 
-  Widget _buildOneColumnLayout(BuildContext context, ModeloUsuario usuario, List<Amigo> listaAmigos, int criticasCount, double puntuacionMedia) {
+ Widget _buildOneColumnLayout(
+  BuildContext context,
+  ModeloUsuario usuario,
+  List<Amigo> listaAmigos,
+  int criticasCount,
+  double puntuacionMedia,
+  ) {
     return Column(
       children: [
         _buildTabSelector(),
-        FotoPerfilUsuarioCard(
-          nickUsuario: _nickActual ?? '',
-          emailUsuario: usuario.correo,
-          urlImagenInicial: _imagenPerfilActual,
-          usuarioId: userId,
-          onImagenActualizada: (nuevaUrl) {
-            setState(() {
-              _imagenPerfilActual = nuevaUrl;
-            });
-          },
-        ),
-        const SizedBox(height: 10),
-        InformacionBasicaCard(
-          nombreRecibido: _nickActual ?? '',
-          emailRecibido: usuario.correo,
-          fechaRegistro: "N/A",
-          usuarioId: userId,
-          onNickActualizado: (nuevoNick) {
-            setState(() {
-              _nickActual = nuevoNick;
-            });
-          },
-        ),
-        const SizedBox(height: 10),
-        EstadisticasCard(
-          peliculasValoradas: criticasCount,
-          numeroAmigos: _usuarioActual?.amigosId.length ?? 0,
-          puntuacionMedia: puntuacionMedia,
-        ),
-        const SizedBox(height: 10),
-        ListaAmigosCard(
-          amigos: listaAmigos,
-          usuarioId: userId,
-          onAmigoEliminado: (amigoNombre) => _eliminarAmigoLocal(amigoNombre),
-        ),
-        const SizedBox(height: 10),
-        BuscarUsuarioCard(
-          key: _buscarKey,
-          onSearch: _handleUserSearch,
-        ),
-        const SizedBox(height: 10),
+        if (tabSeleccionada == 0) ...[
+          FotoPerfilUsuarioCard(
+            nickUsuario: _nickActual ?? '',
+            emailUsuario: usuario.correo,
+            urlImagenInicial: _imagenPerfilActual,
+            usuarioId: userId,
+            onImagenActualizada: (nuevaUrl) {
+              setState(() => _imagenPerfilActual = nuevaUrl);
+            },
+          ),
+          const SizedBox(height: 10),
+          InformacionBasicaCard(
+            nombreRecibido: _nickActual ?? '',
+            emailRecibido: usuario.correo,
+            fechaRegistro: "N/A",
+            usuarioId: userId,
+            onNickActualizado: (nuevoNick) {
+              setState(() => _nickActual = nuevoNick);
+            },
+          ),
+          const SizedBox(height: 10),
+          EstadisticasCard(
+            peliculasValoradas: criticasCount,
+            numeroAmigos: _usuarioActual?.amigosId.length ?? 0,
+            puntuacionMedia: puntuacionMedia,
+          ),
+          const SizedBox(height: 10),
+          ListaAmigosCard(
+            amigos: listaAmigos,
+            usuarioId: userId,
+            onAmigoEliminado: (amigoNombre) =>
+                _eliminarAmigoLocal(amigoNombre),
+          ),
+          const SizedBox(height: 10),
+          BuscarUsuarioCard(
+            key: _buscarKey,
+            onSearch: _manejoBusquedaUsuario,
+          ),
+          const SizedBox(height: 10),
+        ] else
+          MisCriticasCard(usuarioId: userId)
       ],
     );
   }
@@ -401,7 +407,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
               ),
               BuscarUsuarioCard(
                 key: _buscarKey,
-                onSearch: _handleUserSearch,
+                onSearch: _manejoBusquedaUsuario,
               ),
               const SizedBox(height: 10),
             ],
