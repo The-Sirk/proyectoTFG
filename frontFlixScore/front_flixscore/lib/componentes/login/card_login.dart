@@ -1,11 +1,8 @@
 import 'package:flixscore/componentes/common/snack_bar.dart';
 import 'package:flixscore/componentes/common/tab_button.dart';
-<<<<<<< HEAD
 import 'package:flixscore/paginas/home_page.dart';
-=======
 import 'package:flixscore/controllers/login_provider.dart';
 import 'package:flixscore/controllers/register_provider.dart';
->>>>>>> origin/front-end
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -162,18 +159,11 @@ class _LoginCardState extends State<LoginCard> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-<<<<<<< HEAD
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
-=======
                   if (selectedTab == 0) {
                     _iniciarSesion();
                   } else {
                     _registrarUsuario();
                   }
->>>>>>> origin/front-end
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
