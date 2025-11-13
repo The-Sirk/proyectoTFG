@@ -1,6 +1,10 @@
+import 'package:flixscore/componentes/common/snack_bar.dart';
 import 'package:flixscore/componentes/common/tab_button.dart';
+import 'package:flixscore/controllers/login_provider.dart';
+import 'package:flixscore/controllers/register_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class LoginCard extends StatefulWidget {
   const LoginCard({super.key});
@@ -10,11 +14,84 @@ class LoginCard extends StatefulWidget {
 }
 
 class _LoginCardState extends State<LoginCard> {
-  bool isLogin = true;
   int selectedTab = 0;
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController repeatPasswordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    usernameController.dispose();
+    repeatPasswordController.dispose();
+    super.dispose();
+  }
+
+  // Registro del usuario
+  void _registrarUsuario() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final username = usernameController.text.trim();
+    final repeatPassword = repeatPasswordController.text.trim();
+
+    final registerProvider = Provider.of<RegisterProvider>(context, listen: false);
+
+    try {
+      await registerProvider.registroUsuario(
+        email: email,
+        password: password,
+        username: username,
+        repeatPassword: repeatPassword,
+      );
+
+      if (registerProvider.isRegistered && mounted) {
+        mostrarSnackBarExito(context, "Usuario registrado correctamente, disfruta de las pelis!");
+      }
+    } catch (e) {
+      mostrarSnackBarError(context, "Error al registrarte: ${e.toString()}");
+    }
+  }
+
+  // Login del usuario
+  void _iniciarSesion() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      mostrarSnackBarError(context, "Por favor, completa todos los campos");
+      return;
+    }
+
+    final LoginProvider loginProvider = Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    );
+
+    try {
+      await loginProvider.loginUsuario(email: email, password: password);
+      if (loginProvider.isAuthenticated && mounted) {
+        mostrarSnackBarExito(context, "Inicio de sesion correcto!");
+      }
+    } catch (e) {
+      mostrarSnackBarError(context, "Error en el inicio de sesion: ${e.toString()}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final _loginProvider = Provider.of<LoginProvider>(context);
+    final _registerProvider = Provider.of<RegisterProvider>(context);
+    final _cargando = selectedTab == 0
+        ? _loginProvider.status == AuthStatus.autenticando
+        : _registerProvider.status == RegisterStatus.registrando;
+
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -80,7 +157,13 @@ class _LoginCardState extends State<LoginCard> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (selectedTab == 0) {
+                    _iniciarSesion();
+                  } else {
+                    _registrarUsuario();
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blueAccent,
@@ -89,7 +172,18 @@ class _LoginCardState extends State<LoginCard> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text("Iniciar Sesión"),
+                child: _cargando
+                    ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        selectedTab == 0 ? "Iniciar Sesión" : "Registrarse",
+                      ),
               ),
             ),
             const SizedBox(height: 16),
@@ -146,6 +240,7 @@ class _LoginCardState extends State<LoginCard> {
             Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
                 hintText: "tu@email.com",
@@ -155,6 +250,7 @@ class _LoginCardState extends State<LoginCard> {
             Text("Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
+              controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
@@ -168,9 +264,13 @@ class _LoginCardState extends State<LoginCard> {
         return Column(
           children: [
             const SizedBox(height: 24),
-            Text("Nombre de Usuario", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Nombre de Usuario",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             TextField(
+              controller: usernameController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.person, color: Colors.white54),
                 hintText: "Nombre de Usuario",
@@ -180,6 +280,7 @@ class _LoginCardState extends State<LoginCard> {
             Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
                 hintText: "tu@email.com",
@@ -190,15 +291,20 @@ class _LoginCardState extends State<LoginCard> {
             const SizedBox(height: 8),
             TextField(
               obscureText: true,
+              controller: passwordController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
                 hintText: "••••••••",
               ),
             ),
             const SizedBox(height: 16),
-            Text("Repetir Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Repetir Contraseña",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             TextField(
+              controller: repeatPasswordController,
               obscureText: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.lock_reset, color: Colors.white54),
