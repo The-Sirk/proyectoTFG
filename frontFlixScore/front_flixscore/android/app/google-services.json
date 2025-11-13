@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "152779337859",
+    "project_id": "tfg-flixscore",
+    "storage_bucket": "tfg-flixscore.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152779337859:android:a3b871c45dba44ff886bb6",
+        "android_client_info": {
+          "package_name": "com.example.front_flixscore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "152779337859-7kdebd9c7rjhl77la9c1shn8t0kbrnh3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMI1-Ce505v2LctsA_SagW74_OXT99TmY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "152779337859-7kdebd9c7rjhl77la9c1shn8t0kbrnh3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "152779337859-7po3pqg41e8sqo195mks74ivc31a2328.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.frontFlixscore"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

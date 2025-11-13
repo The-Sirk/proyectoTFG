@@ -209,11 +209,10 @@ class ApiService {
       throw Exception('Fallo al obtener todos los usuarios (${response.statusCode}): ${response.body}');
     }
   }
-  
+
   // GET /api/v1/usuarios/{documentId}
   Future<ModeloUsuario> getUsuarioByID(String id) async {
     final response = await http.get(Uri.parse('$_baseUrl/api/v1/usuarios/$id'));
-
     if (response.statusCode == 200) {
       return ModeloUsuario.fromJson(json.decode(response.body));
     } else if (response.statusCode == 404) {
@@ -254,7 +253,7 @@ class ApiService {
       throw Exception('Fallo al añadir usuario (${response.statusCode}): ${response.body}');
     }
   }
-  
+
   // PUT /api/v1/usuarios/editarUsuario/{documentId}
   Future<void> updateUsuario(String id, ModeloUsuario usuario) async {
     final response = await http.put(

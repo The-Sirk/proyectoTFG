@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flixscore/modelos/critica_modelo.dart';
 import 'package:flixscore/modelos/pelicula_modelo.dart';
 import 'package:flixscore/service/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flixscore/componentes/perfil_usuario/components/editar_critica_dialog.dart';
+import 'package:flixscore/componentes/perfil_usuario/components/tarjeta_critica_item.dart';
 
 class MisCriticasCard extends StatefulWidget {
   final String usuarioId;
@@ -14,9 +15,6 @@ class MisCriticasCard extends StatefulWidget {
   @override
   State<MisCriticasCard> createState() => _MisCriticasCardState();
 }
-
-const Color cardBackgroundColor = Color(0xFF1A1C25);
-const Color dividerColor = Color(0xFF333333);
 
 class _MisCriticasCardState extends State<MisCriticasCard> {
   late Future<List<_CriticaConPelicula>> _criticasConPeliculasFuture;
@@ -35,7 +33,7 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
     for (final critica in criticas) {
       try {
         final uri = Uri.parse(
-            'https://backend-proyectotfg-600260085391.europe-southwest1.run.app/tmdb/v1/peliculasPorId')
+                'https://backend-proyectotfg-600260085391.europe-southwest1.run.app/tmdb/v1/peliculasPorId')
             .replace(queryParameters: {'id': critica.peliculaID.toString()});
 
         final response = await http.get(uri);
@@ -59,10 +57,19 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
     return lista;
   }
 
-  String _formatearFecha(int? timestamp) {
-    if (timestamp == null) return 'Fecha no disponible';
-    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
+  void _mostrarPopupEdicion(BuildContext context, ModeloCritica critica) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => EditarCriticaDialog(
+        critica: critica,
+        onGuardar: () {
+          setState(() {
+            _criticasConPeliculasFuture = _cargarCriticasConPeliculas();
+          });
+        },
+      ),
+    );
   }
 
   @override
@@ -71,7 +78,8 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
       future: _criticasConPeliculasFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Colors.cyanAccent));
+          return const Center(
+              child: CircularProgressIndicator(color: Colors.cyanAccent));
         }
 
         if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
@@ -99,156 +107,77 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
                 ),
               ),
               const SizedBox(height: 10),
-              // Listado con altura dinámica y scroll propio
+              // Listado con altura fija y sombras degradadas
               LayoutBuilder(
                 builder: (context, constraints) {
                   final maxHeight = constraints.maxHeight - 60;
-                  return ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: maxHeight.clamp(200, 694),
-                    ),
-                    child: ScrollConfiguration(
-                      behavior: ScrollConfiguration.of(context).copyWith(
-                        physics: const BouncingScrollPhysics(),
-                      ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: items.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final c = items[index].critica;
-                          final p = items[index].pelicula;
-
-                          final posterUrl = (p?.rutaPoster ?? '').trim();
-
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: cardBackgroundColor,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
+                  double sombraSuperior = 0.0;
+                  double sombraInferior = 0.85; 
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: maxHeight.clamp(200, 694),
+                        ),
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (scrollInfo) {
+                            final atStart = scrollInfo.metrics.pixels <= 2;
+                            final atEnd = scrollInfo.metrics.pixels >=
+                                scrollInfo.metrics.maxScrollExtent - 2;
+                            final sombreadoSuperior = atStart ? 0.0 : 1.0;
+                            final sombreadoInferior = atEnd ? 0.0 : 1.0;
+                            if (sombreadoSuperior != sombraSuperior || sombreadoInferior != sombraInferior) {
+                              setState(() {
+                                sombraSuperior = sombreadoSuperior;
+                                sombraInferior = sombreadoInferior;
+                              });
+                            }
+                            return false;
+                          },
+                          child: ShaderMask(
+                            shaderCallback: (Rect rect) {
+                              return LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withOpacity(sombraSuperior),
+                                  Colors.transparent,
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(sombraInferior),
+                                ],
+                                stops: const [0.0, 0.05, 0.95, 1.0],
+                              ).createShader(rect);
+                            },
+                            blendMode: BlendMode.dstOut,
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                              child: ScrollConfiguration(
+                                behavior: ScrollConfiguration.of(context).copyWith(
+                                  physics: const BouncingScrollPhysics(),
                                 ),
-                              ],
+                                child: ListView.separated(
+                                  shrinkWrap: true,
+                                  itemCount: items.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 5),
+                                  itemBuilder: (context, index) {
+                                    final c = items[index].critica;
+                                    final p = items[index].pelicula;
+                                    return TarjetaCritica(
+                                      critica: c,
+                                      pelicula: p,
+                                      onEditar: () => _mostrarPopupEdicion(context, c),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: CachedNetworkImage(
-                                    imageUrl: posterUrl.isNotEmpty
-                                        ? posterUrl
-                                        : 'https://dummyimage.com/100x150/333333/ffffff.png&text=Sin+Cartel',
-                                    width: 138,
-                                    height: 207,
-                                    fit: BoxFit.cover,
-                                    placeholder: (_, __) => Container(
-                                      color: Colors.grey.shade800,
-                                      child: const Center(
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2, color: Colors.cyanAccent),
-                                      ),
-                                    ),
-                                    errorWidget: (_, __, ___) => Container(
-                                      color: Colors.grey.shade800,
-                                      child: const Center(
-                                        child: Icon(Icons.broken_image,
-                                            color: Colors.white54),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        p?.titulo ?? 'Película desconocida',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        p?.fechaEstreno ?? 'Fecha no disponible',
-                                        style: const TextStyle(color: Colors.white70),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      // Recuadro fijo
-                                      SizedBox(
-                                        height: 130,
-                                        width: double.infinity,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF1F2937),
-                                            borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(
-                                                color: dividerColor, width: 1),
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  const Icon(Icons.star,
-                                                      color: Colors.cyanAccent,
-                                                      size: 14),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    "${c.puntuacion}/10",
-                                                    style: const TextStyle(
-                                                      color: Colors.cyanAccent,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 12),
-                                                  Text(
-                                                    _formatearFecha(c.fechaCreacion),
-                                                    style: const TextStyle(
-                                                      color: Colors.white70,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Divider(
-                                                  height: 10, color: Colors.white24),
-                                              Expanded(
-                                                child: SingleChildScrollView(
-                                                  physics:
-                                                      const BouncingScrollPhysics(),
-                                                  child: Text(
-                                                    c.comentario,
-                                                    style: const TextStyle(
-                                                        color: Colors.white70),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
-              ),
+              )
             ],
           ),
         );
