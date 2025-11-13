@@ -71,7 +71,7 @@ class EstadisticasCard extends StatelessWidget {
 
           // Renderiza la lista de métricas
           _buildMetricRow(
-            icon: Icons.star_border,
+            icon: Icons.movie_outlined,
             iconColor: highlightColor,
             label: "Películas valoradas",
             value: safePeliculasValoradas.toString(),
@@ -84,7 +84,7 @@ class EstadisticasCard extends StatelessWidget {
           const SizedBox(height: 10),
 
           _buildMetricRow(
-            icon: Icons.movie_outlined,
+            icon: Icons.star_border,
             iconColor: Colors.orange.shade400,
             label: "Puntuación media",
             // Formatea la puntuación para mostrar 1 decimal y añade el sufijo /10

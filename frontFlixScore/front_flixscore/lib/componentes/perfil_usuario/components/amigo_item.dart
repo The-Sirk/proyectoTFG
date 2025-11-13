@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // Widget que representa un único amigo en la lista
 class AmigoListItem extends StatelessWidget {
   final String nombre;
   final int amigosEnComun;
+  final String? imagenPerfil;
   final VoidCallback onQuitarAmigo; // Callback para la acción de "Quitar amigo"
 
   const AmigoListItem({
     super.key,
     required this.nombre,
     required this.amigosEnComun,
+    this.imagenPerfil,
     required this.onQuitarAmigo,
   });
 
@@ -23,10 +26,21 @@ class AmigoListItem extends StatelessWidget {
       child: Row(
         children: [
           // Espacio para la foto de perfil del amigo (usaremos un icono de persona por ahora)
-          const Icon(
-            Icons.person_pin,
-            color: Color(0xFF1F2937),
-            size: 40,
+          CircleAvatar(
+            backgroundColor: Colors.grey.shade700,
+            backgroundImage: imagenPerfil != null
+                ? CachedNetworkImageProvider(imagenPerfil!)
+                : null,
+            child: imagenPerfil == null
+                ? Text(
+                    nombre.isNotEmpty ? nombre[0].toUpperCase() : '?',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  )
+                : null,
           ),
           const SizedBox(width: 16),
 
@@ -45,12 +59,14 @@ class AmigoListItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$amigosEnComun amigos en común',
+                  amigosEnComun == 1
+                      ? '$amigosEnComun amigo en común'
+                      : '$amigosEnComun amigos en común',
                   style: const TextStyle(
                     color: secondaryTextColor,
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
-                ),
+                )
               ],
             ),
           ),

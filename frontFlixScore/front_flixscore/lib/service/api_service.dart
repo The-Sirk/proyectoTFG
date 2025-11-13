@@ -171,6 +171,28 @@ class ApiService {
       throw Exception('Fallo al obtener ranking (${response.statusCode}): ${response.body}');
     }
   }
+
+  // PATCH /api/v1/criticas/editarCritica/{documentId}?comentario={comentario}&puntuacion={puntuacion}
+  Future<void> editarCritica(String documentId, {String? comentario, int? puntuacion}) async {
+    final uri = Uri.parse('$_baseUrl/api/v1/criticas/editarCritica/$documentId').replace(
+      queryParameters: {
+        if (comentario != null) 'comentario': comentario,
+        if (puntuacion != null) 'puntuacion': puntuacion.toString(),
+      },
+    );
+
+    final response = await http.patch(uri, headers: _headers);
+
+    if (response.statusCode == 204) {
+      return;
+    } else if (response.statusCode == 404) {
+      throw Exception('Crítica no encontrada.');
+    } else if (response.statusCode == 400) {
+      throw Exception('Datos inválidos al editar crítica.');
+    } else {
+      throw Exception('Error al editar crítica: ${response.body}');
+    }
+  }
   
 // -----------------------------------------------------------------------
 // Endpoints de Usuario (UsuarioController)
@@ -263,6 +285,89 @@ class ApiService {
       throw Exception('Usuario con ID $id no encontrado para eliminar.');
     } else {
       throw Exception('Fallo al eliminar usuario (${response.statusCode}): ${response.body}');
+    }
+  }
+
+  // PATCH /api/v1/usuarios/{documentId}/nick?Nick={nuevoNick}
+  Future<void> cambiarNick(String documentId, String nuevoNick) async {
+    final uri = Uri.parse('$_baseUrl/api/v1/usuarios/$documentId/nick').replace(
+      queryParameters: {'Nick': nuevoNick},
+    );
+
+    final response = await http.patch(uri, headers: _headers);
+
+    if (response.statusCode == 204) {
+      return;
+    } else if (response.statusCode == 409) {
+      throw Exception('El nick ya está en uso.');
+    } else if (response.statusCode == 404) {
+      throw Exception('Usuario no encontrado.');
+    } else {
+      throw Exception('Error al cambiar nick: ${response.body}');
+    }
+  }
+
+  // PATCH /api/v1/usuarios/{documentId}/urlImagen?urlImagen={url}
+  Future<void> cambiarImagenPerfil(String documentId, String? urlImagen) async {
+    final uri = Uri.parse('$_baseUrl/api/v1/usuarios/$documentId/urlImagen').replace(
+      queryParameters: {
+        if (urlImagen != null) 'urlImagen': urlImagen,
+      },
+    );
+
+    final response = await http.patch(uri, headers: _headers);
+
+    if (response.statusCode == 204) {
+      return;
+    } else if (response.statusCode == 404) {
+      throw Exception('Usuario no encontrado.');
+    } else {
+      throw Exception('Error al cambiar imagen de perfil: ${response.body}');
+    }
+  }
+
+  // POST /api/v1/usuarios/agregarAmigo/{usuarioPrincipalId}/{usuarioAmigoId}
+  Future<void> agregarAmigo(String usuarioPrincipalId, String usuarioAmigoId) async {
+    final uri = Uri.parse('$_baseUrl/api/v1/usuarios/agregarAmigo/$usuarioPrincipalId/$usuarioAmigoId');
+
+    final response = await http.post(uri, headers: _headers);
+
+    if (response.statusCode == 204) {
+      return;
+    } else if (response.statusCode == 404) {
+      throw Exception('Uno de los usuarios no fue encontrado.');
+    } else {
+      throw Exception('Error al agregar amigo: ${response.body}');
+    }
+  }
+
+  // DELETE /api/v1/usuarios/eliminarAmigo/{usuarioPrincipalId}/{usuarioAmigoId}
+  Future<void> eliminarAmigo(String usuarioPrincipalId, String usuarioAmigoId) async {
+    final uri = Uri.parse('$_baseUrl/api/v1/usuarios/eliminarAmigo/$usuarioPrincipalId/$usuarioAmigoId');
+
+    final response = await http.delete(uri, headers: _headers);
+
+    if (response.statusCode == 204) {
+      return;
+    } else if (response.statusCode == 404) {
+      throw Exception('Amistad o usuario no encontrado.');
+    } else {
+      throw Exception('Error al eliminar amigo: ${response.body}');
+    }
+  }
+
+  // GET /api/v1/usuarios/amigosEnComun/{usuarioPrincipalId}/{usuarioAmigoId}
+  Future<int> contarAmigosEnComun(String usuarioPrincipalId, String usuarioAmigoId) async {
+    final uri = Uri.parse('$_baseUrl/api/v1/usuarios/amigosEnComun/$usuarioPrincipalId/$usuarioAmigoId');
+
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      return int.parse(response.body);
+    } else if (response.statusCode == 404) {
+      throw Exception('Uno de los usuarios no fue encontrado.');
+    } else {
+      throw Exception('Error al contar amigos en común: ${response.body}');
     }
   }
 }

@@ -151,6 +151,7 @@ class _HomePageState extends State<HomePage> {
                       child: Row(
                         children: [
                           Expanded(
+                            flex: 2,
                             child: TabButton(
                               icono: Icons.access_time, 
                               etiqueta: "Últimas", 
@@ -159,14 +160,16 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Expanded(
+                            flex: 3,
                             child: TabButton(
                               icono: Icons.trending_up, 
-                              etiqueta: "Popular", 
+                              etiqueta: "De tus amigos", 
                               seleccionado: tabSeleccionada == 1,
                               onTap: () => setState(() => tabSeleccionada = 1)
                             ),
                           ),
                           Expanded(
+                            flex: 2,
                             child: TabButton(
                               icono: Icons.search, 
                               etiqueta: "Buscar", 

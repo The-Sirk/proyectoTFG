@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 const Color _primaryTextColor = Colors.white;
 const Color _subtitleColor = Color(0xFF9CA3AF);
-const Color _textoEditable = Color(0xFFAEB0B3);
-const Color cardBackgroundColor = Color(0xFF1A1C25); 
+const Color _textoEditable = Color.fromARGB(255, 174, 176, 179);
+const Color _cardBackgroundColor = Color(0xFF1A1C25);
 const Color _inputBackgroundColor = Color(0xFF1F2937);
 
 class BuscarUsuarioCard extends StatefulWidget {
@@ -15,11 +15,15 @@ class BuscarUsuarioCard extends StatefulWidget {
   });
 
   @override
-  State<BuscarUsuarioCard> createState() => _BuscarUsuarioCardState();
+  State<BuscarUsuarioCard> createState() => BuscarUsuarioCardState();
 }
 
-class _BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
+class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
   final TextEditingController _searchController = TextEditingController();
+
+  void clearText() {
+    _searchController.clear();
+  }
 
   @override
   void dispose() {
@@ -41,7 +45,7 @@ class _BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: cardBackgroundColor,
+        color: _cardBackgroundColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -54,7 +58,6 @@ class _BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título
           const Text(
             "Buscar Amigos",
             style: TextStyle(
@@ -64,7 +67,6 @@ class _BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
             ),
           ),
           const SizedBox(height: 4),
-          // Subtítulo
           const Text(
             "Introduce el Nick de tu amigo para encontrarlo",
             style: TextStyle(
@@ -73,22 +75,19 @@ class _BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
             ),
           ),
           const SizedBox(height: 20),
-          // EditText
           TextField(
             controller: _searchController,
             onSubmitted: (_) => _simularBusqueda(),
             style: const TextStyle(color: _primaryTextColor),
             decoration: InputDecoration(
-              hintText: 'Ejemplo: NickAmigote123', 
+              hintText: 'Ejemplo: NickAmigote123',
               hintStyle: const TextStyle(color: _textoEditable),
               prefixIcon: const Icon(Icons.person_search_outlined, color: _subtitleColor),
-
               suffixIcon: IconButton(
                 icon: const Icon(Icons.search, color: _subtitleColor),
                 onPressed: _simularBusqueda,
                 tooltip: 'Buscar',
               ),
-
               fillColor: _inputBackgroundColor,
               filled: true,
               border: OutlineInputBorder(

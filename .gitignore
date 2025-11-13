@@ -1,3 +1,5 @@
 ### Varibles de entorno ###
 .env
 tfg-flixscore-firebase-adminsdk-fbsvc-cc1860106c.json
+frontFlixScore/front_flixscore/android/app/google-services.json
+frontFlixScore/front_flixscore/lib/firebase_options.dart

@@ -1,47 +1,56 @@
 import 'package:flutter/material.dart';
-import 'comunes/amigo_item.dart';
+import 'components/amigo_item.dart';
 import 'package:flixscore/componentes/common/snack_bar.dart';
 import 'package:flixscore/modelos/amigo_modelo.dart';
+import 'package:flixscore/service/api_service.dart';
 
-// Tarjeta que contiene el listado de amigos
-class ListaAmigosCard extends StatelessWidget {
+class ListaAmigosCard extends StatefulWidget {
   final List<Amigo> amigos;
-  final double maxHeight; 
+  final double maxHeight;
+  final String usuarioId;
+  final Function(String) onAmigoEliminado;
 
   const ListaAmigosCard({
     super.key,
     required this.amigos,
     this.maxHeight = 350,
+    required this.usuarioId,
+    required this.onAmigoEliminado,
   });
 
-  static const Color cardBackgroundColor = Color(0xFF1A1C25); 
+  static const Color cardBackgroundColor = Color(0xFF1A1C25);
   static const Color primaryTextColor = Colors.white;
   static const Color secondaryTextColor = Color(0xFFAAAAAA);
   static const Color dividerColor = Color(0xFF333333);
   static const Color countBadgeColor = Color(0xFF1F2937);
   static const Color accentColor = Color(0xFFEF4444);
 
+  @override
+  State<ListaAmigosCard> createState() => _ListaAmigosCardState();
+}
 
-  // Función para mostrar el diálogo de confirmación
+class _ListaAmigosCardState extends State<ListaAmigosCard> {
+  final ApiService _apiService = ApiService();
+
   Future<bool?> _mostrarDialogoConfirmacion(BuildContext context, String nombreAmigo) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: cardBackgroundColor,
+          backgroundColor: ListaAmigosCard.cardBackgroundColor,
           title: const Text(
             'Confirmar Eliminación',
-            style: TextStyle(color: primaryTextColor, fontWeight: FontWeight.bold),
+            style: TextStyle(color: ListaAmigosCard.primaryTextColor, fontWeight: FontWeight.bold),
           ),
           content: Text(
             '¿Estás seguro de que quieres dejar de seguir a $nombreAmigo?',
-            style: const TextStyle(color: secondaryTextColor),
+            style: const TextStyle(color: ListaAmigosCard.secondaryTextColor),
           ),
           actions: <Widget>[
             TextButton(
               child: const Text(
                 'Cancelar',
-                style: TextStyle(color: secondaryTextColor),
+                style: TextStyle(color: ListaAmigosCard.secondaryTextColor),
               ),
               onPressed: () {
                 Navigator.of(context).pop(false);
@@ -50,7 +59,7 @@ class ListaAmigosCard extends StatelessWidget {
             TextButton(
               child: const Text(
                 'Confirmar',
-                style: TextStyle(color: accentColor, fontWeight: FontWeight.bold),
+                style: TextStyle(color: ListaAmigosCard.accentColor, fontWeight: FontWeight.bold),
               ),
               onPressed: () {
                 Navigator.of(context).pop(true);
@@ -67,7 +76,7 @@ class ListaAmigosCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: cardBackgroundColor,
+        color: ListaAmigosCard.cardBackgroundColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -82,29 +91,27 @@ class ListaAmigosCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Encabezado de la tarjeta
           Row(
             children: [
               const Text(
                 "Mis Amigos",
                 style: TextStyle(
-                  color: primaryTextColor,
+                  color: ListaAmigosCard.primaryTextColor,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const Spacer(),
-              // Badge con el número de amigos
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: countBadgeColor,
+                  color: ListaAmigosCard.countBadgeColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  amigos.length.toString(),
+                  widget.amigos.length.toString(),
                   style: const TextStyle(
-                    color: primaryTextColor,
+                    color: ListaAmigosCard.primaryTextColor,
                     fontSize: 14,
                   ),
                 ),
@@ -112,38 +119,52 @@ class ListaAmigosCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          // Subtítulo
           const Text(
             "Personas que sigues",
             style: TextStyle(
-              color: secondaryTextColor,
+              color: ListaAmigosCard.secondaryTextColor,
               fontSize: 14,
             ),
           ),
-          
-          const Divider(height: 20, color: dividerColor),
-          
-          // Listado de Amigos usando ListView.builder
+          const Divider(height: 20, color: ListaAmigosCard.dividerColor),
           SizedBox(
-            height: 275, // Espacio en vertical máximo que va a ocupar el listview
+            height: 275,
             child: ListView.builder(
-              shrinkWrap: true, // Ajusta su altura al contenido (hasta maxHeight)
-              itemCount: amigos.length,
+              shrinkWrap: true,
+              itemCount: widget.amigos.length,
               itemBuilder: (context, index) {
-                final amigo = amigos[index];
+                final amigo = widget.amigos[index];
                 return AmigoListItem(
                   nombre: amigo.nombre,
                   amigosEnComun: amigo.amigosEnComun,
-                  // Se envuelve la lógica en un Future para manejar el diálogo asíncrono
+                  imagenPerfil: amigo.imagenPerfil, // ✅ Nueva línea
                   onQuitarAmigo: () async {
-                    // Muestra el diálogo y espera la respuesta (true/false)
                     final confirmado = await _mostrarDialogoConfirmacion(context, amigo.nombre);
+                    if (confirmado != true) return;
 
-                    // Si la respuesta es true, procede con la "eliminación"
-                    if (confirmado == true) {
-                      // TODO: Implementar la lógica real para quitar amigo
+                    try {
+                      final amigosEncontrados = await _apiService.getByNick(amigo.nombre);
+                      if (amigosEncontrados.isEmpty) {
+                        mostrarSnackBarError(context, "No se encontró al usuario");
+                        return;
+                      }
+                      final amigoUsuario = amigosEncontrados.first;
+                      if (amigoUsuario.documentID == null) {
+                        mostrarSnackBarError(context, "El amigo no tiene ID válido");
+                        return;
+                      }
 
-                      mostrarSnackBarExito(context, "${amigo.nombre} eliminado/a con éxito");
+                      await _apiService.eliminarAmigo(widget.usuarioId, amigoUsuario.documentID!);
+
+                      setState(() {
+                        widget.amigos.removeAt(index);
+                      });
+
+                      widget.onAmigoEliminado(amigo.nombre);
+
+                      mostrarSnackBarExito(context, "${amigo.nombre} eliminado de tus amigos");
+                    } catch (e) {
+                      mostrarSnackBarError(context, "Error al eliminar amigo: ${e.toString().split(':').last.trim()}");
                     }
                   },
                 );
