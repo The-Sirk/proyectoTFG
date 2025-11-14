@@ -2,6 +2,7 @@ package tfg.avellaneda.ira.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +27,7 @@ import jakarta.validation.Valid;
  *         Se hacen modificaciones para añadir validaciones y se renombran
  *         algunos endpoints para que sean autodescriptivos.
  */
+
 @RestController
 @RequestMapping("/api/v1/usuarios")
 @Tag(name = "Usuarios", description = "Gestión de usuarios y sus perfiles")
@@ -292,7 +294,10 @@ public class UsuarioController {
                                 .onErrorResume(RuntimeException.class, e -> {
                                         if (e.getMessage() != null
                                                         && e.getMessage().contains("Usuario no encontrado")) {
-                                                return Mono.just(ResponseEntity.notFound().build());
+                                                return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+                                        } else if (e.getMessage() != null
+                                                        && e.getMessage().contains(("No puedes añadirte"))) {
+                                                return Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, "No te añadas tu mismo triste"));
                                         }
                                         // Manejo de otros posibles errores, como si ya son amigos (que idealmente el
                                         // servicio manejaría sin error si se considera idempotente).
@@ -412,4 +417,5 @@ public class UsuarioController {
                                                         HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
                                 });
         }
+
 }

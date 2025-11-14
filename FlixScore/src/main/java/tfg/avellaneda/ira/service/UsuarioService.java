@@ -287,19 +287,19 @@ public class UsuarioService {
      * @throws RuntimeException si alguno de los usuarios no existe.
      */
     public void addAmigo(String usuarioPrincipalId, String usuarioAmigoId) {
-        if (usuarioPrincipalId.equals(usuarioAmigoId)) {
-            logger.warn("El usuario {} intentó añadirse a sí mismo como amigo.", usuarioPrincipalId);
-            throw new IllegalArgumentException("No puedes añadirte a ti mismo como amigo.");
-        }
-
-        // Obtener ambos usuarios. Lanza excepción si no se encuentran
-        ModeloUsuario principal = getUsuarioById(usuarioPrincipalId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioPrincipalId));
-        ModeloUsuario amigo = getUsuarioById(usuarioAmigoId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioAmigoId));
-
-        // Modificar lista y actualizar
         try {
+            
+            // Obtener ambos usuarios. Lanza excepción si no se encuentran
+            ModeloUsuario principal = getUsuarioById(usuarioPrincipalId)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioPrincipalId));
+            ModeloUsuario amigo = getUsuarioById(usuarioAmigoId)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioAmigoId));
+            
+            if (usuarioPrincipalId.equals(usuarioAmigoId)) {
+                logger.warn("El usuario {} intentó añadirse a sí mismo como amigo.", usuarioPrincipalId);
+                throw new IllegalArgumentException("No puedes añadirte a ti mismo como amigo.");
+            }
+            // Modificar lista y actualizar
             ensureAmigoAdded(usuarioPrincipalId, principal, usuarioAmigoId);
             logger.info("Amistad agregada (o ya existente) entre {} y {}.", usuarioPrincipalId, usuarioAmigoId);
         } catch (InterruptedException e) {
