@@ -87,4 +87,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'tfg-flixscore.firebasestorage.app',
     measurementId: 'G-K30V7D9D1K',
   );
+
 }

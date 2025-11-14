@@ -209,11 +209,11 @@ class _LoginCardState extends State<LoginCard> {
                   if (kIsWeb) {
                     _loginProvider.loginGoogleWeb();
                   } else {
-                    //
+                    _loginProvider.loginGoogle();
                   }
                 },
                 icon: SvgPicture.asset(
-                  "images/google-icon.svg",
+                  "assets/images/google_icon.svg",
                   //"assets/images/google_icon.png",
                   width: 35,
                   height: 35,

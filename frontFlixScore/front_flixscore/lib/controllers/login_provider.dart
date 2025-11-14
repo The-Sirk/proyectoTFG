@@ -3,10 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flixscore/modelos/usuario_modelo.dart';
 import 'package:flixscore/service/api_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 enum AuthStatus { noAutenticado, autenticado, autenticando }
 
 class LoginProvider extends ChangeNotifier {
+
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -24,6 +27,8 @@ class LoginProvider extends ChangeNotifier {
   bool get isAuthenticated =>
       _status == AuthStatus.autenticado && _usuarioLogueado != null;
 
+
+  // Constructor que esta pendiente de cambios en el estado de autenticación
   LoginProvider() {
     _auth.authStateChanges().listen((User? user) async {
       if (user == null) {
@@ -36,7 +41,7 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
-  // Metodo para cargar los datos del usuario cuando se acaba de registrar
+  // Recargamos datos del usuario 
   Future<void> _cargarDatosUsuario(String uid) async {
     try {
       _status = AuthStatus.autenticando;
@@ -73,18 +78,17 @@ class LoginProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Metodo para iniciar sesión
   Future<void> loginUsuario({
     required String email,
     required String password,
   }) async {
+
     try {
       _status = AuthStatus.autenticando;
       _errorMessage = null;
       notifyListeners();
 
-      final UserCredential userCredential = await _auth
-          .signInWithEmailAndPassword(email: email, password: password);
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
 
       if (userCredential.user == null) {
         throw Exception('Error al autenticar usuario');
@@ -145,7 +149,6 @@ class LoginProvider extends ChangeNotifier {
     }
   }
 
-  // Metodo para cerrar sesión
   Future<void> logout() async {
     await _auth.signOut();
     _usuarioLogueado = null;
@@ -183,6 +186,8 @@ class LoginProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+
+      // TODO: Manejar error adecuadamente
       print('Error al actualizar usuario: $e');
     }
   }
@@ -229,7 +234,6 @@ class LoginProvider extends ChangeNotifier {
 
   Future<void> loginGoogleWeb() async {
     try {
-
       // Seteamos el estado a autenticando
       _status = AuthStatus.autenticando;
       _errorMessage = null;
@@ -245,10 +249,10 @@ class LoginProvider extends ChangeNotifier {
         googleProvider,
       );
       if (userCredential.user == null) {
-          _status = AuthStatus.noAutenticado;
-          _usuarioLogueado = null;
-          _errorMessage = 'Error de autenticación con Google:';
-      notifyListeners();
+        _status = AuthStatus.noAutenticado;
+        _usuarioLogueado = null;
+        _errorMessage = 'Error de autenticación con Google:';
+        notifyListeners();
         throw Exception('Error al autenticar usuario con Google');
       }
 
@@ -302,5 +306,79 @@ class LoginProvider extends ChangeNotifier {
       throw Exception(_errorMessage);
     }
   }
+
+  Future<void> loginGoogle() async {
+
+    try {
+
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
+      final credenciales = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
+
+      UserCredential userCredential = await _auth.signInWithCredential(credenciales);
+        
+      // ESTE CODIGO SE REPITE EN TODOS LOS LOGINS
+
+      if (userCredential.user == null) {
+        _status = AuthStatus.noAutenticado;
+        _usuarioLogueado = null;
+        _errorMessage = 'Error de autenticación con Google:';
+        notifyListeners();
+        throw Exception('Error al autenticar usuario con Google');
+      }
+
+      final DocumentSnapshot userDoc = await _firestore
+          .collection("usuarios")
+          .doc(userCredential.user!.uid)
+          .get();
+
+      // Si el usuario no existe en la base de datos, lo creamos
+
+      if (!userDoc.exists) {
+        apiService.addUsuario(
+          ModeloUsuario(
+            documentID: userCredential.user!.uid,
+            correo: userCredential.user!.email ?? "",
+            imagenPerfil: userCredential.user!.photoURL ?? "",
+            nick: userCredential.user!.displayName ?? "Usuario",
+            amigosId: [],
+            peliculasCriticadas: [],
+            peliculasFavoritas: [],
+            peliculasVistas: [],
+          ),
+        );
+      } else {
+        _usuarioLogueado = ModeloUsuario(
+          documentID: userCredential.user!.uid,
+          correo: userDoc.get("correo"),
+          imagenPerfil: userDoc.get("imagen_perfil") ?? "",
+          nick: userDoc.get("nick"),
+          amigosId: List<String>.from(userDoc.get("amigos_ids") ?? []),
+          peliculasCriticadas: List<int>.from(
+            userDoc.get("peliculas_criticadas") ?? [],
+          ),
+          peliculasFavoritas: List<int>.from(
+            userDoc.get("peliculas_favoritas") ?? [],
+          ),
+          peliculasVistas: List<int>.from(
+            userDoc.get("peliculas_vistas") ?? [],
+          ),
+        );
+      }
+
+      _status = AuthStatus.autenticado;
+      _errorMessage = null;
+      notifyListeners();
+    } catch (e) {
+      _status = AuthStatus.noAutenticado;
+      _usuarioLogueado = null;
+      _errorMessage = 'Error de autenticación con Google: $e';
+      notifyListeners();
+      throw Exception(_errorMessage);
+    }
+  }
+
+
 
 }
