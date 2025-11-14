@@ -2,6 +2,7 @@ import 'package:flixscore/componentes/common/snack_bar.dart';
 import 'package:flixscore/componentes/common/tab_button.dart';
 import 'package:flixscore/controllers/login_provider.dart';
 import 'package:flixscore/controllers/register_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -204,7 +205,13 @@ class _LoginCardState extends State<LoginCard> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  if (kIsWeb) {
+                    _loginProvider.loginGoogleWeb();
+                  } else {
+                    //
+                  }
+                },
                 icon: SvgPicture.asset(
                   "images/google-icon.svg",
                   //"assets/images/google_icon.png",

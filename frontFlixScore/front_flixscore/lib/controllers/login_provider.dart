@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flixscore/modelos/usuario_modelo.dart';
+import 'package:flixscore/service/api_service.dart';
 import 'package:flutter/foundation.dart';
 
 enum AuthStatus { noAutenticado, autenticado, autenticando }
@@ -15,10 +16,13 @@ class LoginProvider extends ChangeNotifier {
   AuthStatus _status = AuthStatus.noAutenticado;
   AuthStatus get status => _status;
 
+  ApiService apiService = ApiService();
+
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
-  bool get isAuthenticated => _status == AuthStatus.autenticado && _usuarioLogueado != null;
+  bool get isAuthenticated =>
+      _status == AuthStatus.autenticado && _usuarioLogueado != null;
 
   LoginProvider() {
     _auth.authStateChanges().listen((User? user) async {
@@ -50,9 +54,15 @@ class LoginProvider extends ChangeNotifier {
           imagenPerfil: userDoc.get("imagen_perfil") ?? "",
           nick: userDoc.get("nick"),
           amigosId: List<String>.from(userDoc.get("amigos_ids") ?? []),
-          peliculasCriticadas: List<int>.from(userDoc.get("peliculas_criticadas") ?? []),
-          peliculasFavoritas: List<int>.from(userDoc.get("peliculas_favoritas") ?? []),
-          peliculasVistas: List<int>.from(userDoc.get("peliculas_vistas") ?? []),
+          peliculasCriticadas: List<int>.from(
+            userDoc.get("peliculas_criticadas") ?? [],
+          ),
+          peliculasFavoritas: List<int>.from(
+            userDoc.get("peliculas_favoritas") ?? [],
+          ),
+          peliculasVistas: List<int>.from(
+            userDoc.get("peliculas_vistas") ?? [],
+          ),
         );
         _status = AuthStatus.autenticado;
       }
@@ -62,7 +72,7 @@ class LoginProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
-  
+
   // Metodo para iniciar sesión
   Future<void> loginUsuario({
     required String email,
@@ -73,10 +83,8 @@ class LoginProvider extends ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final UserCredential userCredential = await _auth
+          .signInWithEmailAndPassword(email: email, password: password);
 
       if (userCredential.user == null) {
         throw Exception('Error al autenticar usuario');
@@ -94,18 +102,22 @@ class LoginProvider extends ChangeNotifier {
       _usuarioLogueado = ModeloUsuario(
         documentID: userCredential.user!.uid,
         correo: userDoc.get("correo"),
-        imagenPerfil: userDoc.get("imagen_perfil") ?? "",  //Imagen terminada en .webp
+        imagenPerfil:
+            userDoc.get("imagen_perfil") ?? "", //Imagen terminada en .webp
         nick: userDoc.get("nick"),
         amigosId: List<String>.from(userDoc.get("amigos_ids") ?? []),
-        peliculasCriticadas: List<int>.from(userDoc.get("peliculas_criticadas") ?? []),
-        peliculasFavoritas: List<int>.from(userDoc.get("peliculas_favoritas") ?? []),
+        peliculasCriticadas: List<int>.from(
+          userDoc.get("peliculas_criticadas") ?? [],
+        ),
+        peliculasFavoritas: List<int>.from(
+          userDoc.get("peliculas_favoritas") ?? [],
+        ),
         peliculasVistas: List<int>.from(userDoc.get("peliculas_vistas") ?? []),
       );
 
       _status = AuthStatus.autenticado;
       _errorMessage = null;
       notifyListeners();
-
     } on FirebaseAuthException catch (e) {
       _status = AuthStatus.noAutenticado;
       _usuarioLogueado = null;
@@ -121,10 +133,9 @@ class LoginProvider extends ChangeNotifier {
       } else {
         _errorMessage = 'Error de autenticación: ${e.message}';
       }
-      
+
       notifyListeners();
       throw Exception(_errorMessage);
-
     } catch (e) {
       _status = AuthStatus.noAutenticado;
       _usuarioLogueado = null;
@@ -133,7 +144,6 @@ class LoginProvider extends ChangeNotifier {
       throw Exception(_errorMessage);
     }
   }
-
 
   // Metodo para cerrar sesión
   Future<void> logout() async {
@@ -160,10 +170,15 @@ class LoginProvider extends ChangeNotifier {
           imagenPerfil: userDoc.get("imagen_perfil") ?? "",
           nick: userDoc.get("nick"),
           amigosId: List<String>.from(userDoc.get("amigos_ids") ?? []),
-          peliculasCriticadas: List<int>.from(userDoc.get("peliculas_criticadas") ?? []),
-          peliculasFavoritas: List<int>.from(userDoc.get("peliculas_favoritas") ?? []),
-          peliculasVistas: List<int>.from(userDoc.get("peliculas_vistas") ?? []),
-         
+          peliculasCriticadas: List<int>.from(
+            userDoc.get("peliculas_criticadas") ?? [],
+          ),
+          peliculasFavoritas: List<int>.from(
+            userDoc.get("peliculas_favoritas") ?? [],
+          ),
+          peliculasVistas: List<int>.from(
+            userDoc.get("peliculas_vistas") ?? [],
+          ),
         );
         notifyListeners();
       }
@@ -191,9 +206,15 @@ class LoginProvider extends ChangeNotifier {
             imagenPerfil: userDoc.get("imagen_perfil") ?? "",
             nick: userDoc.get("nick"),
             amigosId: List<String>.from(userDoc.get("amigos_ids") ?? []),
-            peliculasCriticadas: List<int>.from(userDoc.get("peliculas_criticadas") ?? []),
-            peliculasFavoritas: List<int>.from(userDoc.get("peliculas_favoritas") ?? []),
-            peliculasVistas: List<int>.from(userDoc.get("peliculas_vistas") ?? []),
+            peliculasCriticadas: List<int>.from(
+              userDoc.get("peliculas_criticadas") ?? [],
+            ),
+            peliculasFavoritas: List<int>.from(
+              userDoc.get("peliculas_favoritas") ?? [],
+            ),
+            peliculasVistas: List<int>.from(
+              userDoc.get("peliculas_vistas") ?? [],
+            ),
           );
           _status = AuthStatus.autenticado;
         } else {
@@ -203,6 +224,82 @@ class LoginProvider extends ChangeNotifier {
         await logout();
       }
       notifyListeners();
+    }
+  }
+
+  Future<void> loginGoogleWeb() async {
+    try {
+
+      // Seteamos el estado a autenticando
+      _status = AuthStatus.autenticando;
+      _errorMessage = null;
+      notifyListeners();
+
+      // Lanzamos el popup de autenticación de Google
+      GoogleAuthProvider googleProvider = GoogleAuthProvider();
+      googleProvider.addScope(
+        "https://www.googleapis.com/auth/contacts.readonly",
+      );
+
+      final UserCredential userCredential = await _auth.signInWithPopup(
+        googleProvider,
+      );
+      if (userCredential.user == null) {
+          _status = AuthStatus.noAutenticado;
+          _usuarioLogueado = null;
+          _errorMessage = 'Error de autenticación con Google:';
+      notifyListeners();
+        throw Exception('Error al autenticar usuario con Google');
+      }
+
+      final DocumentSnapshot userDoc = await _firestore
+          .collection("usuarios")
+          .doc(userCredential.user!.uid)
+          .get();
+
+      // Si el usuario no existe en la base de datos, lo creamos
+
+      if (!userDoc.exists) {
+        apiService.addUsuario(
+          ModeloUsuario(
+            documentID: userCredential.user!.uid,
+            correo: userCredential.user!.email ?? "",
+            imagenPerfil: userCredential.user!.photoURL ?? "",
+            nick: userCredential.user!.displayName ?? "Usuario",
+            amigosId: [],
+            peliculasCriticadas: [],
+            peliculasFavoritas: [],
+            peliculasVistas: [],
+          ),
+        );
+      } else {
+        _usuarioLogueado = ModeloUsuario(
+          documentID: userCredential.user!.uid,
+          correo: userDoc.get("correo"),
+          imagenPerfil: userDoc.get("imagen_perfil") ?? "",
+          nick: userDoc.get("nick"),
+          amigosId: List<String>.from(userDoc.get("amigos_ids") ?? []),
+          peliculasCriticadas: List<int>.from(
+            userDoc.get("peliculas_criticadas") ?? [],
+          ),
+          peliculasFavoritas: List<int>.from(
+            userDoc.get("peliculas_favoritas") ?? [],
+          ),
+          peliculasVistas: List<int>.from(
+            userDoc.get("peliculas_vistas") ?? [],
+          ),
+        );
+      }
+
+      _status = AuthStatus.autenticado;
+      _errorMessage = null;
+      notifyListeners();
+    } catch (e) {
+      _status = AuthStatus.noAutenticado;
+      _usuarioLogueado = null;
+      _errorMessage = 'Error de autenticación con Google: $e';
+      notifyListeners();
+      throw Exception(_errorMessage);
     }
   }
 
