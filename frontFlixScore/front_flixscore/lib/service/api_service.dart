@@ -9,7 +9,7 @@ class ApiService {
   
   // URL de nuestro Backend
   static const String _baseUrl = 
-      'https://backend-proyectotfg-600260085391.europe-southwest1.run.app';
+      'https://tfg-backend-152779337859.europe-west1.run.app';
 
   final Map<String, String> _headers = {
     'Content-Type': 'application/json',
