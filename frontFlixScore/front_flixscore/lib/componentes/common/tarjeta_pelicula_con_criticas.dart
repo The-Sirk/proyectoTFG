@@ -102,8 +102,6 @@ class _TarjetaPeliculaConCriticasState
         const SizedBox(height: 12),
         Row(
           children: [
-            Text("Media de tus amigos:"),
-            const SizedBox(width: 4),
             const Icon(Icons.star, color: Colors.orange, size: 14),
             const SizedBox(width: 4),
             Text(

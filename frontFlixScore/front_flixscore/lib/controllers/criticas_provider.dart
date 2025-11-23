@@ -231,7 +231,7 @@ class CriticasProvider extends ChangeNotifier {
           PeliculaCard(
             pelicula: pelicula,
             criticasAmigos: todasCriticas,
-            showFriendLabel: false, // Ocultar etiqueta en Popular
+            mostrarEtiquetaAmigo: false, // Ocultar etiqueta en Popular
           ),
         );
       }

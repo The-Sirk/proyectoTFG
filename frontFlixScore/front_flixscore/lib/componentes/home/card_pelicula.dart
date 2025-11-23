@@ -10,7 +10,7 @@ class PeliculaCard extends StatelessWidget {
   final ModeloCritica? critica;
   final ModeloUsuario? usuario;
   final List<ModeloCritica>? criticasAmigos;
-  final bool showFriendLabel;
+  final bool mostrarEtiquetaAmigo;
 
   const PeliculaCard({
     super.key,
@@ -18,7 +18,7 @@ class PeliculaCard extends StatelessWidget {
     this.critica,
     this.usuario,
     this.criticasAmigos,
-    this.showFriendLabel = true,
+    this.mostrarEtiquetaAmigo = true,
   });
 
   @override
@@ -124,7 +124,7 @@ class PeliculaCard extends StatelessWidget {
             ),
           ],
         ),
-        if (showFriendLabel &&
+        if (mostrarEtiquetaAmigo &&
             todasCriticas.isNotEmpty &&
             criticasAmigos != null &&
             criticasAmigos!.isNotEmpty)
