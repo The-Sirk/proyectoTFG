@@ -77,7 +77,7 @@ class ApiService {
   // POST /api/v1/criticas (Añadir)
   Future<ModeloCritica> addCritica(ModeloCritica critica) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/api/v1/criticas'),
+      Uri.parse('$_baseUrl/api/v1/criticas/'),
       headers: _headers,
       body: json.encode(critica.toMap()), 
     );
@@ -162,7 +162,7 @@ class ApiService {
     final uri = Uri.parse('$_baseUrl/api/v1/criticas/ranking').replace(
       queryParameters: {'cantidad': cantidad.toString()},
     );
-
+    
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {

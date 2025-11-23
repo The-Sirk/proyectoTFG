@@ -1,10 +1,6 @@
 
 import 'package:flixscore/componentes/home/card_pelicula.dart';
-import 'package:flixscore/controllers/login_provider.dart';
-import 'package:flixscore/modelos/critica_modelo.dart';
-import 'package:flixscore/modelos/pelicula_modelo.dart';
-import 'package:flixscore/modelos/usuario_modelo.dart';
-import 'package:flixscore/service/api_service.dart';
+import 'package:flixscore/controllers/criticas_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,50 +12,35 @@ class PopularLayout extends StatefulWidget {
 }
 
 class _PopularLayoutState extends State<PopularLayout> {
-  // Instanciamos PeliculasService
-  
-  final ApiService _service = ApiService();
-
   // Variables de uso local
-  List<PeliculaCard> _peliculas = [];
+  
   bool _cargando = true;
   String? _error;
+  List<PeliculaCard> _peliculas = [];
 
   @override
   void initState() {
     super.initState();
-    _cargarPeliculasPopulares();
+    _cargarPeliculas();
   }
 
-  Future<void> _cargarPeliculasPopulares() async {
+  Future<void> _cargarPeliculas() async {
     try {
       setState(() {
         _cargando = true;
         _error = null;
       });
-      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
-      final usuario = loginProvider.usuarioLogueado;
-      
-      for (var amigo in usuario!.amigosId) {
-        List<ModeloCritica> criticasAmigo = await _service.getCriticasByUserId(amigo);
-        for (var critica in criticasAmigo) {
-          ModeloPelicula pelicula = await _service.getMovieByID(critica.peliculaID.toString());
-          ModeloUsuario usuarioCritica = await _service.getUsuarioByID(critica.usuarioUID);
+      _peliculas = [];
+      final provider = Provider.of<CriticasProvider>(context, listen: false);
 
-          PeliculaCard tarjetaPelicula = PeliculaCard(pelicula: pelicula, critica: critica, usuario: usuarioCritica); 
-          _peliculas.add(tarjetaPelicula);
-          }
-
-      }
-
+      _peliculas = provider.peliculasCardAmigos;
       setState(() {
+        _peliculas = _peliculas;
         _cargando = false;
       });
     } catch (e) {
-      print("Error al cargar películas populares: ${e.toString()}");
       setState(() {
         _error = e.toString();
-        print(e.toString());
         _cargando = false;
       });
     }
@@ -90,7 +71,7 @@ class _PopularLayoutState extends State<PopularLayout> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _cargarPeliculasPopulares,
+              onPressed: () {},
               child: const Text('Reintentar'),
             ),
           ],
@@ -145,10 +126,7 @@ class _PopularLayoutState extends State<PopularLayout> {
         spacing: 20,
         runSpacing: 20,
         children: _peliculas.map((pelicula) {
-          return SizedBox(
-            width: anchoCard,
-            child: pelicula,
-          );
+          return SizedBox(width: anchoCard, child: pelicula);
         }).toList(),
       ),
     );

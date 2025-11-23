@@ -419,7 +419,7 @@ class LoginProvider extends ChangeNotifier {
     }
   }
 
-  // Obtenemos todas las puntuaciones de las criticas que ha hecho el usuario
+  // Obtenemos las criticas del usuario
   Future<List<int>> _obtenerPuntuacionesDesdeCriticas(String usuarioId) async {
     try {
       final criticas = await ApiService().getCriticasByUserId(usuarioId);
