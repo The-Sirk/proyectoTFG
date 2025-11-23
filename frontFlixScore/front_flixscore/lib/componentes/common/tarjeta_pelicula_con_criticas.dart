@@ -43,22 +43,16 @@ class _TarjetaPeliculaConCriticasState
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 800),
-      child: IntrinsicWidth(
-        child: IntrinsicHeight(
-          child: Card(
-            color: const Color(0xFF1F2937),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: _tarjetaLayout(
-                criticasAmigos,
-                criticaUsuario,
-                criticasProvider,
-              ),
-            ),
+      child: Card(
+        color: const Color(0xFF1F2937),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: _tarjetaLayout(
+            criticasAmigos,
+            criticaUsuario,
+            criticasProvider,
           ),
         ),
       ),
@@ -70,129 +64,161 @@ class _TarjetaPeliculaConCriticasState
     ModeloCritica? criticaUsuario,
     CriticasProvider criticasProvider,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final esMovil = constraints.maxWidth < 600;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Container(
-              width: 140,
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.grey,
-              ),
-              child: Image.network(
-                widget.pelicula.rutaPoster ?? '',
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 2,
-              child: ResumenPelicula(
-                titulo: widget.pelicula.titulo,
-                resumen: widget.pelicula.resumen,
-                fechaEstreno: widget.pelicula.fechaEstreno,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            const Icon(Icons.star, color: Colors.orange, size: 14),
-            const SizedBox(width: 4),
-            Text(
-              "${_calcularMedia(criticasAmigos)}/10",
-              style: const TextStyle(
-                color: Colors.orange,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (criticaUsuario == null)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: mostrarCritica
-                          ? Colors.white
-                          : Colors.black,
-                      backgroundColor: mostrarCritica
-                          ? Colors.redAccent
-                          : Colors.blueAccent,
+            // Layout responsive
+            if (esMovil)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 140,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.grey,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        mostrarCritica = !mostrarCritica;
-                      });
-                    },
-                    child: mostrarCritica
-                        ? const Text("Cancelar")
-                        : const Text("Escribir Critica"),
+                    child: Image.network(
+                      widget.pelicula.rutaPoster ?? '',
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  ResumenPelicula(
+                    titulo: widget.pelicula.titulo,
+                    resumen: widget.pelicula.resumen,
+                    fechaEstreno: widget.pelicula.fechaEstreno,
+                  ),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  Container(
+                    width: 140,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.grey,
+                    ),
+                    child: Image.network(
+                      widget.pelicula.rutaPoster ?? '',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: ResumenPelicula(
+                      titulo: widget.pelicula.titulo,
+                      resumen: widget.pelicula.resumen,
+                      fechaEstreno: widget.pelicula.fechaEstreno,
+                    ),
+                  ),
+                ],
               ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (mostrarCritica && criticaUsuario == null)
-          widgetCrearCritica(criticasProvider),
-        const SizedBox(height: 8),
-        ...criticasAmigos.map((critica) {
-          return Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF374151),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
+            const SizedBox(height: 12),
+            Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(
-                    criticasProvider
-                            .getUsuarioAmigo(critica.usuarioUID)
-                            ?.imagenPerfil ??
-                        "",
+                const Icon(Icons.star, color: Colors.orange, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  "${_calcularMedia(criticasAmigos)}/10",
+                  style: const TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "${(critica.usuarioUID == criticasProvider.usuarioLogueado?.documentID) ? (criticasProvider.usuarioLogueado?.nick ?? "Tú") : (criticasProvider.getUsuarioAmigo(critica.usuarioUID)?.nick ?? "Usuario desconocido (${critica.usuarioUID})")}  •  ${critica.fechaCreacion != null ? "${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).day}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).month}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).year}" : ""}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                if (criticaUsuario == null)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 16.0),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: mostrarCritica
+                              ? Colors.white
+                              : Colors.black,
+                          backgroundColor: mostrarCritica
+                              ? Colors.redAccent
+                              : Colors.blueAccent,
                         ),
+                        onPressed: () {
+                          setState(() {
+                            mostrarCritica = !mostrarCritica;
+                          });
+                        },
+                        child: mostrarCritica
+                            ? const Text("Cancelar")
+                            : const Text("Escribir Critica"),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        critica.comentario,
-                        style: TextStyle(
-                          color: Colors.grey[300],
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
               ],
             ),
-          );
-        }),
-      ],
+            const SizedBox(height: 12),
+            if (mostrarCritica && criticaUsuario == null)
+              widgetCrearCritica(criticasProvider),
+            const SizedBox(height: 8),
+            ...criticasAmigos.map((critica) {
+              return Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF374151),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundImage: NetworkImage(
+                        criticasProvider
+                                .getUsuarioAmigo(critica.usuarioUID)
+                                ?.imagenPerfil ??
+                            "",
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${(critica.usuarioUID == criticasProvider.usuarioLogueado?.documentID) ? (criticasProvider.usuarioLogueado?.nick ?? "Tú") : (criticasProvider.getUsuarioAmigo(critica.usuarioUID)?.nick ?? "Usuario desconocido (${critica.usuarioUID})")}  •  ${critica.fechaCreacion != null ? "${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).day}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).month}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).year}" : ""}",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            critica.comentario,
+                            style: TextStyle(
+                              color: Colors.grey[300],
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        );
+      },
     );
   }
 

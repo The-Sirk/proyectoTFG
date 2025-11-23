@@ -12,7 +12,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
-  void initState()  {
+  void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _cargarDatos();
@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final provider = Provider.of<CriticasProvider>(context, listen: false);
 
     // Definir el tiempo mínimo de espera (ej. 4 segundos)
-    final minSplashDuration = Future.delayed(const Duration(seconds: 4));
+    final minSplashDuration = Future.delayed(const Duration(seconds: 1));
 
     // Definir la carga de datos
     final dataLoading = Future(() async {
@@ -45,9 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Center(
-        child: Lottie.asset('assets/images/animacion-splash.json'),
-      ),
+      body: Center(child: Lottie.asset('assets/images/animacion-splash.json')),
     );
   }
 }
