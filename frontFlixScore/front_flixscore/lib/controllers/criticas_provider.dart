@@ -23,7 +23,7 @@ class CriticasProvider extends ChangeNotifier {
   List<PeliculaCard> get peliculasCardAmigos => _peliculasCardAmigos;
   List<PeliculaCard> _peliculasCardUltimas = [];
   List<PeliculaCard> get peliculasCardUltimas => _peliculasCardUltimas;
-  
+
   // Cache de amigos para no pedir sus datos repetidamente
   final Map<String, ModeloUsuario> _amigosCache = {};
   Map<String, ModeloUsuario> get amigosCache => _amigosCache;
@@ -126,6 +126,21 @@ class CriticasProvider extends ChangeNotifier {
       List<ModeloCritica> ultimasCriticas = await apiService
           .getCriticasRecientes(10);
       AppLogger.logVar('ultimasCriticas', ultimasCriticas);
+
+      // Cargar perfiles de usuarios desconocidos
+      for (var critica in ultimasCriticas) {
+        if (!_amigosCache.containsKey(critica.usuarioUID)) {
+          try {
+            final usuario = await apiService.getUsuarioByID(critica.usuarioUID);
+            _amigosCache[critica.usuarioUID] = usuario;
+          } catch (e) {
+            AppLogger.logError(
+              "Error cargando usuario ${critica.usuarioUID} en ultimas: $e",
+            );
+          }
+        }
+      }
+
       _peliculasCardUltimas.clear();
 
       // Agrupa críticas por película para evitar duplicados
@@ -138,11 +153,44 @@ class CriticasProvider extends ChangeNotifier {
 
       for (var entry in criticasPorPelicula.entries) {
         final peliculaID = entry.key;
-        final criticas = entry.value;
         final pelicula = await apiService.getMovieByID(peliculaID);
 
+        // Cargar TODAS las críticas de esa película (no solo las recientes)
+        List<ModeloCritica> todasLasCriticas = [];
+        try {
+          todasLasCriticas = await apiService.getCriticasByPeliculaId(
+            pelicula.id,
+          );
+        } catch (e) {
+          AppLogger.logError(
+            "Error cargando todas las criticas para pelicula $peliculaID: $e",
+          );
+          // Si falla, usamos al menos las que ya teniamos
+          todasLasCriticas = entry.value;
+        }
+
+        // Cargar perfiles de usuarios de TODAS las críticas
+        for (var critica in todasLasCriticas) {
+          if (!_amigosCache.containsKey(critica.usuarioUID) &&
+              critica.usuarioUID != _usuarioLogueado?.documentID) {
+            try {
+              final usuario = await apiService.getUsuarioByID(
+                critica.usuarioUID,
+              );
+              _amigosCache[critica.usuarioUID] = usuario;
+            } catch (e) {
+              AppLogger.logError(
+                "Error cargando usuario ${critica.usuarioUID} en ultimas (full): $e",
+              );
+            }
+          }
+        }
+
+        // Buscar si hay críticas de amigos para esta película (ya deberían estar en todasLasCriticas si el backend funciona bien,
+        // Asumimos que getCriticasByPeliculaId trae todo.
+
         _peliculasCardUltimas.add(
-          PeliculaCard(pelicula: pelicula, criticasAmigos: criticas),
+          PeliculaCard(pelicula: pelicula, criticasAmigos: todasLasCriticas),
         );
       }
 
@@ -161,7 +209,9 @@ class CriticasProvider extends ChangeNotifier {
       '_servirPeliculasCard',
       message: 'criticasAmigos: $_criticasAmigos',
     );
-    _peliculasCardAmigos.clear();
+    // Usamos una lista local para evitar duplicados
+    List<PeliculaCard> nuevasPeliculasCard = [];
+
     try {
       final criticasPorPelicula = _agruparCriticasPorPelicula(_criticasAmigos);
       for (var entry in criticasPorPelicula.entries) {
@@ -177,10 +227,18 @@ class CriticasProvider extends ChangeNotifier {
         // Crea una lista combinada: primero tu crítica (si existe), luego las de amigos
         final todasCriticas = [...miCriticaList, ...criticas];
 
-        _peliculasCardAmigos.add(
-          PeliculaCard(pelicula: pelicula, criticasAmigos: todasCriticas),
+        nuevasPeliculasCard.add(
+          PeliculaCard(
+            pelicula: pelicula,
+            criticasAmigos: todasCriticas,
+            showFriendLabel: false, // Ocultar etiqueta en Popular
+          ),
         );
       }
+
+      // Asignamos la lista completa al final
+      _peliculasCardAmigos = nuevasPeliculasCard;
+
       AppLogger.logVar('peliculasCardAmigos', _peliculasCardAmigos);
       _errorMessage = null;
     } catch (e) {
@@ -205,6 +263,11 @@ class CriticasProvider extends ChangeNotifier {
       AppLogger.logVar('criticaCreada', criticaCreada);
       _criticasUsuario.add(criticaCreada);
       AppLogger.logVar('criticasUsuario', _criticasUsuario);
+
+      // Actualizar las tarjetas para que se vea la nueva crítica
+      await servirPeliculasCard();
+      await cargarUltimasCriticas();
+
       _errorMessage = null;
       notifyListeners();
     } catch (e) {
@@ -228,8 +291,11 @@ class CriticasProvider extends ChangeNotifier {
     return criticasPorPelicula;
   }
 
-
   ModeloUsuario? getUsuarioAmigo(String id) {
     return _amigosCache[id];
+  }
+
+  List<ModeloCritica> getCriticasAmigosPorPelicula(int peliculaId) {
+    return _criticasAmigos.where((c) => c.peliculaID == peliculaId).toList();
   }
 }

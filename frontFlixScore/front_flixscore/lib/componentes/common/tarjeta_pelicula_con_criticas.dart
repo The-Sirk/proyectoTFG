@@ -164,29 +164,31 @@ class _TarjetaPeliculaConCriticasState
                   ),
                 ),
                 const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${(critica.usuarioUID == criticasProvider.usuarioLogueado?.documentID) ? (criticasProvider.usuarioLogueado?.nick ?? "Tú") : (criticasProvider.getUsuarioAmigo(critica.usuarioUID)?.nick ?? "Usuario desconocido (${critica.usuarioUID})")}  •  ${critica.fechaCreacion != null ? "${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).day}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).month}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).year}" : ""}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${(critica.usuarioUID == criticasProvider.usuarioLogueado?.documentID) ? (criticasProvider.usuarioLogueado?.nick ?? "Tú") : (criticasProvider.getUsuarioAmigo(critica.usuarioUID)?.nick ?? "Usuario desconocido (${critica.usuarioUID})")}  •  ${critica.fechaCreacion != null ? "${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).day}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).month}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).year}" : ""}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      critica.comentario,
-                      style: TextStyle(
-                        color: Colors.grey[300],
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
+                      const SizedBox(height: 4),
+                      Text(
+                        critica.comentario,
+                        style: TextStyle(
+                          color: Colors.grey[300],
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -10,6 +10,7 @@ class PeliculaCard extends StatelessWidget {
   final ModeloCritica? critica;
   final ModeloUsuario? usuario;
   final List<ModeloCritica>? criticasAmigos;
+  final bool showFriendLabel;
 
   const PeliculaCard({
     super.key,
@@ -17,6 +18,7 @@ class PeliculaCard extends StatelessWidget {
     this.critica,
     this.usuario,
     this.criticasAmigos,
+    this.showFriendLabel = true,
   });
 
   @override
@@ -122,6 +124,21 @@ class PeliculaCard extends StatelessWidget {
             ),
           ],
         ),
+        if (showFriendLabel &&
+            todasCriticas.isNotEmpty &&
+            criticasAmigos != null &&
+            criticasAmigos!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              "Criticada por amigos",
+              style: const TextStyle(
+                color: Colors.cyanAccent,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
       ],
     );
   }
