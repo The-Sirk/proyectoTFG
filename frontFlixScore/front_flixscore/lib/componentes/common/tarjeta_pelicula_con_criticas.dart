@@ -47,13 +47,27 @@ class _TarjetaPeliculaConCriticasState
         color: const Color(0xFF1F2937),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 4,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: _tarjetaLayout(
-            criticasAmigos,
-            criticaUsuario,
-            criticasProvider,
-          ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: _tarjetaLayout(
+                criticasAmigos,
+                criticaUsuario,
+                criticasProvider,
+              ),
+            ),
+            // Botón de cierre en esquina superior derecha
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+                tooltip: 'Cerrar',
+              ),
+            ),
+          ],
         ),
       ),
     );
