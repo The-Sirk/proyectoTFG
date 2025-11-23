@@ -142,14 +142,6 @@ class _TarjetaPeliculaConCriticasState
         const SizedBox(height: 12),
         if (mostrarCritica && criticaUsuario == null)
           widgetCrearCritica(criticasProvider),
-        Text(
-          "Críticas de tus amigos: ${criticasAmigos.length}",
-          style: const TextStyle(
-            color: Colors.cyan,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
         const SizedBox(height: 8),
         ...criticasAmigos.map((critica) {
           return Container(
@@ -160,27 +152,41 @@ class _TarjetaPeliculaConCriticasState
               color: const Color(0xFF374151),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  "ID usuario: ${critica.usuarioUID}",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: NetworkImage(
+                    criticasProvider
+                            .getUsuarioAmigo(critica.usuarioUID)
+                            ?.imagenPerfil ??
+                        "",
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  critica.comentario,
-                  style: TextStyle(
-                    color: Colors.grey[300],
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${(critica.usuarioUID == criticasProvider.usuarioLogueado?.documentID) ? (criticasProvider.usuarioLogueado?.nick ?? "Tú") : (criticasProvider.getUsuarioAmigo(critica.usuarioUID)?.nick ?? "Usuario desconocido (${critica.usuarioUID})")}  •  ${critica.fechaCreacion != null ? "${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).day}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).month}/${DateTime.fromMillisecondsSinceEpoch(critica.fechaCreacion!).year}" : ""}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      critica.comentario,
+                      style: TextStyle(
+                        color: Colors.grey[300],
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -23,6 +23,10 @@ class CriticasProvider extends ChangeNotifier {
   List<PeliculaCard> get peliculasCardAmigos => _peliculasCardAmigos;
   List<PeliculaCard> _peliculasCardUltimas = [];
   List<PeliculaCard> get peliculasCardUltimas => _peliculasCardUltimas;
+  
+  // Cache de amigos para no pedir sus datos repetidamente
+  final Map<String, ModeloUsuario> _amigosCache = {};
+  Map<String, ModeloUsuario> get amigosCache => _amigosCache;
 
   CriticasProvider();
 
@@ -93,6 +97,16 @@ class CriticasProvider extends ChangeNotifier {
             .getCriticasByUserId(amigoId);
         AppLogger.logVar('criticasAmigo', criticasAmigo);
         criticasAmigosTemp.addAll(criticasAmigo);
+
+        // Cargar datos del amigo si no están en caché
+        if (!_amigosCache.containsKey(amigoId)) {
+          try {
+            final amigoUsuario = await apiService.getUsuarioByID(amigoId);
+            _amigosCache[amigoId] = amigoUsuario;
+          } catch (e) {
+            AppLogger.logError("Error cargando datos de amigo $amigoId: $e");
+          }
+        }
       }
       _criticasAmigos = criticasAmigosTemp;
       AppLogger.logVar('criticasAmigos', _criticasAmigos);
@@ -212,5 +226,10 @@ class CriticasProvider extends ChangeNotifier {
       criticasPorPelicula[key]!.add(critica);
     }
     return criticasPorPelicula;
+  }
+
+
+  ModeloUsuario? getUsuarioAmigo(String id) {
+    return _amigosCache[id];
   }
 }

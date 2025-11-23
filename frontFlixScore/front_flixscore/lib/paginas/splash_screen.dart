@@ -21,10 +21,20 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _cargarDatos() async {
     final provider = Provider.of<CriticasProvider>(context, listen: false);
-    await provider.cargarCriticasDelUsuario();
-    await provider.cargarCriticasDeAmigos();
-    await provider.servirPeliculasCard();
-    await provider.cargarUltimasCriticas();
+
+    // Definir el tiempo mínimo de espera (ej. 4 segundos)
+    final minSplashDuration = Future.delayed(const Duration(seconds: 4));
+
+    // Definir la carga de datos
+    final dataLoading = Future(() async {
+      await provider.cargarCriticasDelUsuario();
+      await provider.cargarCriticasDeAmigos();
+      await provider.cargarUltimasCriticas();
+      await provider.servirPeliculasCard();
+    });
+
+    // Esperar a que AMBOS terminen
+    await Future.wait([minSplashDuration, dataLoading]);
 
     if (mounted) {
       Navigator.of(context).pushReplacementNamed('/home');
