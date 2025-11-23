@@ -4,11 +4,11 @@ FROM ghcr.io/cirruslabs/flutter:stable AS flutter-builder
 WORKDIR /app
 
 # Copiar archivos de dependencias
-COPY front_flixscore/pubspec.* ./
+COPY frontFlixScore/front_flixscore/pubspec.* ./
 RUN flutter pub get
 
 # Copiar el resto del proyecto
-COPY front_flixscore/ ./
+COPY frontFlixScore/front_flixscore/ ./
 
 # Build para producción
 RUN flutter build web --release
