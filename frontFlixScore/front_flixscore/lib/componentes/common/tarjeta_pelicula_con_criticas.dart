@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flixscore/modelos/pelicula_modelo.dart';
 import 'package:provider/provider.dart';
 import 'package:flixscore/controllers/criticas_provider.dart';
-import 'package:flixscore/componentes/home/components/resumen_pelicula.dart';
 
 class TarjetaPeliculaConCriticas extends StatefulWidget {
   final ModeloPelicula pelicula;
@@ -43,23 +42,33 @@ class _TarjetaPeliculaConCriticasState
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 800),
-      child: IntrinsicWidth(
-        child: IntrinsicHeight(
-          child: Card(
-            color: const Color(0xFF1F2937),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: _tarjetaLayout(
-                criticasAmigos,
-                criticaUsuario,
-                criticasProvider,
+      child: Card(
+        color: const Color(0xFF1F2937),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: _tarjetaLayout(
+                  criticasAmigos,
+                  criticaUsuario,
+                  criticasProvider,
+                ),
               ),
             ),
-          ),
+            // Botón de cierre en esquina superior derecha
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+                tooltip: 'Cerrar',
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -71,36 +80,64 @@ class _TarjetaPeliculaConCriticasState
     CriticasProvider criticasProvider,
   ) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 140,
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.grey,
-              ),
-              child: Image.network(
-                widget.pelicula.rutaPoster ?? '',
-                fit: BoxFit.cover,
-              ),
+        // Póster de la película
+        Container(
+          width: 200,
+          height: 280,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.grey,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              widget.pelicula.rutaPoster ?? '',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Icon(Icons.movie, size: 48, color: Colors.white54),
+                );
+              },
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 2,
-              child: ResumenPelicula(
-                titulo: widget.pelicula.titulo,
-                resumen: widget.pelicula.resumen,
-                fechaEstreno: widget.pelicula.fechaEstreno,
-              ),
-            ),
-          ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Título
+        Text(
+          widget.pelicula.titulo,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+
+        // Fecha de estreno
+        Text(
+          widget.pelicula.fechaEstreno,
+          style: const TextStyle(color: Colors.grey, fontSize: 16),
         ),
         const SizedBox(height: 12),
+
+        // Resumen
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            widget.pelicula.resumen,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            textAlign: TextAlign.justify,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Puntuación media
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.star, color: Colors.orange, size: 14),
             const SizedBox(width: 4),
@@ -111,36 +148,48 @@ class _TarjetaPeliculaConCriticasState
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (criticaUsuario == null)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: mostrarCritica
-                          ? Colors.white
-                          : Colors.black,
-                      backgroundColor: mostrarCritica
-                          ? Colors.redAccent
-                          : Colors.blueAccent,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        mostrarCritica = !mostrarCritica;
-                      });
-                    },
-                    child: mostrarCritica
-                        ? const Text("Cancelar")
-                        : const Text("Escribir Critica"),
-                  ),
-                ),
-              ),
           ],
         ),
+        const SizedBox(height: 20),
+
+        // Botón para escribir crítica (solo si no tiene crítica)
+        if (criticaUsuario == null)
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: mostrarCritica ? Colors.white : Colors.black,
+              backgroundColor: mostrarCritica
+                  ? Colors.redAccent
+                  : Colors.blueAccent,
+            ),
+            onPressed: () {
+              setState(() {
+                mostrarCritica = !mostrarCritica;
+              });
+            },
+            child: mostrarCritica
+                ? const Text("Cancelar")
+                : const Text("Escribir Crítica"),
+          ),
         const SizedBox(height: 12),
+
+        // Formulario para crear crítica
         if (mostrarCritica && criticaUsuario == null)
           widgetCrearCritica(criticasProvider),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
+
+        // Título de sección de críticas
+        if (criticasAmigos.isNotEmpty)
+          const Text(
+            "Críticas",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        const SizedBox(height: 12),
+
+        // Lista de críticas
         ...criticasAmigos.map((critica) {
           return Container(
             width: double.infinity,
