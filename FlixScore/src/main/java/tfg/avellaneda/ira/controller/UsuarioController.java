@@ -295,6 +295,7 @@ public class UsuarioController {
         @Operation(summary = "Añadir un amigo", description = "Crea la relación de amistad entre dos usuarios. Si ya existe, devuelve 204.", responses = {
                         @ApiResponse(responseCode = "204", description = "Amistad agregada o ya existente (No Content)."),
                         @ApiResponse(responseCode = "404", description = "Uno o ambos usuarios no fueron encontrados."),
+                        @ApiResponse(responseCode = "409", description = "No te puedes agregar a ti mismo."),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
         })
         @PostMapping("/agregarAmigo/{usuarioPrincipalId}/{usuarioAmigoId}")
@@ -398,20 +399,19 @@ public class UsuarioController {
                 })
                                 .onErrorResume(RuntimeException.class, e -> {
                                         if (e instanceof ResponseStatusException) {
-                                                return Mono.error(e);
+                                                return Mono.error(e); 
                                         }
                                         if (e.getMessage() != null
-                                                        && e.getMessage().contains("El nick ya está en uso")) {
-                                                return Mono.error(new ResponseStatusException(
-                                                                HttpStatus.CONFLICT, e.getMessage(), e));
+                                                && e.getMessage().contains("El nick ya está en uso")) {
+                                                return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).<Void>build());
                                         }
                                         if (e.getMessage() != null
-                                                        && e.getMessage().contains("Usuario no encontrado")) {
+                                                && e.getMessage().contains("Usuario no encontrado")) {
                                                 return Mono.just(ResponseEntity.notFound().build());
                                         }
                                         return Mono.error(new ResponseStatusException(
-                                                        HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
-                                });
+                                                HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
+                                        });
         }
 
         /**

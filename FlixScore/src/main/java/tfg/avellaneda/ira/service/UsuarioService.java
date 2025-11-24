@@ -148,27 +148,21 @@ public class UsuarioService {
      * @throws RuntimeException si la operación falla.
      */
     public ModeloUsuario addUsuario(ModeloUsuario entity) {
+        List<ModeloUsuario> usuariosMismoNick = getUsuarioByNick(entity.getNick());
+        if (!usuariosMismoNick.isEmpty()) {
+            logger.warn("Intento de añadir usuario con nick duplicado: {}", entity.getNick());
+            // Se lanza la excepción que el Controller mapea al 409 Conflict
+            throw new RuntimeException("Conflicto: El nick '" + entity.getNick() + "' ya está en uso.");
+        }
         String documentId = entity.getDocumentID();
-
         try {
             if (documentId != null && !documentId.trim().isEmpty()) {
-                // Se ha proporcionado un documentId
-                // Usamos un método set con el ID específico
                 repo.setUsuario(documentId, entity).get();
-
-                // El usuario ya tiene el documentID, no necesitamos leerlo de nuevo
                 logger.info("Usuario añadido correctamente con ID proporcionado: {}", documentId);
                 return entity;
-
             } else {
-                // No se ha proporcionado un documentId
-                // Usamos un método de add para que Firestore lo genere
                 var docRef = repo.addUsuario(entity).get();
-
-                // Lee el documento de vuelta para obtener el objeto completo, incluyendo el ID
-                // generado
                 var document = docRef.get().get();
-
                 if (document.exists()) {
                     ModeloUsuario creado = document.toObject(ModeloUsuario.class);
                     creado.setDocumentID(document.getId());
