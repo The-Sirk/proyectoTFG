@@ -1,4 +1,3 @@
-
 import 'package:flixscore/controllers/criticas_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -53,6 +52,8 @@ class UltimasLayout extends StatelessWidget {
         bool esMovil = constraints.maxWidth < 600;
         if (esMovil) {
           return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             itemCount: peliculas.length,
             itemBuilder: (context, index) {
@@ -74,10 +75,7 @@ class UltimasLayout extends StatelessWidget {
               spacing: 20,
               runSpacing: 20,
               children: peliculas.map((pelicula) {
-                return SizedBox(
-                  width: anchoCard,
-                  child: pelicula,
-                );
+                return SizedBox(width: anchoCard, child: pelicula);
               }).toList(),
             ),
           );

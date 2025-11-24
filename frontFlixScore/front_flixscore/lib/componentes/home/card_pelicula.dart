@@ -31,33 +31,36 @@ class PeliculaCard extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: SingleChildScrollView(
-                  child: TarjetaPeliculaConCriticas(
-                    pelicula: pelicula,
-                    criticasAmigos: todasCriticas,
+        return IntrinsicHeight(
+          child: InkWell(
+            key: Key('card_pelicula'),
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SingleChildScrollView(
+                    child: TarjetaPeliculaConCriticas(
+                      pelicula: pelicula,
+                      criticasAmigos: todasCriticas, // pasa la lista combinada
+                    ),
                   ),
                 ),
+              );
+            },
+            child: Card(
+              color: const Color(0xFF1F2937),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            );
-          },
-          child: Card(
-            color: const Color(0xFF1F2937),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: _tarjetaLayout(todasCriticas),
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: _tarjetaLayout(todasCriticas),
+              ),
             ),
           ),
         );

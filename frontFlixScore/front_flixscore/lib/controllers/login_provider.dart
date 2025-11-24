@@ -10,8 +10,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 enum AuthStatus { noAutenticado, autenticado, autenticando }
 
 class LoginProvider extends ChangeNotifier {
-
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -24,14 +22,13 @@ class LoginProvider extends ChangeNotifier {
   ApiService apiService = ApiService();
 
   String? _errorMessage;
-  
+
   List<ModeloUsuario> _amigosObj = [];
   List<ModeloUsuario> get amigosObj => _amigosObj;
   String? get errorMessage => _errorMessage;
 
   bool get isAuthenticated =>
       _status == AuthStatus.autenticado && _usuarioLogueado != null;
-
 
   // Constructor que esta pendiente de cambios en el estado de autenticación
   LoginProvider() {
@@ -46,7 +43,7 @@ class LoginProvider extends ChangeNotifier {
     });
   }
 
-  // Recargamos datos del usuario 
+  // Recargamos datos del usuario
   Future<void> _cargarDatosUsuario(String uid) async {
     try {
       _status = AuthStatus.autenticando;
@@ -56,8 +53,10 @@ class LoginProvider extends ChangeNotifier {
       final fechaRegistro = user?.metadata.creationTime;
       final puntuaciones = await _obtenerPuntuacionesDesdeCriticas(uid);
 
-      final DocumentSnapshot userDoc =
-          await _firestore.collection("usuarios").doc(uid).get();
+      final DocumentSnapshot userDoc = await _firestore
+          .collection("usuarios")
+          .doc(uid)
+          .get();
 
       if (userDoc.exists) {
         _usuarioLogueado = ModeloUsuario(
@@ -66,9 +65,15 @@ class LoginProvider extends ChangeNotifier {
           imagenPerfil: userDoc.get("imagen_perfil") ?? "",
           nick: userDoc.get("nick"),
           amigosId: List<String>.from(userDoc.get("amigos_id") ?? []),
-          peliculasCriticadas: List<int>.from(userDoc.get("peliculas_criticadas") ?? []),
-          peliculasFavoritas: List<int>.from(userDoc.get("peliculas_favoritas") ?? []),
-          peliculasVistas: List<int>.from(userDoc.get("peliculas_vistas") ?? []),
+          peliculasCriticadas: List<int>.from(
+            userDoc.get("peliculas_criticadas") ?? [],
+          ),
+          peliculasFavoritas: List<int>.from(
+            userDoc.get("peliculas_favoritas") ?? [],
+          ),
+          peliculasVistas: List<int>.from(
+            userDoc.get("peliculas_vistas") ?? [],
+          ),
           fechaRegistro: fechaRegistro,
           puntuaciones: puntuaciones,
         );
@@ -86,14 +91,13 @@ class LoginProvider extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-
     try {
       _status = AuthStatus.autenticando;
       _errorMessage = null;
       notifyListeners();
 
-      final UserCredential userCredential =
-          await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final UserCredential userCredential = await _auth
+          .signInWithEmailAndPassword(email: email, password: password);
 
       if (userCredential.user == null) {
         throw Exception('Error al autenticar usuario');
@@ -103,8 +107,10 @@ class LoginProvider extends ChangeNotifier {
       final fechaRegistro = user.metadata.creationTime;
       final puntuaciones = await _obtenerPuntuacionesDesdeCriticas(user.uid);
 
-      final DocumentSnapshot userDoc =
-          await _firestore.collection("usuarios").doc(user.uid).get();
+      final DocumentSnapshot userDoc = await _firestore
+          .collection("usuarios")
+          .doc(user.uid)
+          .get();
 
       if (!userDoc.exists) {
         throw Exception('Usuario no encontrado en la base de datos');
@@ -116,8 +122,12 @@ class LoginProvider extends ChangeNotifier {
         imagenPerfil: userDoc.get("imagen_perfil") ?? "",
         nick: userDoc.get("nick"),
         amigosId: List<String>.from(userDoc.get("amigos_id") ?? []),
-        peliculasCriticadas: List<int>.from(userDoc.get("peliculas_criticadas") ?? []),
-        peliculasFavoritas: List<int>.from(userDoc.get("peliculas_favoritas") ?? []),
+        peliculasCriticadas: List<int>.from(
+          userDoc.get("peliculas_criticadas") ?? [],
+        ),
+        peliculasFavoritas: List<int>.from(
+          userDoc.get("peliculas_favoritas") ?? [],
+        ),
         peliculasVistas: List<int>.from(userDoc.get("peliculas_vistas") ?? []),
         fechaRegistro: fechaRegistro,
         puntuaciones: puntuaciones,
@@ -171,8 +181,10 @@ class LoginProvider extends ChangeNotifier {
       final fechaRegistro = user.metadata.creationTime;
       final puntuaciones = await _obtenerPuntuacionesDesdeCriticas(user.uid);
 
-      final DocumentSnapshot userDoc =
-          await _firestore.collection("usuarios").doc(user.uid).get();
+      final DocumentSnapshot userDoc = await _firestore
+          .collection("usuarios")
+          .doc(user.uid)
+          .get();
 
       if (userDoc.exists) {
         _usuarioLogueado = ModeloUsuario(
@@ -181,16 +193,21 @@ class LoginProvider extends ChangeNotifier {
           imagenPerfil: userDoc.get("imagen_perfil") ?? "",
           nick: userDoc.get("nick"),
           amigosId: List<String>.from(userDoc.get("amigos_id") ?? []),
-          peliculasCriticadas: List<int>.from(userDoc.get("peliculas_criticadas") ?? []),
-          peliculasFavoritas: List<int>.from(userDoc.get("peliculas_favoritas") ?? []),
-          peliculasVistas: List<int>.from(userDoc.get("peliculas_vistas") ?? []),
+          peliculasCriticadas: List<int>.from(
+            userDoc.get("peliculas_criticadas") ?? [],
+          ),
+          peliculasFavoritas: List<int>.from(
+            userDoc.get("peliculas_favoritas") ?? [],
+          ),
+          peliculasVistas: List<int>.from(
+            userDoc.get("peliculas_vistas") ?? [],
+          ),
           fechaRegistro: fechaRegistro,
           puntuaciones: puntuaciones,
         );
         notifyListeners();
       }
     } catch (e) {
-
       // TODO: Manejar error adecuadamente
       print('Error al actualizar usuario: $e');
     }
@@ -205,8 +222,10 @@ class LoginProvider extends ChangeNotifier {
 
       try {
         final puntuaciones = await _obtenerPuntuacionesDesdeCriticas(user.uid);
-        final DocumentSnapshot userDoc =
-            await _firestore.collection("usuarios").doc(user.uid).get();
+        final DocumentSnapshot userDoc = await _firestore
+            .collection("usuarios")
+            .doc(user.uid)
+            .get();
 
         if (userDoc.exists) {
           _usuarioLogueado = ModeloUsuario(
@@ -215,9 +234,15 @@ class LoginProvider extends ChangeNotifier {
             imagenPerfil: userDoc.get("imagen_perfil") ?? "",
             nick: userDoc.get("nick"),
             amigosId: List<String>.from(userDoc.get("amigos_id") ?? []),
-            peliculasCriticadas: List<int>.from(userDoc.get("peliculas_criticadas") ?? []),
-            peliculasFavoritas: List<int>.from(userDoc.get("peliculas_favoritas") ?? []),
-            peliculasVistas: List<int>.from(userDoc.get("peliculas_vistas") ?? []),
+            peliculasCriticadas: List<int>.from(
+              userDoc.get("peliculas_criticadas") ?? [],
+            ),
+            peliculasFavoritas: List<int>.from(
+              userDoc.get("peliculas_favoritas") ?? [],
+            ),
+            peliculasVistas: List<int>.from(
+              userDoc.get("peliculas_vistas") ?? [],
+            ),
             fechaRegistro: user.metadata.creationTime,
             puntuaciones: puntuaciones,
           );
@@ -308,23 +333,41 @@ class LoginProvider extends ChangeNotifier {
   }
 
   Future<void> loginGoogle() async {
-
     try {
       _status = AuthStatus.autenticando;
       _errorMessage = null;
       notifyListeners();
       final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-      await googleSignIn.initialize(clientId: "1:152779337859:android:a3b871c45dba44ff886bb6");
+      await googleSignIn.initialize();
 
-      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      // Intentar autenticación lightweight primero (silenciosa)
+      GoogleSignInAccount? googleUser = await googleSignIn
+          .attemptLightweightAuthentication();
 
-      final credenciales = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
+      // Si el lightweight no funciona, usar authenticate (muestra diálogo)
+      googleUser ??= await googleSignIn.authenticate();
 
-      UserCredential userCredential = await _auth.signInWithCredential(credenciales);
-        
-      // ESTE CODIGO SE REPITE EN TODOS LOS LOGGINS
-      // TENDRIA QUE REFACTORIZAR
+      // Aqui da error de deadCode, pero googleUser puede ser nulo perfectamente.
+      if (googleUser == null) {
+        _status = AuthStatus.noAutenticado;
+        _usuarioLogueado = null;
+        _errorMessage =
+            'Error de autenticación con Google: No se pudo obtener la cuenta de Google.';
+        notifyListeners();
+        throw Exception('Error al autenticar usuario con Google');
+      }
+
+      // Obtener credenciales de autenticación
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credenciales = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential = await _auth.signInWithCredential(
+        credenciales,
+      );
 
       if (userCredential.user == null) {
         _status = AuthStatus.noAutenticado;
@@ -467,14 +510,14 @@ class LoginProvider extends ChangeNotifier {
             print('Error al cargar amigo con ID $id: $e');
           }
           // Devolver null si el usuario no pudo ser cargado (ej. fue borrado)
-          return null; 
+          return null;
         }
       }),
     );
 
     // Filtrar los resultados para mantener solo los usuarios válidos (que no son null)
     _amigosObj = resultados.whereType<ModeloUsuario>().toList();
-    
+
     // Si la lista de IDs estaba vacía, el código anterior ya lo manejó,
     // pero si falla la API de forma silenciosa, también actualizamos la UI.
     if (notificar) notifyListeners();
@@ -486,7 +529,7 @@ class LoginProvider extends ChangeNotifier {
     _usuarioLogueado = _usuarioLogueado!.copyWith(
       amigosId: nuevaLista,
       puntuaciones: _usuarioLogueado!.puntuaciones,
-      fechaRegistro: _usuarioLogueado!.fechaRegistro, 
+      fechaRegistro: _usuarioLogueado!.fechaRegistro,
     );
     notifyListeners();
   }
@@ -497,7 +540,10 @@ class LoginProvider extends ChangeNotifier {
 
     // No se debería poder llegar a este punto, pero por si acaso...
     if (currentUserId == null) {
-      mostrarSnackBarError(context, "Error: El usuario actual no está logueado.");
+      mostrarSnackBarError(
+        context,
+        "Error: El usuario actual no está logueado.",
+      );
       return false;
     }
 
@@ -506,38 +552,68 @@ class LoginProvider extends ChangeNotifier {
       final usuariosEncontrados = await api.getByNick(nick);
 
       if (usuariosEncontrados.isEmpty) {
-        mostrarSnackBarError(context, "No se encontró ningún usuario con el nick ''$nick''.");
+        mostrarSnackBarError(
+          context,
+          "No se encontró ningún usuario con el nick ''$nick''.",
+        );
         return false;
       }
 
       final usuarioEncontrado = usuariosEncontrados.first;
-      
+
       if (usuarioEncontrado.documentID == null) {
-          mostrarSnackBarError(context, "El usuario encontrado no tiene ID válido.");
-          return false;
+        mostrarSnackBarError(
+          context,
+          "El usuario encontrado no tiene ID válido.",
+        );
+        return false;
       }
 
       if (usuarioEncontrado.documentID! == currentUserId) {
-        mostrarSnackBarError(context, "En FlixScore valoramos fuertemente tu amor propio, pero no puedes agregarte como amigo.");
+        mostrarSnackBarError(
+          context,
+          "En FlixScore valoramos fuertemente tu amor propio, pero no puedes agregarte como amigo.",
+        );
         return false;
       }
 
       // Verificar si ya es amigo usando el estado actual del provider
       if (_usuarioLogueado!.amigosId.contains(usuarioEncontrado.documentID!)) {
-        mostrarSnackBarError(context, "${usuarioEncontrado.nick} ya es tu amigo");
+        mostrarSnackBarError(
+          context,
+          "${usuarioEncontrado.nick} ya es tu amigo",
+        );
         return false;
       }
-      
+
       // Mostrar diálogo de confirmación
       final confirmar = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: const Color(0xFF1A1C25),
-          title: const Text('¿Agregar amigo?', style: TextStyle(color: Colors.white)),
-          content: Text('¿Deseas agregar a ${usuarioEncontrado.nick} como amigo?', style: const TextStyle(color: Color(0xFFAAAAAA))),
+          title: const Text(
+            '¿Agregar amigo?',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Text(
+            '¿Deseas agregar a ${usuarioEncontrado.nick} como amigo?',
+            style: const TextStyle(color: Color(0xFFAAAAAA)),
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar', style: TextStyle(color: Color(0xFFAAAAAA)))),
-            TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Agregar', style: TextStyle(color: Colors.cyanAccent))),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Color(0xFFAAAAAA)),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Agregar',
+                style: TextStyle(color: Colors.cyanAccent),
+              ),
+            ),
           ],
         ),
       );
@@ -548,14 +624,20 @@ class LoginProvider extends ChangeNotifier {
       await api.agregarAmigo(currentUserId, usuarioEncontrado.documentID!);
 
       // Actualizar la lista de IDs de amigos en el provider
-      List<String> nuevaListaIds = List.from(_usuarioLogueado!.amigosId)..add(usuarioEncontrado.documentID!);
+      List<String> nuevaListaIds = List.from(_usuarioLogueado!.amigosId)
+        ..add(usuarioEncontrado.documentID!);
       actualizarAmigosId(nuevaListaIds);
-      
-      mostrarSnackBarExito(context, "${usuarioEncontrado.nick} agregado a tu lista de amigos");
-      return true;
 
+      mostrarSnackBarExito(
+        context,
+        "${usuarioEncontrado.nick} agregado a tu lista de amigos",
+      );
+      return true;
     } catch (e) {
-      mostrarSnackBarError(context, "Error al agregar amigo: ${e.toString().split(':').last.trim()}");
+      mostrarSnackBarError(
+        context,
+        "Error al agregar amigo: ${e.toString().split(':').last.trim()}",
+      );
       return false;
     }
   }
@@ -574,18 +656,31 @@ class LoginProvider extends ChangeNotifier {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1C25),
-        title: const Text('CONFIRMAR ELIMINACIÓN', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'CONFIRMAR ELIMINACIÓN',
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: const Text(
-            'Esta acción es irreversible. ¿Estás absolutamente seguro de que deseas eliminar tu cuenta y todos tus datos?',
-            style: TextStyle(color: Color(0xFFAAAAAA))),
+          'Esta acción es irreversible. ¿Estás absolutamente seguro de que deseas eliminar tu cuenta y todos tus datos?',
+          style: TextStyle(color: Color(0xFFAAAAAA)),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar', style: TextStyle(color: Color(0xFFAAAAAA))),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Color(0xFFAAAAAA)),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('SÍ, ELIMINAR', style: TextStyle(color: Colors.redAccent)),
+            child: const Text(
+              'SÍ, ELIMINAR',
+              style: TextStyle(color: Colors.redAccent),
+            ),
           ),
         ],
       ),
@@ -596,20 +691,26 @@ class LoginProvider extends ChangeNotifier {
     try {
       final api = ApiService();
       final user = _auth.currentUser;
-      
+
       // Eliminar documento del usuario en la base de datos (Firebase)
-      await api.deleteUsuario(currentUserId); 
-      
+      await api.deleteUsuario(currentUserId);
+
       // Borra la cuenta de Firebase Authentication
       if (user != null) {
-          await user.delete(); 
+        await user.delete();
       }
 
-      mostrarSnackBarExito(context, "Tu cuenta ha sido eliminada exitosamente.");
-      
-      return true; 
+      mostrarSnackBarExito(
+        context,
+        "Tu cuenta ha sido eliminada exitosamente.",
+      );
+
+      return true;
     } catch (e) {
-      mostrarSnackBarError(context, "Error al eliminar la cuenta: ${e.toString().split(':').last.trim()}");
+      mostrarSnackBarError(
+        context,
+        "Error al eliminar la cuenta: ${e.toString().split(':').last.trim()}",
+      );
       return false;
     }
   }
@@ -617,7 +718,9 @@ class LoginProvider extends ChangeNotifier {
   // Recarga las puntuaciones medias del usuario
   Future<void> recargarPuntuaciones() async {
     if (_usuarioLogueado == null) return;
-    final nuevas = await _obtenerPuntuacionesDesdeCriticas(_usuarioLogueado!.documentID!);
+    final nuevas = await _obtenerPuntuacionesDesdeCriticas(
+      _usuarioLogueado!.documentID!,
+    );
     _usuarioLogueado = _usuarioLogueado!.copyWith(puntuaciones: nuevas);
     notifyListeners();
   }
