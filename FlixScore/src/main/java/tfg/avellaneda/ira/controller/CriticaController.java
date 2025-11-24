@@ -223,13 +223,13 @@ public class CriticaController {
          * @param comentario Nuevo texto del comentario (opcional).
          * @param puntuacion Nueva puntuación (1-10) (opcional).
          * @return Mono<ResponseEntity<Void>>
-         *         204 si se actualizó.
+         *         204 si se actualizó o no necesitó hacer ningún cambio.
          *         404 si la crítica no existe.
          *         400 si los datos son inválidos.
          *         500 si hay un error interno.
          */
         @Operation(summary = "Editar comentario y/o puntuación de una crítica", description = "Actualiza solo los campos proporcionados (comentario y/o puntuación) de una crítica identificada por su documentId.", responses = {
-                        @ApiResponse(responseCode = "204", description = "Crítica actualizada exitosamente."),
+                        @ApiResponse(responseCode = "204", description = "Crítica actualizada exitosamente o sin cambios."),
                         @ApiResponse(responseCode = "404", description = "Crítica no encontrada."),
                         @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos."),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
