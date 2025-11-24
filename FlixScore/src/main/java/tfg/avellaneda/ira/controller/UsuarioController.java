@@ -1,5 +1,7 @@
 package tfg.avellaneda.ira.controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -128,21 +130,27 @@ public class UsuarioController {
          */
         @Operation(summary = "Registra un nuevo usuario", description = "Crea un nuevo usuario y comprueba que no exista su nick y el formato del correo.", responses = {
                         @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente.", content = @Content(schema = @Schema(implementation = ModeloUsuario.class))),
-                        @ApiResponse(responseCode = "400", description = "Correo electrónico no válido."),
+                        @ApiResponse(responseCode = "400", description = "Error de validación: Correo electrónico no válido o campos faltantes."),
                         @ApiResponse(responseCode = "409", description = "Conflicto: El nick ya está en uso."),
-                        @ApiResponse(responseCode = "500", description = "Error al guardar en la base de datos.")
+                        @ApiResponse(responseCode = "500", description = "Error en el servidor.")
         })
         @PostMapping("/crearUsuario")
-        @ResponseStatus(HttpStatus.CREATED)
-        public Mono<ModeloUsuario> addUsuario(@Valid @RequestBody ModeloUsuario usuario) {
+        public Mono<ResponseEntity<Object>> addUsuario(@Valid @RequestBody ModeloUsuario usuario) {
+
                 return Mono.fromCallable(() -> usuarioService.addUsuario(usuario))
+                                .map(u -> ResponseEntity.status(HttpStatus.CREATED).body((Object) u))
                                 .onErrorResume(RuntimeException.class, e -> {
-                                        if (e.getMessage() != null && e.getMessage().startsWith("Conflicto: El nick")) {
-                                                return Mono.error(new ResponseStatusException(
-                                                                HttpStatus.CONFLICT, e.getMessage(), e));
+                                        String errorMessage = e.getMessage() != null ? e.getMessage()
+                                                        : "Error desconocido al crear usuario.";
+                                        Map<String, String> errorBody = Map.of("status", "error", "message",
+                                                        errorMessage);
+
+                                        if (errorMessage.startsWith("Conflicto: El nick")) {
+                                                return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
+                                                                .body(errorBody));
                                         }
-                                        return Mono.error(new ResponseStatusException(
-                                                        HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
+                                        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                                        .body(errorBody));
                                 });
         }
 
@@ -170,20 +178,29 @@ public class UsuarioController {
                         @ApiResponse(responseCode = "500", description = "Error al actualizar en la base de datos.")
         })
         @PutMapping("/editarUsuario/{documentId}")
-        public Mono<ResponseEntity<Void>> updateUsuario(
+        public Mono<ResponseEntity<Object>> updateUsuario(
                         @Parameter(description = "documentId del usuario a actualizar.") @PathVariable String documentId,
                         @Valid @RequestBody ModeloUsuario usuario) {
                 return Mono.fromCallable(() -> {
                         usuarioService.updateUsuario(documentId, usuario);
-                        return ResponseEntity.noContent().<Void>build();
+                        return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); // 204 No Content
                 })
                                 .onErrorResume(RuntimeException.class, e -> {
-                                        if (e.getMessage() != null && e.getMessage()
-                                                        .contains("Actualización fallida: No se encontró")) {
-                                                return Mono.just(ResponseEntity.notFound().build());
+                                        String errorMessage = e.getMessage() != null ? e.getMessage()
+                                                        : "Error desconocido al actualizar usuario.";
+                                        Map<String, String> errorBody = Map.of("status", "error", "message",
+                                                        errorMessage);
+                                        if (errorMessage.contains("Actualización fallida: No se encontró")) {
+                                                return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                                                .body(errorBody)); // 404 Not Found
                                         }
-                                        return Mono.error(new ResponseStatusException(
-                                                        HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
+                                        if (errorMessage.startsWith("Conflicto: El nick")) {
+                                                return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
+                                                                .body(errorBody)); // 409 Conflict
+                                        }
+                                        // Default 500: Internal Server Error
+                                        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                                        .body(errorBody));
                                 });
         }
 
@@ -352,12 +369,14 @@ public class UsuarioController {
          * @param nuevoNick  Nuevo nick que se desea asignar.
          * @return Mono<ResponseEntity<Void>>
          *         Devuelve HTTP 204 si se actualizó.
+         *         Devuelve HTTP 400 Si el nick se da vacío o nulo.
          *         Devuelve HTTP 409 si el nick ya está en uso.
          *         Devuelve HTTP 404 si el usuario no existe.
          *         Devuelve HTTP 500 si hay un error interno.
          */
         @Operation(summary = "Cambiar el nick de un usuario", description = "Actualiza el nick de un usuario validando que no esté duplicado.", responses = {
                         @ApiResponse(responseCode = "204", description = "Nick actualizado exitosamente."),
+                        @ApiResponse(responseCode = "400", description = "Error de validación: El nick no puede estar vacío o en blanco."),
                         @ApiResponse(responseCode = "404", description = "Usuario no encontrado."),
                         @ApiResponse(responseCode = "409", description = "El nuevo nick ya está en uso."),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
@@ -367,14 +386,24 @@ public class UsuarioController {
                         @Parameter(description = "ID del usuario") @PathVariable String documentId,
                         @RequestParam("Nick") String nuevoNick) {
 
+                if (nuevoNick == null || nuevoNick.isBlank()) {
+                        return Mono.error(new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "El nick no puede ser nulo, vacío o contener solo espacios en blanco."));
+                }
+
                 return Mono.fromCallable(() -> {
                         usuarioService.cambiarNick(documentId, nuevoNick);
                         return ResponseEntity.noContent().<Void>build();
                 })
                                 .onErrorResume(RuntimeException.class, e -> {
+                                        if (e instanceof ResponseStatusException) {
+                                                return Mono.error(e);
+                                        }
                                         if (e.getMessage() != null
                                                         && e.getMessage().contains("El nick ya está en uso")) {
-                                                return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).build());
+                                                return Mono.error(new ResponseStatusException(
+                                                                HttpStatus.CONFLICT, e.getMessage(), e));
                                         }
                                         if (e.getMessage() != null
                                                         && e.getMessage().contains("Usuario no encontrado")) {
@@ -387,24 +416,31 @@ public class UsuarioController {
 
         /**
          * Permite actualizar únicamente la URL de la imagen de perfil de un usuario.
+         * La URL *no puede* ser nula ni vacía.
          *
          * @param documentId ID del usuario a actualizar
-         * @param urlImagen  nueva URL de imagen (puede ser null o vacía para borrarla)
+         * @param urlImagen  nueva URL de imagen (requerida y no puede ser vacía)
          * @return Mono<ResponseEntity<Void>>
          *         Devuelve HTTP 204 si se actualizó.
+         *         Devuelve HTTP 400 si la URL es nula o vacía.
          *         Devuelve HTTP 404 si el usuario no existe.
          *         Devuelve HTTP 500 si hay error interno.
          */
-        @Operation(summary = "Cambiar imagen de perfil", description = "Actualiza solo el campo imagen_perfil de un usuario.", responses = {
+        @Operation(summary = "Cambiar imagen de perfil", description = "Actualiza solo el campo imagen_perfil de un usuario, la URL no puede ser nula ni vacía.", responses = {
                         @ApiResponse(responseCode = "204", description = "Imagen actualizada exitosamente."),
+                        @ApiResponse(responseCode = "400", description = "Error de validación: La URL de la imagen no puede estar vacía."),
                         @ApiResponse(responseCode = "404", description = "Usuario no encontrado."),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
         })
         @PatchMapping("/{documentId}/urlImagen")
         public Mono<ResponseEntity<Void>> cambiarImagenPerfil(
                         @Parameter(description = "ID del usuario") @PathVariable String documentId,
-                        @RequestParam(value = "urlImagen", required = false) String urlImagen) {
-
+                        @RequestParam("urlImagen") String urlImagen) {
+                if (urlImagen.isBlank()) {
+                        return Mono.error(new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "La URL de la imagen no puede estar vacía o en blanco."));
+                }
                 return Mono.fromCallable(() -> {
                         usuarioService.cambiarImagenPerfil(documentId, urlImagen);
                         return ResponseEntity.noContent().<Void>build();
@@ -414,9 +450,11 @@ public class UsuarioController {
                                                         && e.getMessage().contains("Usuario no encontrado")) {
                                                 return Mono.just(ResponseEntity.notFound().build());
                                         }
+                                        if (e instanceof ResponseStatusException) {
+                                                return Mono.error(e);
+                                        }
                                         return Mono.error(new ResponseStatusException(
                                                         HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
                                 });
         }
-
 }
