@@ -103,13 +103,16 @@ public class FirebaseAdminService {
         List<Map<String, Object>> usuariosMapeados = new ArrayList<>();
 
         try {
-            ListUsersPage page = FirebaseAuth.getInstance().listUsers(
-                    siguienteTokenPagina,
-                    maxResultados);
+            ListUsersPage page = FirebaseAuth.getInstance()
+                    .listUsers(siguienteTokenPagina, maxResultados);
 
             for (UserRecord user : page.getValues()) {
                 usuariosMapeados.add(mapUsuarioParaRespuesta(user));
             }
+
+            usuariosMapeados.sort(Comparator.comparing(
+                    m -> (String) m.get("email"),
+                    String.CASE_INSENSITIVE_ORDER));
 
             return Map.of(
                     "status", "success",
