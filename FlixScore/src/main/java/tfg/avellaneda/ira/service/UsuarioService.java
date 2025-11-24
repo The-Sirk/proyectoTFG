@@ -194,34 +194,22 @@ public class UsuarioService {
      */
     public void updateUsuario(String usuarioId, ModeloUsuario usuario) {
         try {
-            // Comprobamos su existencia
             DocumentSnapshot document = repo.getUsuarioById(usuarioId).get();
             if (!document.exists()) {
                 logger.warn("Intento de actualizar usuario no existente: {}", usuarioId);
                 throw new RuntimeException("Actualización fallida: No se encontró el usuario con ID " + usuarioId);
             }
-
-            // Comprobamos que el nick no esté duplicado
             List<ModeloUsuario> usuariosExistentesConMismoNick = getUsuarioByNick(usuario.getNick());
-
-            // Si encontramos algún usuario con el mismo nick verificamos que el usuario
-            // encontrado no sea el mismo que estamos actualizando
-            if (!usuariosExistentesConMismoNick.isEmpty()) {
-                boolean esMismoUsuario = usuariosExistentesConMismoNick.stream()
-                        .anyMatch(u -> usuarioId.equals(u.getDocumentID()));
-
-                // Si encontramos que hay un usuario con el mismo nick y es otro usuario
-                if (!esMismoUsuario) {
-                    logger.warn("Intento de actualizar usuario {} con nick duplicado: {}", usuarioId,
-                            usuario.getNick());
-                    throw new RuntimeException("Conflicto: El nick '" + usuario.getNick()
-                            + "' ya está siendo utilizado por otro usuario.");
-                }
+            boolean ocupadoPorOtro = usuariosExistentesConMismoNick.stream()
+                    .anyMatch(u -> !usuarioId.equals(u.getDocumentID()));
+            if (ocupadoPorOtro) {
+                logger.warn("Intento de actualizar usuario {} con nick duplicado: {}", usuarioId,
+                        usuario.getNick());
+                throw new RuntimeException("Conflicto: El nick '" + usuario.getNick()
+                        + "' ya está siendo utilizado por otro usuario.");
             }
-
             repo.updateUsuario(usuarioId, usuario).get();
             logger.info("Usuario actualizado correctamente: {}", usuarioId);
-
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("Error (Interrupción) al actualizar el usuario {}: {}", usuarioId, e.getMessage());

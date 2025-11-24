@@ -401,8 +401,7 @@ public class UsuarioController {
                                         if (e instanceof ResponseStatusException) {
                                                 return Mono.error(e); 
                                         }
-                                        if (e.getMessage() != null
-                                                && e.getMessage().contains("El nick ya está en uso")) {
+                                        if (e.getMessage() != null && e.getMessage().contains("ya está en uso")) {
                                                 return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).<Void>build());
                                         }
                                         if (e.getMessage() != null
