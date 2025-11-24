@@ -19,7 +19,8 @@ class _LoginCardState extends State<LoginCard> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
-  final TextEditingController repeatPasswordController = TextEditingController();
+  final TextEditingController repeatPasswordController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -42,7 +43,10 @@ class _LoginCardState extends State<LoginCard> {
     final username = usernameController.text.trim();
     final repeatPassword = repeatPasswordController.text.trim();
 
-    final registerProvider = Provider.of<RegisterProvider>(context, listen: false);
+    final registerProvider = Provider.of<RegisterProvider>(
+      context,
+      listen: false,
+    );
 
     try {
       await registerProvider.registroUsuario(
@@ -53,7 +57,10 @@ class _LoginCardState extends State<LoginCard> {
       );
 
       if (registerProvider.isRegistered && mounted) {
-        mostrarSnackBarExito(context, "Usuario registrado correctamente, disfruta de las pelis!");
+        mostrarSnackBarExito(
+          context,
+          "Usuario registrado correctamente, disfruta de las pelis!",
+        );
       }
     } catch (e) {
       mostrarSnackBarError(context, "Error al registrarte: ${e.toString()}");
@@ -81,7 +88,10 @@ class _LoginCardState extends State<LoginCard> {
         mostrarSnackBarExito(context, "Inicio de sesion correcto!");
       }
     } catch (e) {
-      mostrarSnackBarError(context, "Error en el inicio de sesion: ${e.toString()}");
+      mostrarSnackBarError(
+        context,
+        "Error en el inicio de sesion: ${e.toString()}",
+      );
     }
   }
 
@@ -136,6 +146,7 @@ class _LoginCardState extends State<LoginCard> {
                   children: [
                     Expanded(
                       child: TabButton(
+                        key: const Key('tab_iniciarSesion'),
                         icono: Icons.abc,
                         etiqueta: "Iniciar Sesion",
                         seleccionado: selectedTab == 0,
@@ -144,6 +155,7 @@ class _LoginCardState extends State<LoginCard> {
                     ),
                     Expanded(
                       child: TabButton(
+                        key: const Key('tab_registrarse'),
                         icono: Icons.login,
                         etiqueta: "Registrarse",
                         seleccionado: selectedTab == 1,
@@ -158,6 +170,7 @@ class _LoginCardState extends State<LoginCard> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                key: const Key('boton_enviar'),
                 onPressed: () {
                   if (selectedTab == 0) {
                     _iniciarSesion();
@@ -182,9 +195,7 @@ class _LoginCardState extends State<LoginCard> {
                           color: Colors.white,
                         ),
                       )
-                    : Text(
-                        selectedTab == 0 ? "Iniciar Sesión" : "Registrarse",
-                      ),
+                    : Text(selectedTab == 0 ? "Iniciar Sesión" : "Registrarse"),
               ),
             ),
             const SizedBox(height: 16),
@@ -205,8 +216,9 @@ class _LoginCardState extends State<LoginCard> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
+                key: const Key('boton_loginGoogle'),
                 onPressed: () {
-                  if(kIsWeb){
+                  if (kIsWeb) {
                     _loginProvider.loginGoogleWeb();
                   } else {
                     _loginProvider.loginGoogle();
@@ -247,6 +259,7 @@ class _LoginCardState extends State<LoginCard> {
             Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
+              key: const Key('textfield_email_login'),
               controller: emailController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
@@ -257,6 +270,7 @@ class _LoginCardState extends State<LoginCard> {
             Text("Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
+              key: const Key('textfield_password_login'),
               controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
@@ -277,6 +291,7 @@ class _LoginCardState extends State<LoginCard> {
             ),
             const SizedBox(height: 8),
             TextField(
+              key: const Key('textfield_username_registro'),
               controller: usernameController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.person, color: Colors.white54),
@@ -287,6 +302,7 @@ class _LoginCardState extends State<LoginCard> {
             Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
+              key: const Key('textfield_email_registro'),
               controller: emailController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
@@ -297,6 +313,7 @@ class _LoginCardState extends State<LoginCard> {
             Text("Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
+              key: const Key('textfield_password_registro'),
               obscureText: true,
               controller: passwordController,
               decoration: InputDecoration(
@@ -311,6 +328,7 @@ class _LoginCardState extends State<LoginCard> {
             ),
             const SizedBox(height: 8),
             TextField(
+              key: const Key('textfield_repeatPassword_registro'),
               controller: repeatPasswordController,
               obscureText: true,
               decoration: InputDecoration(

@@ -33,6 +33,7 @@ class PeliculaCard extends StatelessWidget {
       builder: (context, constraints) {
         return IntrinsicHeight(
           child: InkWell(
+            key: Key('card_pelicula'),
             borderRadius: BorderRadius.circular(16),
             onTap: () {
               showDialog(

@@ -1,4 +1,3 @@
-
 import 'package:flixscore/componentes/home/card_pelicula.dart';
 import 'package:flixscore/controllers/criticas_provider.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +12,7 @@ class PopularLayout extends StatefulWidget {
 
 class _PopularLayoutState extends State<PopularLayout> {
   // Variables de uso local
-  
+
   bool _cargando = true;
   String? _error;
   List<PeliculaCard> _peliculas = [];
@@ -71,6 +70,7 @@ class _PopularLayoutState extends State<PopularLayout> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
+              key: const Key('boton_reintentar_popular'),
               onPressed: () {},
               child: const Text('Reintentar'),
             ),
@@ -103,6 +103,8 @@ class _PopularLayoutState extends State<PopularLayout> {
 
   Widget _mostrarListView() {
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       itemCount: _peliculas.length,
       itemBuilder: (context, index) {

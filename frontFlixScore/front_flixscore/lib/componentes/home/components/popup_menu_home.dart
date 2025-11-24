@@ -13,7 +13,8 @@ class AppBarPopupMenu extends StatelessWidget {
   void _onSelected(BuildContext context, AppBarMenuOption item) {
     switch (item) {
       case AppBarMenuOption.verPerfil:
-        Navigator.pushReplacement(context,
+        Navigator.pushReplacement(
+          context,
           MaterialPageRoute(builder: (_) => const PerfilUsuario()),
         );
         break;
@@ -36,6 +37,7 @@ class AppBarPopupMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<AppBarMenuOption>(
+      key: const Key('menu_perfil'),
       tooltip: 'Navegación',
       onSelected: (item) => _onSelected(context, item),
       icon: CircleAvatar(
@@ -43,14 +45,17 @@ class AppBarPopupMenu extends StatelessWidget {
         backgroundColor: const Color(0xFF0A0E1A),
         child: ClipOval(
           child: Image.network(
-            Provider.of<LoginProvider>(context).usuarioLogueado?.imagenPerfil ?? '',
+            Provider.of<LoginProvider>(context).usuarioLogueado?.imagenPerfil ??
+                '',
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white),
+            errorBuilder: (_, __, ___) =>
+                const Icon(Icons.person, color: Colors.white),
           ),
         ),
       ),
       itemBuilder: (_) => [
         const PopupMenuItem(
+          key: Key('menuitem_verPerfil'),
           value: AppBarMenuOption.verPerfil,
           child: Row(
             children: [
@@ -61,6 +66,7 @@ class AppBarPopupMenu extends StatelessWidget {
           ),
         ),
         const PopupMenuItem(
+          key: Key('menuitem_administracion'),
           value: AppBarMenuOption.administracion,
           child: Row(
             children: [
@@ -71,6 +77,7 @@ class AppBarPopupMenu extends StatelessWidget {
           ),
         ),
         const PopupMenuItem(
+          key: Key('menuitem_cerrarSesion'),
           value: AppBarMenuOption.cerrarSesion,
           child: Row(
             children: [
