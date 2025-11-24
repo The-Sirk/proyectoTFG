@@ -147,40 +147,38 @@ public class UsuarioService {
      * @return El ModeloUsuario creado (incluyendo el ID generado/proporcionado).
      * @throws RuntimeException si la operación falla.
      */
-    public ModeloUsuario addUsuario(ModeloUsuario entity) {
-        List<ModeloUsuario> usuariosMismoNick = getUsuarioByNick(entity.getNick());
+    public ModeloUsuario addUsuario(ModeloUsuario usuario) {
+        List<ModeloUsuario> usuariosMismoNick = getUsuarioByNick(usuario.getNick());
         if (!usuariosMismoNick.isEmpty()) {
-            logger.warn("Intento de añadir usuario con nick duplicado: {}", entity.getNick());
-            // Se lanza la excepción que el Controller mapea al 409 Conflict
-            throw new RuntimeException("Conflicto: El nick '" + entity.getNick() + "' ya está en uso.");
+            logger.warn("Intento de añadir usuario con nick duplicado: {}", usuario.getNick());
+            throw new RuntimeException("Conflicto: El nick '" + usuario.getNick() + "' ya está en uso.");
         }
-        String documentId = entity.getDocumentID();
+        String documentId = usuario.getDocumentID();
         try {
             if (documentId != null && !documentId.trim().isEmpty()) {
-                repo.setUsuario(documentId, entity).get();
+                repo.setUsuario(documentId, usuario).get();
                 logger.info("Usuario añadido correctamente con ID proporcionado: {}", documentId);
-                return entity;
+                return usuario;
             } else {
-                var docRef = repo.addUsuario(entity).get();
-                var document = docRef.get().get();
+                var docRef = repo.addUsuario(usuario).get();
+                var document = docRef.get().get(); 
                 if (document.exists()) {
                     ModeloUsuario creado = document.toObject(ModeloUsuario.class);
-                    creado.setDocumentID(document.getId());
-
+                    creado.setDocumentID(document.getId()); 
                     logger.info("Usuario añadido correctamente con ID generado: {}", creado.getDocumentID());
                     return creado;
                 } else {
-                    logger.error("Usuario añadido pero no se pudo recuperar el documento: {}", entity);
+                    logger.error("Usuario añadido pero no se pudo recuperar el documento: {}", usuario.getNick());
                     throw new RuntimeException("El usuario fue añadido, pero el documento no se pudo recuperar.");
                 }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("Error (Interrupción) al añadir el usuario: {}", e.getMessage());
-            throw new RuntimeException("Operación de base de datos interrumpida.", e);
+            throw new RuntimeException("Error en el servidor: Operación de base de datos interrumpida.", e);
         } catch (ExecutionException e) {
             logger.error("Error (Ejecución) al añadir el usuario: {}", e.getMessage());
-            throw new RuntimeException("Fallo al añadir el usuario.", e.getCause());
+            throw new RuntimeException("Error de base de datos: Fallo al añadir el usuario.", e.getCause());
         }
     }
 
