@@ -142,29 +142,43 @@ public class UsuarioService {
      * Añade un nuevo usuario, usando el documentID proporcionado si no es
      * null/vacío,
      * o dejando que Firestore lo genere automáticamente.
-     * * @param entity El ModeloUsuario a añadir.
+     * Si el nick introducido para dicho usuario ya existe, se lanza una excepción.
+     * 
+     * @param entity El ModeloUsuario a añadir.
      * 
      * @return El ModeloUsuario creado (incluyendo el ID generado/proporcionado).
      * @throws RuntimeException si la operación falla.
      */
     public ModeloUsuario addUsuario(ModeloUsuario usuario) {
+        // Comprueba si el nick ya existe
         List<ModeloUsuario> usuariosMismoNick = getUsuarioByNick(usuario.getNick());
         if (!usuariosMismoNick.isEmpty()) {
+            logger.info("Usuario solicita el nick: " + usuario.getNick() + " usuario buscado para coincidencias: "
+                    + usuariosMismoNick.toString());
             logger.warn("Intento de añadir usuario con nick duplicado: {}", usuario.getNick());
             throw new RuntimeException("Conflicto: El nick '" + usuario.getNick() + "' ya está en uso.");
         }
+
+        // Obtiene el documentID del usuario
         String documentId = usuario.getDocumentID();
         try {
             if (documentId != null && !documentId.trim().isEmpty()) {
+                // Verificar que el documentID no exista ya
+                DocumentSnapshot existingDoc = repo.getUsuarioById(documentId).get();
+                if (existingDoc.exists()) {
+                    logger.warn("Intento de añadir usuario con documentID ya existente: {}", documentId);
+                    throw new RuntimeException("Conflicto: El documentID '" + documentId + "' ya existe.");
+                }
+
                 repo.setUsuario(documentId, usuario).get();
                 logger.info("Usuario añadido correctamente con ID proporcionado: {}", documentId);
                 return usuario;
             } else {
                 var docRef = repo.addUsuario(usuario).get();
-                var document = docRef.get().get(); 
+                var document = docRef.get().get();
                 if (document.exists()) {
                     ModeloUsuario creado = document.toObject(ModeloUsuario.class);
-                    creado.setDocumentID(document.getId()); 
+                    creado.setDocumentID(document.getId());
                     logger.info("Usuario añadido correctamente con ID generado: {}", creado.getDocumentID());
                     return creado;
                 } else {
@@ -268,13 +282,13 @@ public class UsuarioService {
      */
     public void addAmigo(String usuarioPrincipalId, String usuarioAmigoId) {
         try {
-            
+
             // Obtener ambos usuarios. Lanza excepción si no se encuentran
             ModeloUsuario principal = getUsuarioById(usuarioPrincipalId)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioPrincipalId));
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioPrincipalId));
             ModeloUsuario amigo = getUsuarioById(usuarioAmigoId)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioAmigoId));
-            
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + usuarioAmigoId));
+
             if (usuarioPrincipalId.equals(usuarioAmigoId)) {
                 logger.warn("El usuario {} intentó añadirse a sí mismo como amigo.", usuarioPrincipalId);
                 throw new IllegalArgumentException("No puedes añadirte a ti mismo como amigo.");
