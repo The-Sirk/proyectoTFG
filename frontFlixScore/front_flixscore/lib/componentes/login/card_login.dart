@@ -86,6 +86,7 @@ class _LoginCardState extends State<LoginCard> {
       await loginProvider.loginUsuario(email: email, password: password);
       if (loginProvider.isAuthenticated && mounted) {
         mostrarSnackBarExito(context, "Inicio de sesion correcto!");
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       mostrarSnackBarError(
@@ -217,11 +218,23 @@ class _LoginCardState extends State<LoginCard> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 key: const Key('boton_loginGoogle'),
-                onPressed: () {
+                onPressed: () async {
+                  print('[DEBUG CardLogin] Google login button pressed');
                   if (kIsWeb) {
-                    _loginProvider.loginGoogleWeb();
+                    print('[DEBUG CardLogin] Calling loginGoogleWeb');
+                    await _loginProvider.loginGoogleWeb();
                   } else {
-                    _loginProvider.loginGoogle();
+                    print('[DEBUG CardLogin] Calling loginGoogle');
+                    await _loginProvider.loginGoogle();
+                  }
+                  print(
+                    '[DEBUG CardLogin] Login finished. isAuthenticated: ${_loginProvider.isAuthenticated}, mounted: ${context.mounted}',
+                  );
+                  if (_loginProvider.isAuthenticated && context.mounted) {
+                    print('[DEBUG CardLogin] Navigating to /home');
+                    Navigator.pushReplacementNamed(context, '/home');
+                  } else {
+                    print('[DEBUG CardLogin] Navigation skipped');
                   }
                 },
                 icon: SvgPicture.asset(

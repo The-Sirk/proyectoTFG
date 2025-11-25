@@ -34,10 +34,17 @@ class LoginProvider extends ChangeNotifier {
   LoginProvider() {
     _auth.authStateChanges().listen((User? user) async {
       if (user == null) {
+        print(
+          '[DEBUG LoginProvider] authStateChanges: user is null, setting noAutenticado',
+        );
         _status = AuthStatus.noAutenticado;
         _usuarioLogueado = null;
         notifyListeners();
-      } else if (_usuarioLogueado == null) {
+      } else {
+        print(
+          '[DEBUG LoginProvider] authStateChanges: user detected (${user.uid}), calling _cargarDatosUsuario',
+        );
+        // Siempre recargar datos cuando se detecta un usuario autenticado
         await _cargarDatosUsuario(user.uid);
       }
     });
@@ -46,6 +53,9 @@ class LoginProvider extends ChangeNotifier {
   // Recargamos datos del usuario
   Future<void> _cargarDatosUsuario(String uid) async {
     try {
+      print(
+        '[DEBUG LoginProvider] _cargarDatosUsuario: starting, setting autenticando',
+      );
       _status = AuthStatus.autenticando;
       notifyListeners();
 
@@ -77,12 +87,19 @@ class LoginProvider extends ChangeNotifier {
           fechaRegistro: fechaRegistro,
           puntuaciones: puntuaciones,
         );
+        print(
+          '[DEBUG LoginProvider] _cargarDatosUsuario: user data loaded, setting autenticado',
+        );
         _status = AuthStatus.autenticado;
       }
     } catch (e) {
+      print('[DEBUG LoginProvider] _cargarDatosUsuario: ERROR - $e');
       _status = AuthStatus.noAutenticado;
       _errorMessage = 'Error al cargar datos: $e';
     }
+    print(
+      '[DEBUG LoginProvider] _cargarDatosUsuario: calling notifyListeners, status = $_status',
+    );
     notifyListeners();
   }
 
@@ -165,7 +182,20 @@ class LoginProvider extends ChangeNotifier {
 
   // Cerrar sesión
   Future<void> logout() async {
+    // Cerrar sesión de Firebase Auth
     await _auth.signOut();
+
+    // Cerrar sesión de Google Sign In para evitar problemas al volver a iniciar sesión
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
+      await googleSignIn.signOut();
+    } catch (e) {
+      // Si falla el signOut de Google, lo registramos pero continuamos
+      if (kDebugMode) {
+        print('Error al cerrar sesión de Google: $e');
+      }
+    }
+
     _usuarioLogueado = null;
     _status = AuthStatus.noAutenticado;
     _errorMessage = null;
@@ -281,15 +311,14 @@ class LoginProvider extends ChangeNotifier {
         throw Exception('Error al autenticar usuario con Google');
       }
 
+      // Si el usuario no existe en la base de datos, lo creamos
       final DocumentSnapshot userDoc = await _firestore
           .collection("usuarios")
           .doc(userCredential.user!.uid)
           .get();
 
-      // Si el usuario no existe en la base de datos, lo creamos
-
       if (!userDoc.exists) {
-        apiService.addUsuario(
+        await apiService.addUsuario(
           ModeloUsuario(
             documentID: userCredential.user!.uid,
             correo: userCredential.user!.email ?? "",
@@ -301,28 +330,12 @@ class LoginProvider extends ChangeNotifier {
             peliculasVistas: [],
           ),
         );
-      } else {
-        _usuarioLogueado = ModeloUsuario(
-          documentID: userCredential.user!.uid,
-          correo: userDoc.get("correo"),
-          imagenPerfil: userDoc.get("imagen_perfil") ?? "",
-          nick: userDoc.get("nick"),
-          amigosId: List<String>.from(userDoc.get("amigos_id") ?? []),
-          peliculasCriticadas: List<int>.from(
-            userDoc.get("peliculas_criticadas") ?? [],
-          ),
-          peliculasFavoritas: List<int>.from(
-            userDoc.get("peliculas_favoritas") ?? [],
-          ),
-          peliculasVistas: List<int>.from(
-            userDoc.get("peliculas_vistas") ?? [],
-          ),
-        );
       }
 
-      _status = AuthStatus.autenticado;
-      _errorMessage = null;
-      notifyListeners();
+      // El authStateChanges listener se encargará de cargar los datos del usuario
+      // PERO para asegurar que no haya condiciones de carrera con usuarios nuevos,
+      // llamamos explícitamente a cargar datos aquí también.
+      await _cargarDatosUsuario(userCredential.user!.uid);
     } catch (e) {
       _status = AuthStatus.noAutenticado;
       _usuarioLogueado = null;
@@ -377,15 +390,14 @@ class LoginProvider extends ChangeNotifier {
         throw Exception('Error al autenticar usuario con Google');
       }
 
+      // Si el usuario no existe en la base de datos, lo creamos
       final DocumentSnapshot userDoc = await _firestore
           .collection("usuarios")
           .doc(userCredential.user!.uid)
           .get();
 
-      // Si el usuario no existe en la base de datos, lo creamos
-
       if (!userDoc.exists) {
-        apiService.addUsuario(
+        await apiService.addUsuario(
           ModeloUsuario(
             documentID: userCredential.user!.uid,
             correo: userCredential.user!.email ?? "",
@@ -397,28 +409,12 @@ class LoginProvider extends ChangeNotifier {
             peliculasVistas: [],
           ),
         );
-      } else {
-        _usuarioLogueado = ModeloUsuario(
-          documentID: userCredential.user!.uid,
-          correo: userDoc.get("correo"),
-          imagenPerfil: userDoc.get("imagen_perfil") ?? "",
-          nick: userDoc.get("nick"),
-          amigosId: List<String>.from(userDoc.get("amigos_ids") ?? []),
-          peliculasCriticadas: List<int>.from(
-            userDoc.get("peliculas_criticadas") ?? [],
-          ),
-          peliculasFavoritas: List<int>.from(
-            userDoc.get("peliculas_favoritas") ?? [],
-          ),
-          peliculasVistas: List<int>.from(
-            userDoc.get("peliculas_vistas") ?? [],
-          ),
-        );
       }
 
-      _status = AuthStatus.autenticado;
-      _errorMessage = null;
-      notifyListeners();
+      // El authStateChanges listener se encargará de cargar los datos del usuario
+      // PERO para asegurar que no haya condiciones de carrera con usuarios nuevos,
+      // llamamos explícitamente a cargar datos aquí también.
+      await _cargarDatosUsuario(userCredential.user!.uid);
     } catch (e) {
       _status = AuthStatus.noAutenticado;
       _usuarioLogueado = null;

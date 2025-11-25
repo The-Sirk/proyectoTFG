@@ -2,7 +2,6 @@ import 'package:flixscore/componentes/perfil_de_otro/amigos_de_otro_card.dart';
 import 'package:flixscore/componentes/perfil_de_otro/estadisticas_otro_card.dart';
 import 'package:flixscore/componentes/perfil_de_otro/imagen_perfil_otro_card.dart';
 import 'package:flixscore/paginas/home_page.dart';
-import 'package:flixscore/paginas/login_page.dart';
 import 'package:flixscore/paginas/perfil_usuario_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flixscore/modelos/usuario_modelo.dart';
@@ -11,7 +10,7 @@ import 'package:flixscore/componentes/perfil_usuario/mis_criticas_card.dart';
 import 'package:flixscore/controllers/login_provider.dart';
 import 'package:provider/provider.dart';
 
-enum MenuOption { navegarAHome, verPerfilPropio, administracion, cerrarSesion}
+enum MenuOption { navegarAHome, verPerfilPropio, administracion, cerrarSesion }
 
 class PerfilAmigoPage extends StatelessWidget {
   final String usuarioId;
@@ -29,8 +28,7 @@ class PerfilAmigoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    const Color appBarColor = Color(0xFF111827); 
+    const Color appBarColor = Color(0xFF111827);
     const Color backgroundPage = Color(0xFF0A0E1A);
 
     // Lógica para manejar la selección del menú
@@ -40,9 +38,7 @@ class PerfilAmigoPage extends StatelessWidget {
         case MenuOption.navegarAHome:
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const HomePage(),
-            ),
+            MaterialPageRoute(builder: (context) => const HomePage()),
           );
           break;
 
@@ -50,9 +46,7 @@ class PerfilAmigoPage extends StatelessWidget {
         case MenuOption.verPerfilPropio:
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const PerfilUsuario(),
-            ),
+            MaterialPageRoute(builder: (context) => const PerfilUsuario()),
           );
           break;
 
@@ -64,9 +58,10 @@ class PerfilAmigoPage extends StatelessWidget {
         // Cerramos sesión
         case MenuOption.cerrarSesion:
           Provider.of<LoginProvider>(context, listen: false).logout();
-          Navigator.pushReplacement(
+          Navigator.pushNamedAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            '/login',
+            (route) => false,
           );
           break;
       }
@@ -79,14 +74,12 @@ class PerfilAmigoPage extends StatelessWidget {
         toolbarHeight: 80,
         backgroundColor: appBarColor,
         actions: [
-
           // Menú Desplegable
           PopupMenuButton<MenuOption>(
-            tooltip: 'Menú',                
+            tooltip: 'Menú',
             onSelected: onMenuItemSelected,
             icon: const Icon(Icons.more_vert, color: Colors.white),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<MenuOption>>[
-
               // Navegar al Home
               PopupMenuItem<MenuOption>(
                 value: MenuOption.navegarAHome,
@@ -131,7 +124,8 @@ class PerfilAmigoPage extends StatelessWidget {
       body: FutureBuilder<ModeloUsuario>(
         future: _cargarUsuario(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData)
+            return const Center(child: CircularProgressIndicator());
           final usuario = snapshot.data!;
 
           return LayoutBuilder(
@@ -153,9 +147,7 @@ class PerfilAmigoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOneColumnLayout(
-    ModeloUsuario usuario,
-  ) {
+  Widget _buildOneColumnLayout(ModeloUsuario usuario) {
     return Column(
       children: [
         FotoPerfilCualquierUsuario(usuarioId: usuarioId),
@@ -163,13 +155,11 @@ class PerfilAmigoPage extends StatelessWidget {
         EstadisticasAmigoCard(idAmigo: usuarioId),
         MisCriticasCard(usuarioId: usuarioId, editable: false),
         AmigosDeOtroCard(userId: usuarioId),
-      ]
+      ],
     );
   }
 
-  Widget _buildTwoColumnLayout(
-    ModeloUsuario usuario,
-  ) {
+  Widget _buildTwoColumnLayout(ModeloUsuario usuario) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -188,7 +178,7 @@ class PerfilAmigoPage extends StatelessWidget {
           child: Column(
             children: [
               EstadisticasAmigoCard(idAmigo: usuarioId),
-              const SizedBox(height: 15,),
+              const SizedBox(height: 15),
               AmigosDeOtroCard(userId: usuarioId),
             ],
           ),

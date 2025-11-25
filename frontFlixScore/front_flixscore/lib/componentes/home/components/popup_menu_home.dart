@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flixscore/controllers/login_provider.dart';
 import 'package:flixscore/paginas/home_page.dart';
-import 'package:flixscore/paginas/login_page.dart';
 import 'package:flixscore/paginas/perfil_usuario_page.dart';
 
 enum AppBarMenuOption { verPerfil, administracion, cerrarSesion }
@@ -26,10 +25,7 @@ class AppBarPopupMenu extends StatelessWidget {
         break;
       case AppBarMenuOption.cerrarSesion:
         Provider.of<LoginProvider>(context, listen: false).logout();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
         break;
     }
   }
