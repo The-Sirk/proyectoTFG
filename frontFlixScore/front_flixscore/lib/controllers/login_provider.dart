@@ -411,7 +411,7 @@ class LoginProvider extends ChangeNotifier {
         );
       }
 
-      // El authStateChanges listener se encargará de cargar los datos del usuario
+      // El authStateChanges listener se encargara de cargar los datos del usuario
       // PERO para asegurar que no haya condiciones de carrera con usuarios nuevos,
       // llamamos explícitamente a cargar datos aquí también.
       await _cargarDatosUsuario(userCredential.user!.uid);
