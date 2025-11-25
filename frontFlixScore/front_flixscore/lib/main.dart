@@ -8,6 +8,8 @@ import 'package:flixscore/controllers/login_provider.dart';
 import 'package:flixscore/controllers/register_provider.dart';
 import 'package:flixscore/paginas/home_page.dart';
 import 'package:flixscore/paginas/login_page.dart';
+import 'package:flixscore/paginas/perfil_usuario_page.dart';
+import 'package:flixscore/paginas/perfil_amigo_page.dart';
 import 'package:flixscore/firebase_options.dart';
 
 void main() async {
@@ -110,6 +112,16 @@ class MyApp extends StatelessWidget {
               }
             },
           ),
+          "/perfil-usuario": (context) => const PerfilUsuario(),
+          "/perfil-amigo": (context) {
+            final args =
+                ModalRoute.of(context)!.settings.arguments
+                    as Map<String, dynamic>;
+            return PerfilAmigoPage(
+              usuarioId: args['usuarioId'],
+              nickUsuario: args['nickUsuario'],
+            );
+          },
         },
       ),
     );

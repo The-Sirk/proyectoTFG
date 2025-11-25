@@ -48,6 +48,7 @@ class CriticasProvider extends ChangeNotifier {
     await cargarCriticasDelUsuario();
     await cargarCriticasDeAmigos();
     await servirPeliculasCard();
+    await cargarUltimasCriticas();
     notifyListeners();
   }
 
@@ -141,7 +142,8 @@ class CriticasProvider extends ChangeNotifier {
         }
       }
 
-      _peliculasCardUltimas.clear();
+      // Usamos una lista local para evitar duplicados por condiciones de carrera
+      List<PeliculaCard> nuevasPeliculasUltimas = [];
 
       // Agrupa críticas por película para evitar duplicados
       final Map<String, List<ModeloCritica>> criticasPorPelicula = {};
@@ -188,12 +190,12 @@ class CriticasProvider extends ChangeNotifier {
 
         // Filtrar solo las críticas de amigos (no incluir la del usuario logueado ni de desconocidos)
         final criticasDeAmigos = todasLasCriticas.where((critica) {
-          // Es de un amigo si está en la lista de amigos del usuario
-          return _usuarioLogueado?.amigosId.contains(critica.usuarioUID) ??
-              false;
+          final esAmigo =
+              _usuarioLogueado?.amigosId.contains(critica.usuarioUID) ?? false;
+          return esAmigo;
         }).toList();
 
-        _peliculasCardUltimas.add(
+        nuevasPeliculasUltimas.add(
           PeliculaCard(
             pelicula: pelicula,
             criticasAmigos:
@@ -204,6 +206,7 @@ class CriticasProvider extends ChangeNotifier {
         );
       }
 
+      _peliculasCardUltimas = nuevasPeliculasUltimas;
       AppLogger.logVar('peliculasCardUltimas', _peliculasCardUltimas);
       _errorMessage = null;
     } catch (e) {

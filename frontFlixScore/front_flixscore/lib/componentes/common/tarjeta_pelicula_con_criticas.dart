@@ -156,7 +156,7 @@ class _TarjetaPeliculaConCriticasState
             ],
           ),
 
-        // Puntuación y críticas (siempre debajo en Column)
+        // Puntuación y críticas
         const SizedBox(height: 20),
         _seccionPuntuacionYCriticas(
           criticasAmigos,
@@ -274,13 +274,47 @@ class _TarjetaPeliculaConCriticasState
             ),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(
-                    criticasProvider
-                            .getUsuarioAmigo(critica.usuarioUID)
-                            ?.imagenPerfil ??
-                        "",
+                GestureDetector(
+                  onTap: () {
+                    // Cerrar el diálogo actual
+                    Navigator.of(context).pop();
+
+                    // Navegar al perfil del usuario
+                    if (critica.usuarioUID ==
+                        criticasProvider.usuarioLogueado?.documentID) {
+                      // Es el usuario logueado, ir a su perfil
+                      Navigator.pushNamed(context, '/perfil-usuario');
+                    } else {
+                      // Es otro usuario, ir al perfil de amigo
+                      final usuario = criticasProvider.getUsuarioAmigo(
+                        critica.usuarioUID,
+                      );
+                      if (usuario != null) {
+                        Navigator.pushNamed(
+                          context,
+                          '/perfil-amigo',
+                          arguments: {
+                            'usuarioId': critica.usuarioUID,
+                            'nickUsuario': usuario.nick,
+                          },
+                        );
+                      }
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundImage: NetworkImage(
+                        criticasProvider
+                                .getUsuarioAmigo(critica.usuarioUID)
+                                ?.imagenPerfil ??
+                            "",
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
