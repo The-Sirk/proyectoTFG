@@ -1,7 +1,7 @@
  import 'package:flutter/material.dart';
 
 
-Widget CuadroCritica() {
+Widget CuadroCritica(String? nombreUsuario, String? textoCritica) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(12), 
@@ -18,7 +18,7 @@ Widget CuadroCritica() {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Carlos Ruiz:",
+            nombreUsuario ?? "",
             style: TextStyle(
               color: Colors.white,
               fontSize: 14, 
@@ -27,7 +27,7 @@ Widget CuadroCritica() {
           ),
           SizedBox(height: 6), 
           Text(
-            '"Una obra maestra del cine moderno. La narrativa compleja y l..."',
+            textoCritica ?? "",
             style: TextStyle(
               color: Colors.grey[300],
               fontSize: 14, 

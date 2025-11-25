@@ -1,7 +1,8 @@
+
 import 'package:flixscore/componentes/home/card_pelicula.dart';
-import 'package:flixscore/modelos/pelicula_model.dart';
-import 'package:flixscore/servicios/tmdb_service.dart';
+import 'package:flixscore/controllers/criticas_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class PopularLayout extends StatefulWidget {
   const PopularLayout({super.key});
@@ -11,38 +12,35 @@ class PopularLayout extends StatefulWidget {
 }
 
 class _PopularLayoutState extends State<PopularLayout> {
-  // Instanciamos PeliculasService
-  final PeliculaService _service = PeliculaService();
-
   // Variables de uso local
-  List<Pelicula> _peliculas = [];
+  
   bool _cargando = true;
   String? _error;
+  List<PeliculaCard> _peliculas = [];
 
   @override
   void initState() {
     super.initState();
-    _cargarPeliculasPopulares();
+    _cargarPeliculas();
   }
 
-  Future<void> _cargarPeliculasPopulares() async {
+  Future<void> _cargarPeliculas() async {
     try {
       setState(() {
         _cargando = true;
         _error = null;
       });
+      _peliculas = [];
+      final provider = Provider.of<CriticasProvider>(context, listen: false);
 
-      final peliculas = await _service.buscarPeliculas("malditos");
-
+      _peliculas = provider.peliculasCardAmigos;
       setState(() {
-        _peliculas = peliculas;
+        _peliculas = _peliculas;
         _cargando = false;
       });
     } catch (e) {
-      print("Error al cargar películas populares: ${e.toString()}");
       setState(() {
         _error = e.toString();
-        print(e.toString());
         _cargando = false;
       });
     }
@@ -50,10 +48,6 @@ class _PopularLayoutState extends State<PopularLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildContent();
-  }
-
-  Widget _buildContent() {
     if (_cargando) {
       return const Center(child: CircularProgressIndicator(color: Colors.cyan));
     }
@@ -66,7 +60,7 @@ class _PopularLayoutState extends State<PopularLayout> {
             const Icon(Icons.error_outline, color: Colors.red, size: 64),
             const SizedBox(height: 16),
             const Text(
-              'Error al cargar películas populares',
+              'Error al cargar películas de tus amigos',
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
             const SizedBox(height: 8),
@@ -77,7 +71,7 @@ class _PopularLayoutState extends State<PopularLayout> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _cargarPeliculasPopulares,
+              onPressed: () {},
               child: const Text('Reintentar'),
             ),
           ],
@@ -88,7 +82,7 @@ class _PopularLayoutState extends State<PopularLayout> {
     if (_peliculas.isEmpty) {
       return const Center(
         child: Text(
-          "No hay películas populares disponibles",
+          "No hay peliculas de vistas por tus amigos, o no tienes amigos. Vete al bar a buscarlos",
           style: TextStyle(color: Colors.white54, fontSize: 16),
         ),
       );
@@ -115,7 +109,7 @@ class _PopularLayoutState extends State<PopularLayout> {
         final pelicula = _peliculas[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: PeliculaCard(pelicula: pelicula),
+          child: pelicula,
         );
       },
     );
@@ -132,10 +126,7 @@ class _PopularLayoutState extends State<PopularLayout> {
         spacing: 20,
         runSpacing: 20,
         children: _peliculas.map((pelicula) {
-          return SizedBox(
-            width: anchoCard,
-            child: PeliculaCard(pelicula: pelicula),
-          );
+          return SizedBox(width: anchoCard, child: pelicula);
         }).toList(),
       ),
     );

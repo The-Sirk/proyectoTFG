@@ -107,7 +107,7 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 23),
 
           _TextoEditable(
             titulo: "Nick",
@@ -115,7 +115,7 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
             icono: Icons.person_outline,
             textoAyuda: "Da este Nick a tus amigos para ser agregado",
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
 
           _TextoNoEditable(
             titulo: "Email",
@@ -123,7 +123,7 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
             icono: Icons.email_outlined,
             textoAyuda: "El email no puede ser modificado",
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
 
           _TextoNoEditable(
             titulo: "Fecha de registro",
@@ -131,7 +131,7 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
             icono: Icons.calendar_month_outlined,
             textoAyuda: "Fecha en la que te registraste",
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 30),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

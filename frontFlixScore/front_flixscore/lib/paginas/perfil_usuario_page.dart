@@ -1,5 +1,7 @@
 import 'package:flixscore/controllers/login_provider.dart';
 import 'package:flixscore/modelos/amigo_modelo.dart';
+import 'package:flixscore/paginas/admin_page.dart';
+import 'package:flixscore/paginas/home_page.dart';
 import 'package:flixscore/paginas/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flixscore/service/api_service.dart';
@@ -7,11 +9,13 @@ import 'package:flixscore/modelos/usuario_modelo.dart';
 import 'package:flixscore/componentes/common/tab_button.dart';
 import 'package:flixscore/componentes/perfil_usuario/estadisticas_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/lista_amigos_card.dart';
-import 'package:flixscore/componentes/perfil_usuario/foto_perfil_card.dart';
+import 'package:flixscore/componentes/perfil_usuario/imagen_perfil_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/informacion_basica_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/buscar_usuario_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/mis_criticas_card.dart';
 import 'package:provider/provider.dart';
+
+enum MenuOption { navegarAHome, administracion, cerrarSesion}
 
 class PerfilUsuario extends StatefulWidget {
   const PerfilUsuario({super.key});
@@ -37,6 +41,17 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
   void initState() {
     super.initState();
     _datosCompletosFuture = _cargarDatosDesdeProvider();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider = Provider.of<LoginProvider>(context, listen: true);
+    final currentUserId = provider.usuarioLogueado?.documentID;
+
+    if (currentUserId != null && provider.usuarioLogueado?.amigosId.isNotEmpty == true) {
+      _recargarAmigosConComunes(provider.amigosObj, currentUserId);
+    }
   }
 
   Future<Map<String, dynamic>> _cargarDatosDesdeProvider() async {
@@ -100,6 +115,15 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     return lista;
   }
 
+  Future<void> _recargarAmigosConComunes(List<ModeloUsuario> amigosObj, String currentUserId) async {
+    final nuevosConComunes = await _cargarAmigosConComunes(amigosObj, currentUserId);
+    if (mounted) {
+      setState(() {
+        _amigosConComunes = nuevosConComunes;
+      });
+    }
+  }
+
   void _actualizarListaAmigosDespuesDeBusqueda() async {
     final provider = Provider.of<LoginProvider>(context, listen: false);
     final currentUserId = provider.usuarioLogueado!.documentID!; 
@@ -124,9 +148,41 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   @override
   Widget build(BuildContext context) {
+
+    // Lógica para manejar la selección del menú
+    void onMenuItemSelected(MenuOption item) {
+      switch (item) {
+        // Vamos al home
+        case MenuOption.navegarAHome:
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HomePage(),
+            ),
+          );
+          break;
+
+        // Vamos a administración
+        case MenuOption.administracion:
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminUsuariosPage()),
+          );
+          break;
+
+        // Cerramos sesión
+        case MenuOption.cerrarSesion:
+          Provider.of<LoginProvider>(context, listen: false).logout();
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+          break;
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: true,
         toolbarHeight: 80,
         backgroundColor: const Color(0xFF111827),
         title: const Text(
@@ -138,7 +194,53 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             fontFamily: "Inter",
           ),
         ),
-        centerTitle: false,
+        automaticallyImplyLeading: true,
+        actions: [
+          // Menú Desplegable
+          PopupMenuButton<MenuOption>(
+            tooltip: 'Menú',                
+            onSelected: onMenuItemSelected,
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<MenuOption>>[
+
+              // Navegar al Home
+              PopupMenuItem<MenuOption>(
+                value: MenuOption.navegarAHome,
+                child: Row(
+                  children: const [
+                    Icon(Icons.house_outlined, color: Colors.blue),
+                    SizedBox(width: 8),
+                    Text('Ir a principal'),
+                  ],
+                ),
+              ),
+
+              // A administración
+              PopupMenuItem<MenuOption>(
+                value: MenuOption.administracion,
+                child: Row(
+                  children: [
+                    Icon(Icons.shield_outlined, color: Colors.blue),
+                    SizedBox(width: 8),
+                    Text('Administración'),
+                  ],
+                ),
+              ),
+
+              //Cerrar Sesión
+              PopupMenuItem<MenuOption>(
+                value: MenuOption.cerrarSesion,
+                child: Row(
+                  children: const [
+                    Icon(Icons.logout, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Cerrar Sesión'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFF0A0E1A),
       body: FutureBuilder<Map<String, dynamic>>(
@@ -160,22 +262,18 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
           if (snapshot.hasData) {
             final ModeloUsuario usuario = snapshot.data!['usuarioPrincipal'];
-            final List<Amigo> amigosConComunes = snapshot.data!['amigosConComunes'] as List<Amigo>;
+            final currentUserId = usuario.documentID!;
 
             _nickActual ??= usuario.nick;
-            
-            // Si la lista local está vacía, la inicializamos con la data del Future. 
-            // Esto solo pasa en la carga inicial. Las actualizaciones posteriores 
-            // vienen de _actualizarListaAmigosDespuesDeBusqueda.
-            if (_amigosConComunes.isEmpty) {
-               _amigosConComunes = amigosConComunes;
+
+            final provider = Provider.of<LoginProvider>(context, listen: true);
+            if (provider.amigosObj.isNotEmpty) {
+              _recargarAmigosConComunes(provider.amigosObj, currentUserId);
             }
 
             return LayoutBuilder(
               builder: (context, constraints) {
                 final bool isLargeScreen = constraints.maxWidth > _kTabletBreakpoint;
-                // OBTENER ID DEL USUARIO DESDE EL MODELO CARGADO
-                final currentUserId = usuario.documentID!; 
 
                 return SingleChildScrollView(
                   child: Padding(
@@ -213,7 +311,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
       children: [
         _buildTabSelector(),
         if (tabSeleccionada == 0) ...[
-          FotoPerfilUsuarioCard(
+          ImagenPerfilUsuarioCard(
             nickUsuario: _nickActual ?? '',
             emailUsuario: usuario.correo,
             urlImagenInicial: usuario.imagenPerfil,
@@ -263,7 +361,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
               ? Column(
                   children: [
                     _buildTabSelector(),
-                    FotoPerfilUsuarioCard(
+                    ImagenPerfilUsuarioCard(
                       nickUsuario: _nickActual ?? '',
                       emailUsuario: usuario.correo,
                       urlImagenInicial: usuario.imagenPerfil,

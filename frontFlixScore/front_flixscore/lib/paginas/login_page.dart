@@ -13,7 +13,7 @@ class LoginScreen extends StatelessWidget {
     final maxWidth = MediaQuery.of(context).size.width * 0.5;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF000000),   // <- aquí
+      backgroundColor: const Color(0xFF0A0E1A),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

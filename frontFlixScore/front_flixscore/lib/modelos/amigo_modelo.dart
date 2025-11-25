@@ -1,13 +1,15 @@
 class Amigo {
   final String nombre;
-  final int amigosEnComun;
   final String? imagenPerfil;
   final String? documentID;
+  final int amigosEnComun;
+  final bool yaEsMiAmigo;
 
   Amigo({
     required this.nombre,
-    required this.amigosEnComun,
     this.imagenPerfil,
     this.documentID,
+    this.amigosEnComun = 0,
+    this.yaEsMiAmigo = false,
   });
 }

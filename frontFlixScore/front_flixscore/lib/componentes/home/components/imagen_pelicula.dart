@@ -6,7 +6,7 @@ Widget ImagenPelicula() {
     width: double.infinity,
     height: double.infinity,
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12 ),
+      borderRadius: BorderRadius.circular(12),
       color: Colors.blueAccent,
     ),
     child: Stack(

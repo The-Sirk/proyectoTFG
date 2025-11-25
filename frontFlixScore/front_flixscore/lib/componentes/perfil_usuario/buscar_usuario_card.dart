@@ -33,7 +33,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
     super.dispose();
   }
 
-  void _simularBusqueda(BuildContext context) async {
+  void _buscarYagregar(BuildContext context) async {
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
     
@@ -87,7 +87,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
           const SizedBox(height: 20),
           TextField(
             controller: _searchController,
-            onSubmitted: (_) => _simularBusqueda(context), 
+            onSubmitted: (_) => _buscarYagregar(context), 
             style: const TextStyle(color: _primaryTextColor),
             decoration: InputDecoration(
               hintText: 'Ejemplo: NickAmigote123',
@@ -95,7 +95,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
               prefixIcon: const Icon(Icons.person_search_outlined, color: _subtitleColor),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.search, color: _subtitleColor),
-                onPressed: () => _simularBusqueda(context), 
+                onPressed: () => _buscarYagregar(context), 
                 tooltip: 'Buscar',
               ),
               fillColor: _inputBackgroundColor,

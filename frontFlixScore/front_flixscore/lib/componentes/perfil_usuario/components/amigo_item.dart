@@ -6,7 +6,7 @@ class AmigoListItem extends StatelessWidget {
   final int amigosEnComun;
   final String? imagenPerfil;
   final VoidCallback onQuitarAmigo;
-  final VoidCallback onTapPerfil;   // <-- nuevo
+  final VoidCallback onTapPerfil;
 
   const AmigoListItem({
     super.key,
@@ -22,10 +22,10 @@ class AmigoListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(                       // necesario para que el splash se vea
+    return Material( 
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTapPerfil,                // <-- abre el perfil
+        onTap: onTapPerfil,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -82,6 +82,7 @@ class AmigoListItem extends StatelessWidget {
                   color: secondaryTextColor,
                   size: 24,
                 ),
+                tooltip: 'Eliminar amigo',
               ),
               const SizedBox(width: 8),
             ],

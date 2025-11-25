@@ -1,7 +1,9 @@
-import 'package:flixscore/componentes/home/card_pelicula.dart'; // ✅ Agregar import
-import 'package:flixscore/modelos/pelicula_model.dart';
-import 'package:flixscore/servicios/tmdb_service.dart';
+import 'package:flixscore/componentes/home/card_pelicula.dart';
+import 'package:flixscore/controllers/criticas_provider.dart';
+import 'package:flixscore/modelos/pelicula_modelo.dart';
+import 'package:flixscore/service/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class BuscarLayout extends StatefulWidget {
   const BuscarLayout({super.key});
@@ -12,11 +14,11 @@ class BuscarLayout extends StatefulWidget {
 
 class _BuscarLayoutState extends State<BuscarLayout> {
   // Instanciamos PeliculasService y el TextEditingController
-  final PeliculaService _service = PeliculaService();
+  final ApiService _service = ApiService();
   final TextEditingController _buscarController = TextEditingController();
 
   // Variables de uso local
-  List<Pelicula> _peliculas = [];
+  List<ModeloPelicula> _peliculas = [];
   bool _cargando = false;
   String? _error;
   bool _hasBuscado = false;
@@ -37,9 +39,9 @@ class _BuscarLayoutState extends State<BuscarLayout> {
         _error = null;
         _hasBuscado = true;
       });
-      
-      final peliculas = await _service.buscarPeliculas(query);
-      
+
+      final peliculas = await _service.getMoviesByName(query);
+
       setState(() {
         _peliculas = peliculas;
         _cargando = false;
@@ -90,10 +92,8 @@ class _BuscarLayoutState extends State<BuscarLayout> {
             onChanged: (value) => setState(() {}),
           ),
           const SizedBox(height: 20),
-          
-          Expanded(
-            child: mostrarContenido(),
-          ),
+
+          Expanded(child: mostrarContenido()),
         ],
       ),
     );
@@ -101,9 +101,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
 
   Widget mostrarContenido() {
     if (_cargando) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.cyan),
-      );
+      return const Center(child: CircularProgressIndicator(color: Colors.cyan));
     }
 
     if (_error != null) {
@@ -179,16 +177,31 @@ class _BuscarLayoutState extends State<BuscarLayout> {
     );
   }
 
-  // 
+  //
   Widget _mostrarMovil() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       itemCount: _peliculas.length,
       itemBuilder: (context, index) {
         final pelicula = _peliculas[index];
+        final provider = Provider.of<CriticasProvider>(context, listen: false);
+        final criticasAmigos = provider.getCriticasAmigosPorPelicula(
+          pelicula.id,
+        );
+
+        // Buscar mi critica
+        final miCritica = provider.criticasUsuario
+            .where((c) => c.peliculaID == pelicula.id)
+            .firstOrNull;
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: PeliculaCard(pelicula: pelicula),
+          child: PeliculaCard(
+            pelicula: pelicula,
+            critica: miCritica,
+            usuario: provider.usuarioLogueado,
+            criticasAmigos: criticasAmigos,
+          ),
         );
       },
     );
@@ -197,7 +210,8 @@ class _BuscarLayoutState extends State<BuscarLayout> {
   Widget _mostrarPantallaGrande(BoxConstraints constraints) {
     // Ajustamos la cantidad y ancho de las columnas.
     int columnas = constraints.maxWidth > 1000 ? 3 : 2;
-    double anchoCard = (constraints.maxWidth - 60 - (20 * (columnas - 1))) / columnas;
+    double anchoCard =
+        (constraints.maxWidth - 60 - (20 * (columnas - 1))) / columnas;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -205,9 +219,27 @@ class _BuscarLayoutState extends State<BuscarLayout> {
         spacing: 20,
         runSpacing: 20,
         children: _peliculas.map((pelicula) {
+          final provider = Provider.of<CriticasProvider>(
+            context,
+            listen: false,
+          );
+          final criticasAmigos = provider.getCriticasAmigosPorPelicula(
+            pelicula.id,
+          );
+
+          // Buscar mi critica
+          final miCritica = provider.criticasUsuario
+              .where((c) => c.peliculaID == pelicula.id)
+              .firstOrNull;
+
           return SizedBox(
             width: anchoCard,
-            child: PeliculaCard(pelicula: pelicula),
+            child: PeliculaCard(
+              pelicula: pelicula,
+              critica: miCritica,
+              usuario: provider.usuarioLogueado,
+              criticasAmigos: criticasAmigos,
+            ),
           );
         }).toList(),
       ),

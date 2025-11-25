@@ -1,3 +1,5 @@
+import 'package:flixscore/controllers/criticas_provider.dart';
+import 'package:flixscore/paginas/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +9,6 @@ import 'package:flixscore/controllers/register_provider.dart';
 import 'package:flixscore/paginas/home_page.dart';
 import 'package:flixscore/paginas/login_page.dart';
 import 'package:flixscore/firebase_options.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +26,9 @@ void main() async {
   runApp(const MyApp());
 }
 
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -34,6 +38,19 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => LoginProvider()),
         ChangeNotifierProvider(create: (_) => RegisterProvider()),
+        // Con proxy provider nos aseguramos que CriticasProvider
+        // siempre tenga el usuario logueado actualizado
+        // En consecuencia, las críticas se actualizaran y no se tendra que hacer tantas llamadas
+        // desde las paginas que usen CriticasProvider
+        ChangeNotifierProxyProvider<LoginProvider, CriticasProvider>(
+          create: (_) => CriticasProvider(),
+          update: (_, loginProvider, criticasProvider) {
+            criticasProvider!.actualizarUsuarioLogueado(
+              loginProvider.usuarioLogueado,
+            );
+            return criticasProvider;
+          },
+        ),
       ],
       child: MaterialApp(
         title: 'FlixScore',
@@ -58,22 +75,26 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        
-        home: Consumer2<LoginProvider, RegisterProvider>(
-          builder: (context, loginProvider, registerProvider, _) {
-            if (loginProvider.status == AuthStatus.autenticado || 
-                registerProvider.status == RegisterStatus.registrado) {
-              return const HomePage();
-            } else {
-              return const SafeArea(
-                child: Scaffold(
-                  backgroundColor: Color(0xFF000000),
-                  body: Center(child: LoginScreen()),
-                ),
-              );
-            }
-          },
-        ),
+        navigatorObservers: [routeObserver],
+        initialRoute: "/",
+        routes: {
+          '/': (context) => const SplashScreen(),
+          "/home": (context) => Consumer2<LoginProvider, RegisterProvider>(
+            builder: (context, loginProvider, registerProvider, _) {
+              if (loginProvider.status == AuthStatus.autenticado ||
+                  registerProvider.status == RegisterStatus.registrado) {
+                return const HomePage();
+              } else {
+                return const SafeArea(
+                  child: Scaffold(
+                    backgroundColor: Color(0xFF000000),
+                    body: Center(child: LoginScreen()),
+                  ),
+                );
+              }
+            },
+          ),
+        },
       ),
     );
   }

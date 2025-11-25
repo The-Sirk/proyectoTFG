@@ -1,9 +1,11 @@
+import 'package:flixscore/controllers/login_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flixscore/modelos/critica_modelo.dart';
 import 'package:flixscore/modelos/pelicula_modelo.dart';
 import 'package:flixscore/service/api_service.dart';
 import 'package:flixscore/componentes/perfil_usuario/components/editar_critica_dialog.dart';
 import 'package:flixscore/componentes/perfil_usuario/components/tarjeta_critica_item.dart';
+import 'package:provider/provider.dart';
 
 class MisCriticasCard extends StatefulWidget {
   final String usuarioId;
@@ -38,7 +40,7 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
         final pelicula = await _apiService.getMovieByID(critica.peliculaID.toString());
         lista.add(_CriticaConPelicula(critica: critica, pelicula: pelicula));
       } catch (e) {
-        // Si falla, igual añadimos la crítica pero sin película
+        // Si falla, añadimos la crítica pero sin película
         lista.add(_CriticaConPelicula(critica: critica, pelicula: null));
       }
     }
@@ -52,7 +54,9 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
       barrierDismissible: false,
       builder: (_) => EditarCriticaDialog(
         critica: critica,
-        onGuardar: () {
+        onGuardar: () async {
+          await Provider.of<LoginProvider>(context, listen: false)
+              .recargarPuntuaciones();
           setState(() {
             _criticasConPeliculasFuture = _cargarCriticasConPeliculas();
           });
@@ -72,10 +76,12 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
         }
 
         if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              "No has escrito ninguna crítica todavía.",
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+              widget.editable
+                  ? "Todavía no has escrito ninguna crítica."
+                  : "Todavía no ha escrito ninguna crítica.",
+              style: const TextStyle(color: Colors.white70, fontSize: 16),
             ),
           );
         }
@@ -117,7 +123,7 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
                       builder: (context, setState) {
                         return ConstrainedBox(
                           constraints: BoxConstraints(
-                            maxHeight: maxHeight.clamp(200, 720),
+                            maxHeight: maxHeight.clamp(200, 725),
                           ),
                           child: NotificationListener<ScrollNotification>(
                             onNotification: (scrollInfo) {
@@ -159,6 +165,7 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
                                   ),
                                   child: ListView.separated(
                                     shrinkWrap: true,
+                                    padding: const EdgeInsets.only(bottom: 5.0),
                                     itemCount: items.length,
                                     separatorBuilder: (_, __) =>
                                         const SizedBox(height: 5),
