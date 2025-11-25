@@ -49,7 +49,7 @@ class UltimasLayout extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        bool esMovil = constraints.maxWidth < 600;
+        bool esMovil = constraints.maxWidth < 800;
         if (esMovil) {
           return ListView.builder(
             shrinkWrap: true,

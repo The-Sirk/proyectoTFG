@@ -78,9 +78,11 @@ class PeliculaCard extends StatelessWidget {
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final esMovil = constraints.maxWidth < 600;
+    return Builder(
+      builder: (context) {
+        // Usar MediaQuery para obtener el ancho de la pantalla, no el ancho de la tarjeta
+        final screenWidth = MediaQuery.of(context).size.width;
+        final esMovil = screenWidth < 800;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

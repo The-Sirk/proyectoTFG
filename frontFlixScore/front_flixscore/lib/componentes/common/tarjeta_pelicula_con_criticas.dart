@@ -79,32 +79,99 @@ class _TarjetaPeliculaConCriticasState
     ModeloCritica? criticaUsuario,
     CriticasProvider criticasProvider,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Póster de la película
-        Container(
-          width: 200,
-          height: 280,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.grey,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              widget.pelicula.rutaPoster ?? '',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return const Center(
-                  child: Icon(Icons.movie, size: 48, color: Colors.white54),
-                );
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
+    // Usar MediaQuery para detectar el ancho de la pantalla
+    final screenWidth = MediaQuery.of(context).size.width;
+    final esMovil = screenWidth < 800;
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Layout responsive: Column para móvil, Row para web
+        if (esMovil)
+          // Layout móvil: póster arriba, contenido abajo
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Póster de la película
+              Container(
+                width: 200,
+                height: 280,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.grey,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    widget.pelicula.rutaPoster ?? '',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Icon(
+                          Icons.movie,
+                          size: 48,
+                          color: Colors.white54,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _informacionPrincipal(),
+            ],
+          )
+        else
+          // Layout web: póster a la izquierda, info a la derecha
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Póster de la película
+              Container(
+                width: 200,
+                height: 280,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.grey,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    widget.pelicula.rutaPoster ?? '',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Icon(
+                          Icons.movie,
+                          size: 48,
+                          color: Colors.white54,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(child: _informacionPrincipal()),
+            ],
+          ),
+
+        // Puntuación y críticas (siempre debajo en Column)
+        const SizedBox(height: 20),
+        _seccionPuntuacionYCriticas(
+          criticasAmigos,
+          criticaUsuario,
+          criticasProvider,
+        ),
+      ],
+    );
+  }
+
+  // Widget con título, fecha y resumen
+  Widget _informacionPrincipal() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         // Título
         Text(
           widget.pelicula.titulo,
@@ -113,7 +180,6 @@ class _TarjetaPeliculaConCriticasState
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
-          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
 
@@ -125,19 +191,26 @@ class _TarjetaPeliculaConCriticasState
         const SizedBox(height: 12),
 
         // Resumen
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            widget.pelicula.resumen,
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-            textAlign: TextAlign.justify,
-          ),
+        Text(
+          widget.pelicula.resumen,
+          style: const TextStyle(color: Colors.white70, fontSize: 14),
+          textAlign: TextAlign.justify,
         ),
-        const SizedBox(height: 16),
+      ],
+    );
+  }
 
+  // Widget con puntuación, botón de crítica y lista de críticas
+  Widget _seccionPuntuacionYCriticas(
+    List<ModeloCritica> criticasAmigos,
+    ModeloCritica? criticaUsuario,
+    CriticasProvider criticasProvider,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         // Puntuación media
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.star, color: Colors.orange, size: 14),
             const SizedBox(width: 4),

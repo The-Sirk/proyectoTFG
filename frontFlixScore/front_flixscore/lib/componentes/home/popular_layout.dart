@@ -90,7 +90,7 @@ class _PopularLayoutState extends State<PopularLayout> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        bool esMovil = constraints.maxWidth < 600;
+        bool esMovil = constraints.maxWidth < 800;
 
         if (esMovil) {
           return _mostrarListView();
