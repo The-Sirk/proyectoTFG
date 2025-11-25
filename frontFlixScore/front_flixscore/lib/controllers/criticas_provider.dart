@@ -186,11 +186,21 @@ class CriticasProvider extends ChangeNotifier {
           }
         }
 
-        // Buscar si hay críticas de amigos para esta película (ya deberían estar en todasLasCriticas si el backend funciona bien,
-        // Asumimos que getCriticasByPeliculaId trae todo.
+        // Filtrar solo las críticas de amigos (no incluir la del usuario logueado ni de desconocidos)
+        final criticasDeAmigos = todasLasCriticas.where((critica) {
+          // Es de un amigo si está en la lista de amigos del usuario
+          return _usuarioLogueado?.amigosId.contains(critica.usuarioUID) ??
+              false;
+        }).toList();
 
         _peliculasCardUltimas.add(
-          PeliculaCard(pelicula: pelicula, criticasAmigos: todasLasCriticas),
+          PeliculaCard(
+            pelicula: pelicula,
+            criticasAmigos:
+                todasLasCriticas, // Todas las críticas para calcular la media
+            mostrarEtiquetaAmigo: criticasDeAmigos
+                .isNotEmpty, // Solo mostrar si hay críticas de amigos
+          ),
         );
       }
 

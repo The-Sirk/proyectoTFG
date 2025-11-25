@@ -61,6 +61,8 @@ class _LoginCardState extends State<LoginCard> {
           context,
           "Usuario registrado correctamente, disfruta de las pelis!",
         );
+        // Navegar al home después del registro exitoso
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       mostrarSnackBarError(context, "Error al registrarte: ${e.toString()}");

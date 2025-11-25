@@ -156,10 +156,7 @@ class PeliculaCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (mostrarEtiquetaAmigo &&
-                todasCriticas.isNotEmpty &&
-                criticasAmigos != null &&
-                criticasAmigos!.isNotEmpty)
+            if (mostrarEtiquetaAmigo)
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
                 child: Text(
