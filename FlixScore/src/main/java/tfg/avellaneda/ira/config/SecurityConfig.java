@@ -3,6 +3,7 @@ package tfg.avellaneda.ira.config;
 import com.google.firebase.auth.FirebaseAuth;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; // ← Import necesario
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -29,8 +30,9 @@ public class SecurityConfig {
                 .formLogin(formLogin -> formLogin.disable())
                 .logout(logout -> logout.disable())
                 .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .pathMatchers("/admin/**").hasRole("admin") // protege /admin/**
+                        .pathMatchers("/admin/**").hasRole("admin")
                         .anyExchange().authenticated())
                 .addFilterAt(new FirebaseTokenFilter(firebaseAuth), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
