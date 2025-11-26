@@ -147,7 +147,8 @@ class PerfilAmigoPage extends StatelessWidget {
       body: FutureBuilder<ModeloUsuario>(
         future: _cargarUsuario(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData)
+            return const Center(child: CircularProgressIndicator());
           final usuario = snapshot.data!;
 
           return LayoutBuilder(

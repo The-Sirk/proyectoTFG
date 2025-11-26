@@ -74,28 +74,57 @@ class MyApp extends StatelessWidget {
               borderSide: BorderSide.none,
             ),
           ),
+          pageTransitionsTheme: PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: NoTransitionsBuilder(),
+              TargetPlatform.iOS: NoTransitionsBuilder(),
+              TargetPlatform.macOS: NoTransitionsBuilder(),
+              TargetPlatform.windows: NoTransitionsBuilder(),
+              TargetPlatform.linux: NoTransitionsBuilder(),
+              TargetPlatform.fuchsia: NoTransitionsBuilder(),
+            },
+          ),
         ),
         navigatorObservers: [routeObserver],
         initialRoute: "/",
         routes: {
           '/': (context) => const SplashScreen(),
+          "/login": (context) => const SafeArea(
+            child: Scaffold(
+              backgroundColor: Color(0xFF000000),
+              body: Center(child: LoginScreen()),
+            ),
+          ),
           "/home": (context) => Consumer2<LoginProvider, RegisterProvider>(
             builder: (context, loginProvider, registerProvider, _) {
               if (loginProvider.status == AuthStatus.autenticado ||
                   registerProvider.status == RegisterStatus.registrado) {
                 return const HomePage();
               } else {
-                return const SafeArea(
-                  child: Scaffold(
-                    backgroundColor: Color(0xFF000000),
-                    body: Center(child: LoginScreen()),
-                  ),
-                );
+                // Si no está autenticado, redirigir a login
+                // Usamos un microtask para evitar errores de construcción
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Navigator.of(context).pushReplacementNamed('/login');
+                });
+                return const SizedBox.shrink(); // Retornar widget vacío mientras redirige
               }
             },
           ),
         },
       ),
     );
+  }
+}
+
+class NoTransitionsBuilder extends PageTransitionsBuilder {
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return child;
   }
 }

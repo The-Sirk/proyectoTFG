@@ -32,6 +32,7 @@ class PeliculaCard extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return InkWell(
+          key: Key('card_pelicula'),
           borderRadius: BorderRadius.circular(16),
           onTap: () {
             showDialog(
@@ -43,7 +44,7 @@ class PeliculaCard extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: TarjetaPeliculaConCriticas(
                     pelicula: pelicula,
-                    criticasAmigos: todasCriticas,
+                    criticasAmigos: todasCriticas, // pasa la lista combinada
                   ),
                 ),
               ),
@@ -77,9 +78,11 @@ class PeliculaCard extends StatelessWidget {
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final esMovil = constraints.maxWidth < 600;
+    return Builder(
+      builder: (context) {
+        // Usar MediaQuery para obtener el ancho de la pantalla, no el ancho de la tarjeta
+        final screenWidth = MediaQuery.of(context).size.width;
+        final esMovil = screenWidth < 800;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,10 +156,7 @@ class PeliculaCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (mostrarEtiquetaAmigo &&
-                todasCriticas.isNotEmpty &&
-                criticasAmigos != null &&
-                criticasAmigos!.isNotEmpty)
+            if (mostrarEtiquetaAmigo)
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
                 child: Text(

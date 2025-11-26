@@ -62,7 +62,10 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     // Amigos desde provider
     await provider.cargarAmigos(notificar: false);
     final objetosAmigos = provider.amigosObj;
-    final amigosConComunes = await _cargarAmigosConComunes(objetosAmigos, userId);
+    final amigosConComunes = await _cargarAmigosConComunes(
+      objetosAmigos,
+      userId,
+    );
 
     // Estadísticas desde provider
     final criticasCount = usuario.puntuaciones.length;
@@ -71,7 +74,8 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
         : double.parse(
             (usuario.puntuaciones.reduce((a, b) => a + b) /
                     usuario.puntuaciones.length)
-                .toStringAsFixed(1));
+                .toStringAsFixed(1),
+          );
 
     return {
       'usuarioPrincipal': usuario,
@@ -81,34 +85,46 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     };
   }
 
-  Future<List<Amigo>> _cargarAmigosConComunes(List<ModeloUsuario> amigosObj, String currentUserId) async {
+  Future<List<Amigo>> _cargarAmigosConComunes(
+    List<ModeloUsuario> amigosObj,
+    String currentUserId,
+  ) async {
     final List<Amigo> lista = [];
 
     for (final amigo in amigosObj) {
       try {
         if (amigo.documentID == null) {
-          lista.add(Amigo(
+          lista.add(
+            Amigo(
+              nombre: amigo.nick,
+              amigosEnComun: 0,
+              imagenPerfil: amigo.imagenPerfil,
+              documentID: amigo.documentID,
+            ),
+          );
+          continue;
+        }
+        final enComun = await _apiService.contarAmigosEnComun(
+          currentUserId,
+          amigo.documentID!,
+        );
+        lista.add(
+          Amigo(
+            nombre: amigo.nick,
+            amigosEnComun: enComun,
+            imagenPerfil: amigo.imagenPerfil,
+            documentID: amigo.documentID,
+          ),
+        );
+      } catch (e) {
+        lista.add(
+          Amigo(
             nombre: amigo.nick,
             amigosEnComun: 0,
             imagenPerfil: amigo.imagenPerfil,
             documentID: amigo.documentID,
-          ));
-          continue;
-        }
-        final enComun = await _apiService.contarAmigosEnComun(currentUserId, amigo.documentID!);
-        lista.add(Amigo(
-          nombre: amigo.nick,
-          amigosEnComun: enComun,
-          imagenPerfil: amigo.imagenPerfil,
-          documentID: amigo.documentID,
-        ));
-      } catch (e) {
-        lista.add(Amigo(
-          nombre: amigo.nick,
-          amigosEnComun: 0,
-          imagenPerfil: amigo.imagenPerfil,
-          documentID: amigo.documentID,
-        ));
+          ),
+        );
       }
     }
 
@@ -126,11 +142,14 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   void _actualizarListaAmigosDespuesDeBusqueda() async {
     final provider = Provider.of<LoginProvider>(context, listen: false);
-    final currentUserId = provider.usuarioLogueado!.documentID!; 
-    
-    await provider.cargarAmigos(); 
-    final nuevosConComunes = await _cargarAmigosConComunes(provider.amigosObj, currentUserId);
-    
+    final currentUserId = provider.usuarioLogueado!.documentID!;
+
+    await provider.cargarAmigos();
+    final nuevosConComunes = await _cargarAmigosConComunes(
+      provider.amigosObj,
+      currentUserId,
+    );
+
     setState(() {
       _amigosConComunes = nuevosConComunes;
     });
@@ -138,11 +157,8 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   void _manejarEliminacion() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-        Provider.of<LoginProvider>(context, listen: false).logout(); 
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
-        );
+      Provider.of<LoginProvider>(context, listen: false).logout();
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     });
   }
 
@@ -278,12 +294,24 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                 return SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: isLargeScreen ? constraints.maxWidth * 0.05 : 0.0,
+                      horizontal: isLargeScreen
+                          ? constraints.maxWidth * 0.05
+                          : 0.0,
                       vertical: 10.0,
                     ),
                     child: isLargeScreen
-                        ? _buildTwoColumnLayout(context, usuario, _amigosConComunes, currentUserId)
-                        : _buildOneColumnLayout(context, usuario, _amigosConComunes, currentUserId),
+                        ? _buildTwoColumnLayout(
+                            context,
+                            usuario,
+                            _amigosConComunes,
+                            currentUserId,
+                          )
+                        : _buildOneColumnLayout(
+                            context,
+                            usuario,
+                            _amigosConComunes,
+                            currentUserId,
+                          ),
                   ),
                 );
               },
@@ -317,8 +345,10 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             urlImagenInicial: usuario.imagenPerfil,
             usuarioId: currentUserId,
             onImagenActualizada: (nuevaUrl) {
-              Provider.of<LoginProvider>(context, listen: false)
-                  .actualizarImagenPerfil(nuevaUrl);
+              Provider.of<LoginProvider>(
+                context,
+                listen: false,
+              ).actualizarImagenPerfil(nuevaUrl);
             },
           ),
           const SizedBox(height: 10),
@@ -346,12 +376,17 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
           ),
           const SizedBox(height: 10),
         ] else
-          MisCriticasCard(usuarioId: currentUserId, editable: true,)
+          MisCriticasCard(usuarioId: currentUserId, editable: true),
       ],
     );
   }
 
-  Widget _buildTwoColumnLayout(BuildContext context, ModeloUsuario usuario, List<Amigo> amigosConComunes, String currentUserId) {
+  Widget _buildTwoColumnLayout(
+    BuildContext context,
+    ModeloUsuario usuario,
+    List<Amigo> amigosConComunes,
+    String currentUserId,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -367,8 +402,10 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                       urlImagenInicial: usuario.imagenPerfil,
                       usuarioId: currentUserId,
                       onImagenActualizada: (nuevaUrl) {
-                        Provider.of<LoginProvider>(context, listen: false)
-                            .actualizarImagenPerfil(nuevaUrl);
+                        Provider.of<LoginProvider>(
+                          context,
+                          listen: false,
+                        ).actualizarImagenPerfil(nuevaUrl);
                       },
                     ),
                     InformacionBasicaCard(
@@ -386,7 +423,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
               : Column(
                   children: [
                     _buildTabSelector(),
-                    MisCriticasCard(usuarioId: currentUserId, editable: true,),
+                    MisCriticasCard(usuarioId: currentUserId, editable: true),
                   ],
                 ),
         ),

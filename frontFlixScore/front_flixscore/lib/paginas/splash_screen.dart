@@ -37,7 +37,11 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.wait([minSplashDuration, dataLoading]);
 
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
+      if (provider.usuarioLogueado != null) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
     }
   }
 
