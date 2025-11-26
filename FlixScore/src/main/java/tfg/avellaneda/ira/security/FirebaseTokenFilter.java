@@ -40,17 +40,18 @@ public class FirebaseTokenFilter implements WebFilter {
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(token);
             String uid = decodedToken.getUid();
             Map<String, Object> claims = decodedToken.getClaims();
-            String role = (String) claims.getOrDefault("role", "user");
+            String rol = (String) claims.getOrDefault("role", "user");
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    uid,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())));
+            // ← LOG TEMPORAL
+            System.out.println("UID: " + uid + " | rol: " + rol);
 
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(uid, null,
+                    List.of(new SimpleGrantedAuthority("ROLE_" + rol.toUpperCase())));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            // Token inválido, no autenticado
+            // ← LOG TEMPORAL
+            System.out.println("Token rechazado: " + e.getMessage());
             SecurityContextHolder.clearContext();
         }
 
