@@ -22,7 +22,7 @@ class BuscarUsuarioCard extends StatefulWidget {
 
 class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
   final TextEditingController _searchController = TextEditingController();
-  Timer? _debounce;
+  Timer? _delay;
   List<ModeloUsuario> _usuariosEncontrados = [];
   bool _buscando = false;
   final LayerLink _layerLink = LayerLink();
@@ -35,14 +35,14 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    _delay?.cancel();
     _searchController.dispose();
     _cerrarOverlay();
     super.dispose();
   }
 
   void _onSearchChanged(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    if (_delay?.isActive ?? false) _delay!.cancel();
 
     // Cerrar overlay si el texto está vacío
     if (query.trim().isEmpty) {
@@ -50,24 +50,19 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
       return;
     }
 
-    _debounce = Timer(const Duration(seconds: 2), () {
+    _delay = Timer(const Duration(seconds: 1), () {
       _buscarUsuarios(query);
     });
   }
 
   Future<void> _buscarUsuarios(String query) async {
-    print("DEBUG: Iniciando búsqueda para query: '$query'");
     setState(() {
       _buscando = true;
     });
 
     try {
-      print("DEBUG: Iniciando búsqueda local para: '$query'");
       // Obtenemos todos los usuarios y filtramos localmente para "contains" e "ignoreCase"
       final todosLosUsuarios = await ApiService().getAllUsuarios();
-      print(
-        "DEBUG: Total usuarios obtenidos de API: ${todosLosUsuarios.length}",
-      );
 
       // Filtramos para no mostrar al propio usuario ni a los que ya son amigos
       final provider = Provider.of<LoginProvider>(context, listen: false);
@@ -91,7 +86,6 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
         _mostrarOverlay();
       }
     } catch (e) {
-      print("Error buscando usuarios: $e");
       if (mounted) {
         setState(() {
           _usuariosEncontrados = [];
@@ -183,7 +177,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
                         decoration: BoxDecoration(
                           border: Border(
                             top: BorderSide(
-                              color: _subtitleColor.withOpacity(0.3),
+                              color: _subtitleColor.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
@@ -217,13 +211,6 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
 
   void _agregarAmigo(ModeloUsuario usuario) async {
     final provider = Provider.of<LoginProvider>(context, listen: false);
-    // Usamos el método existente en el provider pero pasando el nick exacto
-    // O mejor, creamos una lógica directa aquí ya que tenemos el objeto usuario
-
-    // Como el método del provider busca por nick de nuevo, podemos usarlo
-    // o podemos llamar directamente a la API si queremos ser más eficientes.
-    // Para mantener consistencia con la lógica del provider (snackbars, validaciones),
-    // llamaremos al método del provider.
 
     final bool agregadoExitosamente = await provider.buscarYAgregarAmigo(
       context,
@@ -274,7 +261,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
               controller: _searchController,
               onChanged: _onSearchChanged,
               onSubmitted: (value) {
-                _debounce?.cancel();
+                _delay?.cancel();
                 _buscarUsuarios(value);
               },
               style: const TextStyle(color: _primaryTextColor),
@@ -300,7 +287,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
                     : IconButton(
                         icon: const Icon(Icons.search, color: _subtitleColor),
                         onPressed: () {
-                          _debounce?.cancel();
+                          _delay?.cancel();
                           _buscarUsuarios(_searchController.text);
                         },
                         tooltip: 'Buscar',

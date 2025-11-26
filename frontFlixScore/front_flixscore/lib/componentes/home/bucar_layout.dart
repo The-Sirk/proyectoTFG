@@ -206,6 +206,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
             critica: miCritica,
             usuario: provider.usuarioLogueado,
             criticasAmigos: criticasAmigos,
+            mostrarEtiquetaAmigo: criticasAmigos.isNotEmpty,
           ),
         );
       },
@@ -244,6 +245,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
               critica: miCritica,
               usuario: provider.usuarioLogueado,
               criticasAmigos: criticasAmigos,
+              mostrarEtiquetaAmigo: criticasAmigos.isNotEmpty,
             ),
           );
         }).toList(),
