@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -255,5 +256,38 @@ public class CriticaController {
                                         return Mono.error(new ResponseStatusException(
                                                         HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e));
                                 });
+        }
+
+        /**
+         * Elimina todas las críticas de un usuario específico.
+         *
+         * @param userId ID del usuario cuyas críticas se van a eliminar.
+         * @return Mono<ResponseEntity<String>>
+         *         200 si se eliminaron las críticas exitosamente.
+         *         400 si no se ha especificado el UID del usuario.
+         *         500 si hay un error interno.
+         */
+        @Operation(summary = "Elimina todas las críticas de un usuario", description = "Elimina todas las críticas asociadas a un UID de usuario.", responses = {
+                        @ApiResponse(responseCode = "200", description = "Críticas eliminadas exitosamente."),
+                        @ApiResponse(responseCode = "400", description = "No se ha especificado el UID del usuario."),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+        })
+        @DeleteMapping("/usuario/{userId}")
+        public Mono<ResponseEntity<String>> eliminarCriticasPorUsuario(
+                        @Parameter(description = "UID del usuario cuyas críticas se van a eliminar.") @PathVariable String userId) {
+
+                if (userId == null || userId.trim().isEmpty()) {
+                        return Mono.error(new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST, "El UID del usuario no puede estar vacío."));
+                }
+
+                return Mono.fromCallable(() -> {
+                        criticaService.eliminarCriticasPorUsuario(userId);
+                        return ResponseEntity.ok("Todas las críticas del usuario " + userId + " han sido eliminadas.");
+                }).onErrorResume(RuntimeException.class, e -> {
+                        return Mono.error(new ResponseStatusException(
+                                        HttpStatus.INTERNAL_SERVER_ERROR,
+                                        "Error al eliminar críticas: " + e.getMessage(), e));
+                });
         }
 }

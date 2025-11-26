@@ -335,4 +335,35 @@ public class CriticaService {
             throw new RuntimeException("Error al actualizar la crítica en la base de datos.", e.getCause());
         }
     }
+
+    /**
+     * Elimina todas las críticas de un usuario específico.
+     *
+     * @param userId ID del usuario cuyas críticas se van a eliminar.
+     */
+    public void eliminarCriticasPorUsuario(String userId) {
+        List<ModeloCritica> criticas = getCriticasByUserId(userId);
+        if (criticas == null || criticas.isEmpty()) {
+            logger.info("No se encontraron críticas para el usuario: {}", userId);
+            return;
+        }
+
+        for (ModeloCritica critica : criticas) {
+            String documentId = critica.getDocumentID();
+            if (documentId != null && !documentId.isEmpty()) {
+                try {
+                    repo.deleteCritica(documentId).get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.error("Interrupción al eliminar crítica {}: {}", documentId, e.getMessage());
+                    throw new RuntimeException("Operación interrumpida al eliminar crítica.", e);
+                } catch (ExecutionException e) {
+                    logger.error("Error al eliminar crítica {}: {}", documentId, e.getMessage());
+                    throw new RuntimeException("Error al eliminar crítica en Firestore.", e.getCause());
+                }
+            }
+        }
+
+        logger.info("Todas las críticas del usuario {} han sido eliminadas.", userId);
+    }
 }

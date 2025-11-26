@@ -123,4 +123,14 @@ public class CriticaRepository {
     public ApiFuture<com.google.cloud.firestore.WriteResult> updateCritica(String documentID, ModeloCritica critica) {
         return db.collection("criticas").document(documentID).set(critica);
     }
+
+    /**
+     * Elimina una crítica específica.
+     *
+     * @param documentID ID del documento a eliminar.
+     * @return ApiFuture<WriteResult> resultado de la eliminación.
+     */
+    public ApiFuture<com.google.cloud.firestore.WriteResult> deleteCritica(String documentID) {
+        return db.collection("criticas").document(documentID).delete();
+    }
 }
