@@ -1,3 +1,4 @@
+
 import 'package:flixscore/componentes/home/card_pelicula.dart';
 import 'package:flixscore/controllers/criticas_provider.dart';
 import 'package:flutter/material.dart';

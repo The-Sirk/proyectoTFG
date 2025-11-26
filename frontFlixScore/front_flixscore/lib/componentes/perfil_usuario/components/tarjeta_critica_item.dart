@@ -41,13 +41,17 @@ class TarjetaCritica extends StatelessWidget {
         placeholder: (_, __) => Container(
           color: Colors.grey.shade800,
           child: const Center(
-            child:
-                CircularProgressIndicator(strokeWidth: 2, color: Colors.cyanAccent),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.cyanAccent,
+            ),
           ),
         ),
         errorWidget: (_, __, ___) => Container(
           color: Colors.grey.shade800,
-          child: const Center(child: Icon(Icons.broken_image, color: Colors.white54)),
+          child: const Center(
+            child: Icon(Icons.broken_image, color: Colors.white54),
+          ),
         ),
       ),
     );
@@ -107,9 +111,13 @@ class TarjetaCritica extends StatelessWidget {
                 const Spacer(),
                 editable
                     ? IconButton(
-                        icon: const Icon(Icons.edit,
-                            color: _subtitleColor, size: 18),
+                        icon: const Icon(
+                          Icons.edit,
+                          color: _subtitleColor,
+                          size: 18,
+                        ),
                         onPressed: onEditar,
+                        key: const Key('botonEditarCritica'),
                       )
                     : const SizedBox(height: 40),
               ],
@@ -183,7 +191,7 @@ class TarjetaCritica extends StatelessWidget {
                   ],
                 );
         },
-      )
+      ),
     );
   }
 }

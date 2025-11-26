@@ -16,19 +16,24 @@ class AmigoDeOtroItem extends StatelessWidget {
     final loginProvider = Provider.of<LoginProvider>(context, listen: false);
     final miId = loginProvider.usuarioLogueado?.documentID;
     final esMiPerfil = amigo.documentID == miId;
-    final yaEsAmigo = loginProvider.usuarioLogueado?.amigosId.contains(amigo.documentID) ?? false;
+    final yaEsAmigo =
+        loginProvider.usuarioLogueado?.amigosId.contains(amigo.documentID) ??
+        false;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: (esMiPerfil) ? null : () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => PerfilAmigoPage(
-              usuarioId: amigo.documentID!,
-              nickUsuario: amigo.nombre,
-            ),
-          ),
-        ),
+        key: const Key('amigoDeOtroItem'),
+        onTap: (esMiPerfil)
+            ? null
+            : () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PerfilAmigoPage(
+                    usuarioId: amigo.documentID!,
+                    nickUsuario: amigo.nombre,
+                  ),
+                ),
+              ),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -42,7 +47,9 @@ class AmigoDeOtroItem extends StatelessWidget {
                     : null,
                 child: (amigo.imagenPerfil?.isEmpty ?? true)
                     ? Text(
-                        amigo.nombre.isNotEmpty ? amigo.nombre[0].toUpperCase() : '?',
+                        amigo.nombre.isNotEmpty
+                            ? amigo.nombre[0].toUpperCase()
+                            : '?',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w100,
@@ -69,16 +76,23 @@ class AmigoDeOtroItem extends StatelessWidget {
                       esMiPerfil
                           ? 'Tú'
                           : yaEsAmigo
-                              ? 'Ya es tu amigo'
-                              : 'Aún lo lo sigues',
-                      style: const TextStyle(color: secondaryTextColor, fontSize: 12),
+                          ? 'Ya es tu amigo'
+                          : 'Aún no lo sigues',
+                      style: const TextStyle(
+                        color: secondaryTextColor,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
               ),
               if (!esMiPerfil && !yaEsAmigo) ...[
                 IconButton(
-                  icon: const Icon(Icons.person_add_outlined, color: secondaryTextColor),
+                  key: const Key('botonAgregarAmigo'),
+                  icon: const Icon(
+                    Icons.person_add_outlined,
+                    color: secondaryTextColor,
+                  ),
                   tooltip: 'Agregar amigo',
                   onPressed: () => _agregar(context),
                 ),
@@ -92,7 +106,9 @@ class AmigoDeOtroItem extends StatelessWidget {
   }
 
   Future<void> _agregar(BuildContext context) async {
-    await Provider.of<LoginProvider>(context, listen: false)
-        .buscarYAgregarAmigo(context, amigo.nombre);
+    await Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    ).buscarYAgregarAmigo(context, amigo.nombre);
   }
 }
