@@ -140,19 +140,14 @@ class _ListaAmigosCardState extends State<ListaAmigosCard> {
                     itemBuilder: (_, i) {
                       final a = _amigos[i];
                       return GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => PerfilAmigoPage(usuarioId: a.documentID!, nickUsuario: a.nombre,),
-                            ),
-                          );
-                        },
+                        key: ValueKey(a.documentID),
                         child: AmigoListItem(
+                          key: ValueKey(a.documentID),
                           nombre: a.nombre,
                           amigosEnComun: a.amigosEnComun,
                           imagenPerfil: a.imagenPerfil,
                           onQuitarAmigo: () => _confirmarYEliminarAmigo(a),
-                          onTapPerfil: () => Navigator.pushReplacement(
+                          onTapPerfil: () => Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => PerfilAmigoPage(
@@ -161,7 +156,7 @@ class _ListaAmigosCardState extends State<ListaAmigosCard> {
                               ),
                             ),
                           ),
-                        )
+                        ),
                       );
                     },
                   ),

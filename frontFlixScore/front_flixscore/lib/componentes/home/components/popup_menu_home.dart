@@ -1,7 +1,7 @@
+import 'package:flixscore/paginas/admin_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flixscore/controllers/login_provider.dart';
-import 'package:flixscore/paginas/home_page.dart';
 import 'package:flixscore/paginas/perfil_usuario_page.dart';
 
 enum AppBarMenuOption { verPerfil, administracion, cerrarSesion }
@@ -12,15 +12,15 @@ class AppBarPopupMenu extends StatelessWidget {
   void _onSelected(BuildContext context, AppBarMenuOption item) {
     switch (item) {
       case AppBarMenuOption.verPerfil:
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const PerfilUsuario()),
         );
         break;
       case AppBarMenuOption.administracion:
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(builder: (_) => const AdminUsuariosPage()),
         );
         break;
       case AppBarMenuOption.cerrarSesion:

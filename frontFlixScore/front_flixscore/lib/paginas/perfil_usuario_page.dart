@@ -1,6 +1,8 @@
 import 'package:flixscore/controllers/login_provider.dart';
 import 'package:flixscore/modelos/amigo_modelo.dart';
+import 'package:flixscore/paginas/admin_page.dart';
 import 'package:flixscore/paginas/home_page.dart';
+import 'package:flixscore/paginas/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flixscore/service/api_service.dart';
 import 'package:flixscore/modelos/usuario_modelo.dart';
@@ -13,7 +15,7 @@ import 'package:flixscore/componentes/perfil_usuario/buscar_usuario_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/mis_criticas_card.dart';
 import 'package:provider/provider.dart';
 
-enum MenuOption { navegarAHome, administracion, cerrarSesion }
+enum MenuOption { navegarAHome, administracion, cerrarSesion}
 
 class PerfilUsuario extends StatefulWidget {
   const PerfilUsuario({super.key});
@@ -39,6 +41,17 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
   void initState() {
     super.initState();
     _datosCompletosFuture = _cargarDatosDesdeProvider();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider = Provider.of<LoginProvider>(context, listen: true);
+    final currentUserId = provider.usuarioLogueado?.documentID;
+
+    if (currentUserId != null && provider.usuarioLogueado?.amigosId.isNotEmpty == true) {
+      _recargarAmigosConComunes(provider.amigosObj, currentUserId);
+    }
   }
 
   Future<Map<String, dynamic>> _cargarDatosDesdeProvider() async {
@@ -118,6 +131,15 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     return lista;
   }
 
+  Future<void> _recargarAmigosConComunes(List<ModeloUsuario> amigosObj, String currentUserId) async {
+    final nuevosConComunes = await _cargarAmigosConComunes(amigosObj, currentUserId);
+    if (mounted) {
+      setState(() {
+        _amigosConComunes = nuevosConComunes;
+      });
+    }
+  }
+
   void _actualizarListaAmigosDespuesDeBusqueda() async {
     final provider = Provider.of<LoginProvider>(context, listen: false);
     final currentUserId = provider.usuarioLogueado!.documentID!;
@@ -142,29 +164,34 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   @override
   Widget build(BuildContext context) {
+
     // Lógica para manejar la selección del menú
     void onMenuItemSelected(MenuOption item) {
       switch (item) {
         // Vamos al home
         case MenuOption.navegarAHome:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HomePage(),
+            ),
           );
           break;
 
         // Vamos a administración
         case MenuOption.administracion:
-          // Aquí debemos añadir el navegador a administración
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminUsuariosPage()),
+          );
           break;
 
         // Cerramos sesión
         case MenuOption.cerrarSesion:
           Provider.of<LoginProvider>(context, listen: false).logout();
-          Navigator.pushNamedAndRemoveUntil(
+          Navigator.pushReplacement(
             context,
-            '/login',
-            (route) => false,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
           );
           break;
       }
@@ -183,14 +210,15 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             fontFamily: "Inter",
           ),
         ),
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         actions: [
           // Menú Desplegable
           PopupMenuButton<MenuOption>(
-            tooltip: 'Menú',
+            tooltip: 'Menú',                
             onSelected: onMenuItemSelected,
             icon: const Icon(Icons.more_vert, color: Colors.white),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<MenuOption>>[
+
               // Navegar al Home
               PopupMenuItem<MenuOption>(
                 value: MenuOption.navegarAHome,
@@ -199,6 +227,18 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                     Icon(Icons.house_outlined, color: Colors.blue),
                     SizedBox(width: 8),
                     Text('Ir a principal'),
+                  ],
+                ),
+              ),
+
+              // A administración
+              PopupMenuItem<MenuOption>(
+                value: MenuOption.administracion,
+                child: Row(
+                  children: [
+                    Icon(Icons.shield_outlined, color: Colors.blue),
+                    SizedBox(width: 8),
+                    Text('Administración'),
                   ],
                 ),
               ),
@@ -238,20 +278,18 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
           if (snapshot.hasData) {
             final ModeloUsuario usuario = snapshot.data!['usuarioPrincipal'];
-            final List<Amigo> amigosConComunes =
-                snapshot.data!['amigosConComunes'] as List<Amigo>;
+            final currentUserId = usuario.documentID!;
 
             _nickActual ??= usuario.nick;
 
-            if (_amigosConComunes.isEmpty) {
-              _amigosConComunes = amigosConComunes;
+            final provider = Provider.of<LoginProvider>(context, listen: true);
+            if (provider.amigosObj.isNotEmpty) {
+              _recargarAmigosConComunes(provider.amigosObj, currentUserId);
             }
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final bool isLargeScreen =
-                    constraints.maxWidth > _kTabletBreakpoint;
-                final currentUserId = usuario.documentID!;
+                final bool isLargeScreen = constraints.maxWidth > _kTabletBreakpoint;
 
                 return SingleChildScrollView(
                   child: Padding(

@@ -522,12 +522,10 @@ class LoginProvider extends ChangeNotifier {
   // Actualiza el listado de amigos tras algún cambio
   void actualizarAmigosId(List<String> nuevaLista) {
     if (_usuarioLogueado == null) return;
-    _usuarioLogueado = _usuarioLogueado!.copyWith(
-      amigosId: nuevaLista,
-      puntuaciones: _usuarioLogueado!.puntuaciones,
-      fechaRegistro: _usuarioLogueado!.fechaRegistro,
-    );
+
+    _usuarioLogueado = _usuarioLogueado!.copyWith(amigosId: nuevaLista);
     notifyListeners();
+    cargarAmigos(notificar: true);
   }
 
   // Nuevo método que contiene toda la lógica de búsqueda, verificación y adición
@@ -696,12 +694,9 @@ class LoginProvider extends ChangeNotifier {
         await user.delete();
       }
 
-      mostrarSnackBarExito(
-        context,
-        "Tu cuenta ha sido eliminada exitosamente.",
-      );
-
-      return true;
+      mostrarSnackBarExito(context, "Tu cuenta ha sido eliminada exitosamente.");
+      
+      return true; 
     } catch (e) {
       mostrarSnackBarError(
         context,
@@ -714,9 +709,7 @@ class LoginProvider extends ChangeNotifier {
   // Recarga las puntuaciones medias del usuario
   Future<void> recargarPuntuaciones() async {
     if (_usuarioLogueado == null) return;
-    final nuevas = await _obtenerPuntuacionesDesdeCriticas(
-      _usuarioLogueado!.documentID!,
-    );
+    final nuevas = await _obtenerPuntuacionesDesdeCriticas(_usuarioLogueado!.documentID!);
     _usuarioLogueado = _usuarioLogueado!.copyWith(puntuaciones: nuevas);
     notifyListeners();
   }
