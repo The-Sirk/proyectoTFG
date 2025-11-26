@@ -1,25 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'dart:io';
-import 'package:logging/logging.dart';
-
-final _logger = Logger('AdminService');
 
 class AdminService {
   static const String _baseUrl =
       'https://tfg-backend-152779337859.europe-west1.run.app/admin/users';
 
-  late final String _devKey = Platform.environment['DEV_KEY_ROLES'] ?? 
-      _logMissingKey();
+  late final String _devKey =
+      'ZT`2R3#2((D9[4Z[6rEQ?fB!{yS>hr2PQL+bn+Y!0K,.nY<b';
 
-  String _logMissingKey() {
-      _logger.info("No hay claves de desarrollador (DEV_KEY_ROLES). Las llamadas de administración fallarán con 401/403 si la API lo requiere.");
-      return '';
-  }
-
-  final Map<String, String> _headers = {
-    'Content-Type': 'application/json',
-  };
+  final Map<String, String> _headers = {'Content-Type': 'application/json'};
 
   // ----------------------------------------------------------
   // ASIGNAR ROL
@@ -28,8 +17,9 @@ class AdminService {
     required String uid,
     required String role,
   }) async {
-    final uri = Uri.parse('$_baseUrl/$uid/role')
-        .replace(queryParameters: {'role': role});
+    final uri = Uri.parse(
+      '$_baseUrl/$uid/role',
+    ).replace(queryParameters: {'role': role});
     final response = await http.post(
       uri,
       headers: _headers..['devKeyHeader'] = _devKey,
@@ -45,10 +35,12 @@ class AdminService {
     int maxResults = 50,
     String? nextPageToken,
   }) async {
-    final uri = Uri.parse(_baseUrl.trim()).replace(queryParameters: {
-      'maxResults': maxResults.toString(),
-      if (nextPageToken != null) 'nextPageToken': nextPageToken,
-    });
+    final uri = Uri.parse(_baseUrl.trim()).replace(
+      queryParameters: {
+        'maxResults': maxResults.toString(),
+        if (nextPageToken != null) 'nextPageToken': nextPageToken,
+      },
+    );
 
     final response = await http.get(
       uri,
@@ -64,9 +56,13 @@ class AdminService {
       }
       if (body is List) return body;
 
-      throw Exception('Formato inesperado: ${body.runtimeType}, keys: ${(body as Map).keys}');
+      throw Exception(
+        'Formato inesperado: ${body.runtimeType}, keys: ${(body as Map).keys}',
+      );
     } else {
-      final msg = body is Map ? body['message'] : 'Error ${response.statusCode}';
+      final msg = body is Map
+          ? body['message']
+          : 'Error ${response.statusCode}';
       throw Exception('${response.statusCode} - $msg');
     }
   }
@@ -78,8 +74,9 @@ class AdminService {
     required String uid,
     required bool disabled,
   }) async {
-    final uri = Uri.parse('$_baseUrl/$uid/disable')
-        .replace(queryParameters: {'disabled': disabled.toString()});
+    final uri = Uri.parse(
+      '$_baseUrl/$uid/disable',
+    ).replace(queryParameters: {'disabled': disabled.toString()});
     final response = await http.put(
       uri,
       headers: _headers..['devKeyHeader'] = _devKey,
@@ -96,7 +93,7 @@ class AdminService {
   }) async {
     final uri = Uri.parse('$_baseUrl/$uid/reset-password');
     final response = await http.post(
-      uri, 
+      uri,
       headers: _headers..['devKeyHeader'] = _devKey,
     );
 
@@ -106,9 +103,7 @@ class AdminService {
   // ----------------------------------------------------------
   // ELIMINAR USUARIO
   // ----------------------------------------------------------
-  Future<Map<String, dynamic>> eliminarUsuario({
-    required String uid,
-  }) async {
+  Future<Map<String, dynamic>> eliminarUsuario({required String uid}) async {
     final uri = Uri.parse('$_baseUrl/$uid');
     final response = await http.delete(
       uri,
