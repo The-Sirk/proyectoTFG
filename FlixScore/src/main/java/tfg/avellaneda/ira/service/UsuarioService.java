@@ -29,10 +29,12 @@ public class UsuarioService {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
     private final UsuarioRepository repo;
+    private final CriticaService criticaService;
 
     // Inyección de dependencias por constructor
-    public UsuarioService(UsuarioRepository repo) {
+    public UsuarioService(UsuarioRepository repo, CriticaService criticaService) {
         this.repo = repo;
+        this.criticaService = criticaService;
     }
 
     /**
@@ -110,9 +112,10 @@ public class UsuarioService {
 
     /**
      * Elimina un usuario por ID.
+     * También elimina todas las críticas asociadas a este usuario.
      * * @param usuarioId El ID del usuario a eliminar.
+     * * @return true si la eliminación fue exitosa, false si el usuario no existía.
      * 
-     * @return true si la eliminación fue exitosa, false si el usuario no existía.
      * @throws RuntimeException si la operación falla.
      */
     public boolean deleteUsuario(String usuarioId) {
@@ -124,7 +127,11 @@ public class UsuarioService {
                 return false; // Usuario no encontrado, se devuelve false
             }
 
-            // Realiza la eliminación
+            // Lógica de eliminación de críticas asociada al usuario
+            logger.info("Eliminando críticas asociadas al usuario: {}", usuarioId);
+            criticaService.eliminarCriticasPorUsuario(usuarioId);
+
+            // Realiza la eliminación del usuario
             repo.deleteUsuario(usuarioId).get();
             logger.info("Usuario eliminado correctamente: {}", usuarioId);
             return true; // Eliminación exitosa, se devuelve true
