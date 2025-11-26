@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .pathMatchers("/admin/**").hasRole("admin")
+                        .pathMatchers("/admin/**").hasRole("ADMIN")
                         .anyExchange().authenticated())
                 .addFilterAt(new FirebaseTokenFilter(firebaseAuth), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();

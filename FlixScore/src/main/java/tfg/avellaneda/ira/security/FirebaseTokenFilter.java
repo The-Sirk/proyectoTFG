@@ -40,7 +40,7 @@ public class FirebaseTokenFilter implements WebFilter {
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(token);
             String uid = decodedToken.getUid();
             Map<String, Object> claims = decodedToken.getClaims();
-            String rol = (String) claims.getOrDefault("role", "user");
+            String rol = ((String) claims.getOrDefault("role", "user")).toUpperCase();
 
             // ← LOG TEMPORAL
             System.out.println("UID: " + uid + " | rol: " + rol);
