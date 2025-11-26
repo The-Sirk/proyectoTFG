@@ -50,7 +50,10 @@ class _EditarCriticaDialogState extends State<EditarCriticaDialog> {
       } catch (e) {
         if (mounted) {
           print("Error: $e");
-          mostrarSnackBarError(context, "Error al guardar los cambios. Inténtalo de nuevo más tarde");
+          mostrarSnackBarError(
+            context,
+            "Error al guardar los cambios. Inténtalo de nuevo más tarde",
+          );
         }
       }
     }
@@ -95,7 +98,10 @@ class _EditarCriticaDialogState extends State<EditarCriticaDialog> {
                           children: [
                             const Text(
                               'Puntuación',
-                              style: TextStyle(color: Colors.white70, fontSize: 16),
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 16,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Wrap(
@@ -105,8 +111,10 @@ class _EditarCriticaDialogState extends State<EditarCriticaDialog> {
                               children: List.generate(10, (index) {
                                 final value = index + 1;
                                 return GestureDetector(
-                                  onTapDown: (_) =>
-                                      setStateDialog(() => nuevaPuntuacion = value),
+                                  onTapDown: (_) => setStateDialog(
+                                    () => nuevaPuntuacion = value,
+                                  ),
+                                  key: const Key('puntuacionCritica'),
                                   child: Container(
                                     width: 26,
                                     height: 26,
@@ -115,13 +123,15 @@ class _EditarCriticaDialogState extends State<EditarCriticaDialog> {
                                       alignment: Alignment.center,
                                       children: [
                                         Icon(
-                                          value <= (hoverStar ?? nuevaPuntuacion)
+                                          value <=
+                                                  (hoverStar ?? nuevaPuntuacion)
                                               ? Icons.star
                                               : Icons.star_border,
                                           color: Colors.orange,
                                           size: 26,
                                         ),
-                                        if (value == (hoverStar ?? nuevaPuntuacion))
+                                        if (value ==
+                                            (hoverStar ?? nuevaPuntuacion))
                                           Text(
                                             '${hoverStar ?? nuevaPuntuacion}',
                                             style: const TextStyle(
@@ -140,27 +150,38 @@ class _EditarCriticaDialogState extends State<EditarCriticaDialog> {
                             const SizedBox(height: 20),
                             TextFormField(
                               initialValue: nuevoComentario,
+                              key: const Key('comentarioCritica'),
                               maxLines: 7,
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: 'Escribe tu crítica...',
-                                hintStyle: const TextStyle(color: Colors.white38),
+                                hintStyle: const TextStyle(
+                                  color: Colors.white38,
+                                ),
                                 filled: true,
                                 fillColor: const Color(0xFF1F2937),
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: _dividerColor),
+                                  borderSide: const BorderSide(
+                                    color: _dividerColor,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: _dividerColor),
+                                  borderSide: const BorderSide(
+                                    color: _dividerColor,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(
-                                      color: Colors.cyanAccent, width: 1.5),
+                                    color: Colors.cyanAccent,
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                               onSaved: (val) => nuevoComentario = val!,
@@ -176,11 +197,15 @@ class _EditarCriticaDialogState extends State<EditarCriticaDialog> {
                     children: [
                       TextButton(
                         onPressed: Navigator.of(context).pop,
-                        child: const Text('Cancelar',
-                            style: TextStyle(color: Colors.white70)),
+                        key: const Key('botonCancelar'),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(color: Colors.white70),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
+                        key: const Key('botonGuardar'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.cyanAccent,
                           foregroundColor: Colors.black,
