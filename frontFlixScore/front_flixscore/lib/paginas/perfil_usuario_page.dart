@@ -15,7 +15,7 @@ import 'package:flixscore/componentes/perfil_usuario/buscar_usuario_card.dart';
 import 'package:flixscore/componentes/perfil_usuario/mis_criticas_card.dart';
 import 'package:provider/provider.dart';
 
-enum MenuOption { navegarAHome, administracion, cerrarSesion}
+enum MenuOption { navegarAHome, administracion, cerrarSesion }
 
 class PerfilUsuario extends StatefulWidget {
   const PerfilUsuario({super.key});
@@ -49,7 +49,8 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     final provider = Provider.of<LoginProvider>(context, listen: true);
     final currentUserId = provider.usuarioLogueado?.documentID;
 
-    if (currentUserId != null && provider.usuarioLogueado?.amigosId.isNotEmpty == true) {
+    if (currentUserId != null &&
+        provider.usuarioLogueado?.amigosId.isNotEmpty == true) {
       _recargarAmigosConComunes(provider.amigosObj, currentUserId);
     }
   }
@@ -131,8 +132,14 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     return lista;
   }
 
-  Future<void> _recargarAmigosConComunes(List<ModeloUsuario> amigosObj, String currentUserId) async {
-    final nuevosConComunes = await _cargarAmigosConComunes(amigosObj, currentUserId);
+  Future<void> _recargarAmigosConComunes(
+    List<ModeloUsuario> amigosObj,
+    String currentUserId,
+  ) async {
+    final nuevosConComunes = await _cargarAmigosConComunes(
+      amigosObj,
+      currentUserId,
+    );
     if (mounted) {
       setState(() {
         _amigosConComunes = nuevosConComunes;
@@ -164,17 +171,14 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   @override
   Widget build(BuildContext context) {
-
     // Lógica para manejar la selección del menú
     void onMenuItemSelected(MenuOption item) {
       switch (item) {
         // Vamos al home
         case MenuOption.navegarAHome:
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const HomePage(),
-            ),
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
           );
           break;
 
@@ -197,6 +201,10 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
       }
     }
 
+    // Lógica para determinar si el usuario es administrador
+    final loginProvider = Provider.of<LoginProvider>(context);
+    final bool esAdmin = loginProvider.usuarioLogueado?.esAdmin ?? false;
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
@@ -214,11 +222,10 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
         actions: [
           // Menú Desplegable
           PopupMenuButton<MenuOption>(
-            tooltip: 'Menú',                
+            tooltip: 'Menú',
             onSelected: onMenuItemSelected,
             icon: const Icon(Icons.more_vert, color: Colors.white),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<MenuOption>>[
-
               // Navegar al Home
               PopupMenuItem<MenuOption>(
                 value: MenuOption.navegarAHome,
@@ -232,16 +239,17 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
               ),
 
               // A administración
-              PopupMenuItem<MenuOption>(
-                value: MenuOption.administracion,
-                child: Row(
-                  children: [
-                    Icon(Icons.shield_outlined, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text('Administración'),
-                  ],
+              if (esAdmin)
+                PopupMenuItem<MenuOption>(
+                  value: MenuOption.administracion,
+                  child: Row(
+                    children: [
+                      Icon(Icons.shield_outlined, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text('Administración'),
+                    ],
+                  ),
                 ),
-              ),
 
               //Cerrar Sesión
               PopupMenuItem<MenuOption>(
@@ -289,7 +297,8 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final bool isLargeScreen = constraints.maxWidth > _kTabletBreakpoint;
+                final bool isLargeScreen =
+                    constraints.maxWidth > _kTabletBreakpoint;
 
                 return SingleChildScrollView(
                   child: Padding(

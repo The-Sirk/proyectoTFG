@@ -63,6 +63,8 @@ class LoginProvider extends ChangeNotifier {
       final fechaRegistro = user?.metadata.creationTime;
       final puntuaciones = await _obtenerPuntuacionesDesdeCriticas(uid);
 
+      final isAdmin = await _obtenerClaimAdmin();
+
       final DocumentSnapshot userDoc = await _firestore
           .collection("usuarios")
           .doc(uid)
@@ -86,6 +88,7 @@ class LoginProvider extends ChangeNotifier {
           ),
           fechaRegistro: fechaRegistro,
           puntuaciones: puntuaciones,
+          esAdmin: isAdmin,
         );
         print(
           '[DEBUG LoginProvider] _cargarDatosUsuario: user data loaded, setting autenticado',
@@ -694,9 +697,12 @@ class LoginProvider extends ChangeNotifier {
         await user.delete();
       }
 
-      mostrarSnackBarExito(context, "Tu cuenta ha sido eliminada exitosamente.");
-      
-      return true; 
+      mostrarSnackBarExito(
+        context,
+        "Tu cuenta ha sido eliminada exitosamente.",
+      );
+
+      return true;
     } catch (e) {
       mostrarSnackBarError(
         context,
@@ -709,8 +715,37 @@ class LoginProvider extends ChangeNotifier {
   // Recarga las puntuaciones medias del usuario
   Future<void> recargarPuntuaciones() async {
     if (_usuarioLogueado == null) return;
-    final nuevas = await _obtenerPuntuacionesDesdeCriticas(_usuarioLogueado!.documentID!);
+    final nuevas = await _obtenerPuntuacionesDesdeCriticas(
+      _usuarioLogueado!.documentID!,
+    );
     _usuarioLogueado = _usuarioLogueado!.copyWith(puntuaciones: nuevas);
     notifyListeners();
+  }
+
+  // Función auxiliar para obtener los custom claims
+  Future<bool> _obtenerClaimAdmin() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+
+      // Forzar la recarga del token para obtener los claims más recientes
+      final idTokenResult = await user.getIdTokenResult(true);
+
+      // Obtener el Custom Claim llamado 'role' como String
+      final role = idTokenResult.claims?['role'] as String?;
+
+      // Verificar si el valor del rol es exactamente 'admin' (ignorando mayúsculas/minúsculas por seguridad)
+      final isAdmin = role?.toLowerCase() == 'admin';
+
+      // Imprimir el valor real para depuración
+      print(
+        '[DEBUG LoginProvider] _obtenerClaimAdmin: rol recuperado = $role, es admin = $isAdmin',
+      );
+
+      return isAdmin;
+    } catch (e) {
+      print('[DEBUG LoginProvider] Error al obtener custom claims: $e');
+      return false;
+    }
   }
 }
