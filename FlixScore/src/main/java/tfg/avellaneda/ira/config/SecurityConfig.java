@@ -25,8 +25,11 @@ public class SecurityConfig {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
                 .csrf(csrf -> csrf.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
+                .logout(logout -> logout.disable())
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/tmdb/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .pathMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .pathMatchers("/admin/**").hasRole("admin") // protege /admin/**
                         .anyExchange().authenticated())
                 .addFilterAt(new FirebaseTokenFilter(firebaseAuth), SecurityWebFiltersOrder.AUTHENTICATION)
