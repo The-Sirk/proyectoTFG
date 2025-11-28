@@ -33,8 +33,9 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   String? _nickActual;
 
-  List<Amigo> _amigosConComunes = [];
-
+  List<Amigo>? _amigosConComunes;
+  String? _lastLoadedUserId;
+  int _lastAmigosCount = 0;
   final GlobalKey<BuscarUsuarioCardState> _buscarKey = GlobalKey();
 
   @override
@@ -48,9 +49,17 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     super.didChangeDependencies();
     final provider = Provider.of<LoginProvider>(context, listen: true);
     final currentUserId = provider.usuarioLogueado?.documentID;
+    final currentAmigosCount = provider.usuarioLogueado?.amigosId.length ?? 0;
 
+    // Solo recargar si cambió el usuario o el número de amigos, Y si ya tenemos los objetos de amigos cargados
     if (currentUserId != null &&
-        provider.usuarioLogueado?.amigosId.isNotEmpty == true) {
+        currentAmigosCount > 0 &&
+        provider.amigosObj.isNotEmpty &&
+        (_lastLoadedUserId != currentUserId ||
+            _lastAmigosCount != currentAmigosCount ||
+            _amigosConComunes == null)) {
+      _lastLoadedUserId = currentUserId;
+      _lastAmigosCount = currentAmigosCount;
       _recargarAmigosConComunes(provider.amigosObj, currentUserId);
     }
   }
@@ -61,7 +70,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     final userId = usuario.documentID!;
 
     // Amigos desde provider
-    await provider.cargarAmigos(notificar: false);
+    await provider.cargarAmigos(notificar: true);
     final objetosAmigos = provider.amigosObj;
     final amigosConComunes = await _cargarAmigosConComunes(
       objetosAmigos,
@@ -291,13 +300,10 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
               _nickActual ??= usuario.nick;
 
-              final provider = Provider.of<LoginProvider>(
-                context,
-                listen: true,
-              );
-              if (provider.amigosObj.isNotEmpty) {
-                _recargarAmigosConComunes(provider.amigosObj, currentUserId);
-              }
+              // Usar la lista del snapshot si _amigosConComunes es null
+              final listaAmigos =
+                  _amigosConComunes ??
+                  (snapshot.data!['amigosConComunes'] as List<Amigo>);
 
               return LayoutBuilder(
                 builder: (context, constraints) {
@@ -316,13 +322,13 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                           ? _buildTwoColumnLayout(
                               context,
                               usuario,
-                              _amigosConComunes,
+                              listaAmigos,
                               currentUserId,
                             )
                           : _buildOneColumnLayout(
                               context,
                               usuario,
-                              _amigosConComunes,
+                              listaAmigos,
                               currentUserId,
                             ),
                     ),

@@ -96,77 +96,74 @@ class _FotoPerfilCualquierUsuarioState
             ],
           ),
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Imagen de Perfil',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 5),
-              const Divider(height: 20, color: Color(0xFF333333)),
-              const SizedBox(height: 5),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = MediaQuery.of(context).size.width <= 600;
+
+              return Column(
+                crossAxisAlignment: isMobile
+                    ? CrossAxisAlignment.center
+                    : CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: _tamanioFoto,
-                    height: _tamanioFoto,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF333333),
-                          width: 2,
-                        ),
-                      ),
-                      child: CircleAvatar(
-                        radius: _tamanioFoto / 2,
-                        backgroundColor: Colors.grey.shade700,
-                        child: ClipOval(
-                          child: CachedNetworkImage(
-                            imageUrl: urlActual,
-                            width: _tamanioFoto - 4,
-                            height: _tamanioFoto - 4,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => const Center(
-                              child: SizedBox(
-                                width: 50,
-                                height: 50,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.cyan,
-                                ),
-                              ),
-                            ),
-                            errorWidget: (_, __, ___) => Center(
-                              child: Text(
-                                inicial,
-                                style: const TextStyle(
-                                  fontSize: 55,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  const SizedBox(height: 5),
+                  const Divider(height: 20, color: Color(0xFF333333)),
+                  const SizedBox(height: 5),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isMobile = MediaQuery.of(context).size.width <= 600;
+
+                      if (isMobile) {
+                        // Layout móvil: Column centrada
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            SizedBox(
+                              width: _tamanioFoto,
+                              height: _tamanioFoto,
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFF333333),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: _tamanioFoto / 2,
+                                  backgroundColor: Colors.grey.shade700,
+                                  child: ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl: urlActual,
+                                      width: _tamanioFoto - 4,
+                                      height: _tamanioFoto - 4,
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) => const Center(
+                                        child: SizedBox(
+                                          width: 50,
+                                          height: 50,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.cyan,
+                                          ),
+                                        ),
+                                      ),
+                                      errorWidget: (_, __, ___) => Center(
+                                        child: Text(
+                                          inicial,
+                                          style: const TextStyle(
+                                            fontSize: 55,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
                             Text(
                               usuario.nick,
                               style: const TextStyle(
@@ -175,6 +172,7 @@ class _FotoPerfilCualquierUsuarioState
                                 color: Colors.white,
                               ),
                             ),
+                            const SizedBox(height: 12),
                             if (_yaEsAmigo)
                               const Text(
                                 'Es tu amigo',
@@ -225,13 +223,141 @@ class _FotoPerfilCualquierUsuarioState
                                       ),
                                     ),
                           ],
-                        ),
-                      ],
-                    ),
+                        );
+                      } else {
+                        // Layout desktop: Row horizontal
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: _tamanioFoto,
+                              height: _tamanioFoto,
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFF333333),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: _tamanioFoto / 2,
+                                  backgroundColor: Colors.grey.shade700,
+                                  child: ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl: urlActual,
+                                      width: _tamanioFoto - 4,
+                                      height: _tamanioFoto - 4,
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) => const Center(
+                                        child: SizedBox(
+                                          width: 50,
+                                          height: 50,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.cyan,
+                                          ),
+                                        ),
+                                      ),
+                                      errorWidget: (_, __, ___) => Center(
+                                        child: Text(
+                                          inicial,
+                                          style: const TextStyle(
+                                            fontSize: 55,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        usuario.nick,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      if (_yaEsAmigo)
+                                        const Text(
+                                          'Es tu amigo',
+                                          style: TextStyle(
+                                            color: Color(0xFFAAAAAA),
+                                            fontSize: 14,
+                                          ),
+                                        )
+                                      else
+                                        _isLoading
+                                            ? const SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                              )
+                                            : ElevatedButton.icon(
+                                                onPressed: _agregarAmigo,
+                                                key: const Key(
+                                                  'botonAgregarAmigo',
+                                                ),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.cyan,
+                                                  foregroundColor: Colors.white,
+                                                  elevation: 4,
+                                                  shadowColor: Colors.cyan
+                                                      .withOpacity(0.4),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 8,
+                                                      ),
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.person_add,
+                                                  size: 20,
+                                                ),
+                                                label: const Text(
+                                                  'Hacer amigo',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                    },
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         );
       },
