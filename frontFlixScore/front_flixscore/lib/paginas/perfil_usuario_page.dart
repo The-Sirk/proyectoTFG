@@ -35,7 +35,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   List<Amigo>? _amigosConComunes;
   String? _lastLoadedUserId;
-  int _lastAmigosCount = 0;
+  int _lastAmigosObjLength = 0;
   final GlobalKey<BuscarUsuarioCardState> _buscarKey = GlobalKey();
 
   @override
@@ -46,21 +46,20 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   @override
   void didChangeDependencies() {
-    super.didChangeDependencies();
-    final provider = Provider.of<LoginProvider>(context, listen: true);
-    final currentUserId = provider.usuarioLogueado?.documentID;
-    final currentAmigosCount = provider.usuarioLogueado?.amigosId.length ?? 0;
+  super.didChangeDependencies();
+  final provider = Provider.of<LoginProvider>(context, listen: true);
+  final currentUserId = provider.usuarioLogueado?.documentID;
+  final currentAmigosObj = provider.amigosObj;
 
     // Solo recargar si cambió el usuario o el número de amigos, Y si ya tenemos los objetos de amigos cargados
     if (currentUserId != null &&
-        currentAmigosCount > 0 &&
-        provider.amigosObj.isNotEmpty &&
+        currentAmigosObj.isNotEmpty &&
         (_lastLoadedUserId != currentUserId ||
-            _lastAmigosCount != currentAmigosCount ||
+            _lastAmigosObjLength != currentAmigosObj.length ||
             _amigosConComunes == null)) {
       _lastLoadedUserId = currentUserId;
-      _lastAmigosCount = currentAmigosCount;
-      _recargarAmigosConComunes(provider.amigosObj, currentUserId);
+      _lastAmigosObjLength = currentAmigosObj.length;
+      _recargarAmigosConComunes(currentAmigosObj, currentUserId);
     }
   }
 

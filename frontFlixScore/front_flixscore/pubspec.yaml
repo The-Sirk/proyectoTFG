@@ -45,6 +45,7 @@ dependencies:
     sdk: flutter
   lottie: ^3.3.2
   logging: ^1.3.0
+  flutter_launcher_icons: ^0.14.4
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -77,6 +78,7 @@ flutter:
   assets:
     - assets/images/google_icon.png
     - assets/images/animacion-splash.json
+    - assets/images/google-icon.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -99,5 +101,5 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 flutter_native_splash:
-  color: "#000000"
+  color: "#0a031a"
   image: null
