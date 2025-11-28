@@ -122,245 +122,249 @@ class _AdminUsuariosPageState extends State<AdminUsuariosPage> {
         ),
       ),
       backgroundColor: const Color(0xFF0A0E1A),
-      body: _cargando && _usuarios.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: () async {
-                _usuarios.clear();
-                _nextToken = null;
-                await _cargarUsuarios();
-              },
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.only(top: 10),
-                itemCount: _usuarios.length + (_nextToken != null ? 1 : 0),
-                itemBuilder: (_, i) {
-                  if (i == _usuarios.length && _nextPageToken != null) {
+      body: SafeArea(
+        child: _cargando && _usuarios.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: () async {
+                  _usuarios.clear();
+                  _nextToken = null;
+                  await _cargarUsuarios();
+                },
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.only(top: 10),
+                  itemCount: _usuarios.length + (_nextToken != null ? 1 : 0),
+                  itemBuilder: (_, i) {
+                    if (i == _usuarios.length && _nextPageToken != null) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton(
+                            key: const Key('botonCargarMasUsuarios'),
+                            onPressed: _cargandoMas
+                                ? null
+                                : () => _cargarUsuarios(siguiente: true),
+                            child: _cargandoMas
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text('Cargar más usuarios'),
+                          ),
+                        ),
+                      );
+                    }
+                    final u = _usuarios[i];
+                    final uid = u['uid'] as String;
+                    final email = u['email'] as String? ?? 'Sin email';
+                    final disabled = u['disabled'] as bool? ?? false;
+                    final rol = u['role'] as String? ?? 'user';
+                    final roleColor = rol == 'admin'
+                        ? Colors.blue
+                        : rol == 'sadmin'
+                        ? Colors.purple
+                        : Colors.grey;
                     return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ElevatedButton(
-                          key: const Key('botonCargarMasUsuarios'),
-                          onPressed: _cargandoMas
-                              ? null
-                              : () => _cargarUsuarios(siguiente: true),
-                          child: _cargandoMas
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Text('Cargar más usuarios'),
-                        ),
-                      ),
-                    );
-                  }
-                  final u = _usuarios[i];
-                  final uid = u['uid'] as String;
-                  final email = u['email'] as String? ?? 'Sin email';
-                  final disabled = u['disabled'] as bool? ?? false;
-                  final rol = u['role'] as String? ?? 'user';
-                  final roleColor = rol == 'admin'
-                      ? Colors.blue
-                      : rol == 'sadmin'
-                      ? Colors.purple
-                      : Colors.grey;
-                  return Center(
-                    child: SizedBox(
-                      key: const Key('usuarioItem'),
-                      width: MediaQuery.of(context).size.width <= 600
-                          ? double.infinity
-                          : MediaQuery.of(context).size.width * 0.5,
-                      child: Card(
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 8,
-                        ),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ExpansionTile(
-                          leading: CircleAvatar(
-                            backgroundColor: roleColor,
-                            child: Text(
-                              email[0].toUpperCase(),
-                              style: const TextStyle(color: Colors.white),
-                            ),
+                      child: SizedBox(
+                        key: const Key('usuarioItem'),
+                        width: MediaQuery.of(context).size.width <= 600
+                            ? double.infinity
+                            : MediaQuery.of(context).size.width * 0.5,
+                        child: Card(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 8,
                           ),
-                          title: Text(
-                            email,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'UID: ${uid}',
-                                style: const TextStyle(color: Colors.white70),
+                          child: ExpansionTile(
+                            leading: CircleAvatar(
+                              backgroundColor: roleColor,
+                              child: Text(
+                                email[0].toUpperCase(),
+                                style: const TextStyle(color: Colors.white),
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    rol.toUpperCase(),
-                                    style: TextStyle(
-                                      color: roleColor,
-                                      fontWeight: FontWeight.bold,
+                            ),
+                            title: Text(
+                              email,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'UID: ${uid}',
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      rol.toUpperCase(),
+                                      style: TextStyle(
+                                        color: roleColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    disabled ? 'SUSPENDIDO' : 'ACTIVO',
-                                    style: TextStyle(
-                                      color: disabled
-                                          ? Colors.red
-                                          : Colors.green,
-                                      fontSize: 12,
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      disabled ? 'SUSPENDIDO' : 'ACTIVO',
+                                      style: TextStyle(
+                                        color: disabled
+                                            ? Colors.red
+                                            : Colors.green,
+                                        fontSize: 12,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Verificado: ${u['emailVerified'] == true ? 'Sí' : 'No'}',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                    if (u['creationTime'] != null)
+                                      Text(
+                                        'Creado: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(u['creationTime']).toLocal())}',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                    if (u['lastSignInTime'] != null)
+                                      Text(
+                                        'Último acceso: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(u['lastSignInTime']).toLocal())}',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                      'Rol:',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    DropdownButton<String>(
+                                      key: const Key('rolDropdown'),
+                                      dropdownColor: Colors.grey[850],
+                                      value: ['user', 'admin'].contains(rol)
+                                          ? rol
+                                          : 'user',
+                                      items: ['user', 'admin']
+                                          .map(
+                                            (r) => DropdownMenuItem(
+                                              value: r,
+                                              child: Text(
+                                                r.toUpperCase(),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (val) {
+                                        if (val != null) _asignarRol(uid, val);
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Column(
+                                      children: [
+                                        SizedBox(
+                                          width: 300,
+                                          child: ElevatedButton.icon(
+                                            key: const Key(
+                                              'botonResetPassword',
+                                            ),
+                                            onPressed: disabled
+                                                ? null
+                                                : () => _resetPassword(uid),
+                                            icon: const Icon(Icons.lock_reset),
+                                            label: const Text('Reset password'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  Colors.blue.shade700,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        SizedBox(
+                                          width: 300,
+                                          child: ElevatedButton.icon(
+                                            key: const Key('botonDeshabilitar'),
+                                            onPressed: () =>
+                                                _toggleDisable(uid, !disabled),
+                                            icon: Icon(
+                                              disabled
+                                                  ? Icons.check_circle
+                                                  : Icons.block,
+                                            ),
+                                            label: Text(
+                                              disabled
+                                                  ? 'Habilitar'
+                                                  : 'Deshabilitar',
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: disabled
+                                                  ? Colors.green
+                                                  : Colors.orange,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        SizedBox(
+                                          width: 300,
+                                          child: ElevatedButton.icon(
+                                            key: const Key(
+                                              'botonEliminarUsuario',
+                                            ),
+                                            onPressed: disabled
+                                                ? null
+                                                : () => _eliminarUsuario(uid),
+                                            icon: const Icon(
+                                              Icons.delete_forever,
+                                            ),
+                                            label: const Text('Eliminar'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Verificado: ${u['emailVerified'] == true ? 'Sí' : 'No'}',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                  if (u['creationTime'] != null)
-                                    Text(
-                                      'Creado: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(u['creationTime']).toLocal())}',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                  if (u['lastSignInTime'] != null)
-                                    Text(
-                                      'Último acceso: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(u['lastSignInTime']).toLocal())}',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                  const SizedBox(height: 12),
-                                  const Text(
-                                    'Rol:',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  DropdownButton<String>(
-                                    key: const Key('rolDropdown'),
-                                    dropdownColor: Colors.grey[850],
-                                    value: ['user', 'admin'].contains(rol)
-                                        ? rol
-                                        : 'user',
-                                    items: ['user', 'admin']
-                                        .map(
-                                          (r) => DropdownMenuItem(
-                                            value: r,
-                                            child: Text(
-                                              r.toUpperCase(),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                    onChanged: (val) {
-                                      if (val != null) _asignarRol(uid, val);
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Column(
-                                    children: [
-                                      SizedBox(
-                                        width: 300,
-                                        child: ElevatedButton.icon(
-                                          key: const Key('botonResetPassword'),
-                                          onPressed: disabled
-                                              ? null
-                                              : () => _resetPassword(uid),
-                                          icon: const Icon(Icons.lock_reset),
-                                          label: const Text('Reset password'),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                Colors.blue.shade700,
-                                            foregroundColor: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      SizedBox(
-                                        width: 300,
-                                        child: ElevatedButton.icon(
-                                          key: const Key('botonDeshabilitar'),
-                                          onPressed: () =>
-                                              _toggleDisable(uid, !disabled),
-                                          icon: Icon(
-                                            disabled
-                                                ? Icons.check_circle
-                                                : Icons.block,
-                                          ),
-                                          label: Text(
-                                            disabled
-                                                ? 'Habilitar'
-                                                : 'Deshabilitar',
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: disabled
-                                                ? Colors.green
-                                                : Colors.orange,
-                                            foregroundColor: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      SizedBox(
-                                        width: 300,
-                                        child: ElevatedButton.icon(
-                                          key: const Key(
-                                            'botonEliminarUsuario',
-                                          ),
-                                          onPressed: disabled
-                                              ? null
-                                              : () => _eliminarUsuario(uid),
-                                          icon: const Icon(
-                                            Icons.delete_forever,
-                                          ),
-                                          label: const Text('Eliminar'),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            foregroundColor: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
+      ),
     );
   }
 }

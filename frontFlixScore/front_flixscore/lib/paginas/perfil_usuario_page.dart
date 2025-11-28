@@ -267,73 +267,78 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
         ],
       ),
       backgroundColor: const Color(0xFF0A0E1A),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _datosCompletosFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error al cargar el usuario: ${snapshot.error}',
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
-
-          if (snapshot.hasData) {
-            final ModeloUsuario usuario = snapshot.data!['usuarioPrincipal'];
-            final currentUserId = usuario.documentID!;
-
-            _nickActual ??= usuario.nick;
-
-            final provider = Provider.of<LoginProvider>(context, listen: true);
-            if (provider.amigosObj.isNotEmpty) {
-              _recargarAmigosConComunes(provider.amigosObj, currentUserId);
+      body: SafeArea(
+        child: FutureBuilder<Map<String, dynamic>>(
+          future: _datosCompletosFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
             }
 
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final bool isLargeScreen =
-                    constraints.maxWidth > _kTabletBreakpoint;
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error al cargar el usuario: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.red, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
 
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isLargeScreen
-                          ? constraints.maxWidth * 0.05
-                          : 0.0,
-                      vertical: 10.0,
+            if (snapshot.hasData) {
+              final ModeloUsuario usuario = snapshot.data!['usuarioPrincipal'];
+              final currentUserId = usuario.documentID!;
+
+              _nickActual ??= usuario.nick;
+
+              final provider = Provider.of<LoginProvider>(
+                context,
+                listen: true,
+              );
+              if (provider.amigosObj.isNotEmpty) {
+                _recargarAmigosConComunes(provider.amigosObj, currentUserId);
+              }
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final bool isLargeScreen =
+                      constraints.maxWidth > _kTabletBreakpoint;
+
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isLargeScreen
+                            ? constraints.maxWidth * 0.05
+                            : 0.0,
+                        vertical: 10.0,
+                      ),
+                      child: isLargeScreen
+                          ? _buildTwoColumnLayout(
+                              context,
+                              usuario,
+                              _amigosConComunes,
+                              currentUserId,
+                            )
+                          : _buildOneColumnLayout(
+                              context,
+                              usuario,
+                              _amigosConComunes,
+                              currentUserId,
+                            ),
                     ),
-                    child: isLargeScreen
-                        ? _buildTwoColumnLayout(
-                            context,
-                            usuario,
-                            _amigosConComunes,
-                            currentUserId,
-                          )
-                        : _buildOneColumnLayout(
-                            context,
-                            usuario,
-                            _amigosConComunes,
-                            currentUserId,
-                          ),
-                  ),
-                );
-              },
-            );
-          }
+                  );
+                },
+              );
+            }
 
-          return const Center(
-            child: Text(
-              "Usuario no encontrado o no disponible.",
-              style: TextStyle(color: Colors.white),
-            ),
-          );
-        },
+            return const Center(
+              child: Text(
+                "Usuario no encontrado o no disponible.",
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

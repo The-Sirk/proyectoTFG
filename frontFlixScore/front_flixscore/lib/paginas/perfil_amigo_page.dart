@@ -142,28 +142,30 @@ class PerfilAmigoPage extends StatelessWidget {
         ],
       ),
       backgroundColor: backgroundPage,
-      body: FutureBuilder<ModeloUsuario>(
-        future: _cargarUsuario(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData)
-            return const Center(child: CircularProgressIndicator());
-          final usuario = snapshot.data!;
+      body: SafeArea(
+        child: FutureBuilder<ModeloUsuario>(
+          future: _cargarUsuario(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData)
+              return const Center(child: CircularProgressIndicator());
+            final usuario = snapshot.data!;
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final isSmall = constraints.maxWidth < 600;
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final isSmall = constraints.maxWidth < 600;
 
-              return SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: isSmall
-                      ? _buildOneColumnLayout(usuario)
-                      : _buildTwoColumnLayout(usuario),
-                ),
-              );
-            },
-          );
-        },
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: isSmall
+                        ? _buildOneColumnLayout(usuario)
+                        : _buildTwoColumnLayout(usuario),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
