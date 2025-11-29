@@ -14,20 +14,21 @@ void main() {
 
   testWidgets('Login con credenciales válidas, agregar/eliminar amigo', (WidgetTester tester) async {
     // Llamado de la aplicacion que queremos ejecutar
-    app.main();
-
+    await tester.runAsync(() async {
+      app.main();
+    });   
     // Esperar a que cargue toda la aplicacion
     await tester.pumpAndSettle();
     // Esperar 1 segundos
     await tester.pump(const Duration(seconds: 1));
     // Busqueda de campo tipo TextField sin ID por hintText
-    final usuariologin = find.widgetWithText(TextField, 'tu@email.com');
+    final usuariologin = find.byKey(Key('textfield_email_login'));
     // Introducir Texto en el campo TextField
     await tester.enterText(usuariologin, 'Testing@Testing.es');
     // Busqueda de campo tipo TextField sin ID por hintText
-    final passlogin = find.widgetWithText(TextField, '••••••••');
+    final passlogin = find.byKey(Key('textfield_password_login'));
     await tester.enterText(passlogin, 'Testing');
-    final btninicio = find.text('Iniciar Sesión');
+    final btninicio = find.byKey(Key('boton_enviar'));
     
     // Hacer clic en el boton de inicio
     await tester.tap(btninicio);
