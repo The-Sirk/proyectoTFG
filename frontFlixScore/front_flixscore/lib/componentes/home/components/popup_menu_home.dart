@@ -87,17 +87,44 @@ class AppBarPopupMenu extends StatelessWidget {
       key: const Key('menu_perfil'),
       tooltip: 'Navegación',
       onSelected: (item) => _onSelected(context, item),
-      icon: CircleAvatar(
-        radius: 27,
-        backgroundColor: const Color(0xFF0A0E1A),
-        child: ClipOval(
-          child: Image.network(
-            loginProvider.usuarioLogueado?.imagenPerfil ?? '',
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                const Icon(Icons.person, color: Colors.white),
-          ),
-        ),
+      icon: Builder(
+        builder: (context) {
+          final String urlImagen = loginProvider.usuarioLogueado?.imagenPerfil ?? '';
+          final String? nickUsuario = loginProvider.usuarioLogueado?.nick;
+          final String inicial = nickUsuario != null && nickUsuario.isNotEmpty
+              ? nickUsuario[0].toUpperCase()
+              : '?'; 
+          const double radioAvatar = 28;
+          const double tamanoFuente = radioAvatar * 1.2;
+          final Widget fallbackWidget = Center(
+            child: Text(
+              inicial,
+              style: const TextStyle(
+                fontSize: tamanoFuente, 
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          );
+          Widget childWidget;
+          if (urlImagen.isEmpty) {
+            childWidget = fallbackWidget;
+          } else {
+            childWidget = ClipOval(
+              child: Image.network(
+                urlImagen,
+                fit: BoxFit.cover,
+                cacheWidth: 150,
+                errorBuilder: (_, __, ___) => fallbackWidget,
+              ),
+            );
+          }
+          return CircleAvatar(
+            radius: radioAvatar,
+            backgroundColor: const Color(0xFF333333),
+            child: childWidget,
+          );
+        }
       ),
       itemBuilder: (_) => menuItems,
     );

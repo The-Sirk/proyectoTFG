@@ -183,6 +183,44 @@ class LoginProvider extends ChangeNotifier {
     }
   }
 
+  // Recuperaciónd de contraseña
+  Future<void> solicitarRecuperacionContrasena({required String email}) async {
+    try {
+      _status = AuthStatus.autenticando; 
+      _errorMessage = null;
+      notifyListeners();
+      await _auth.sendPasswordResetEmail(email: email);
+      _status = AuthStatus.noAutenticado;
+      notifyListeners();
+      
+    } on FirebaseAuthException catch (e) {
+      // Revertimos el estado de autenticación ya que falló
+      _status = AuthStatus.noAutenticado;
+      _usuarioLogueado = null; 
+
+      String errorMessage;
+      if (e.code == 'invalid-email') {
+        errorMessage = "El correo proporcionado no es válido.";
+      } else if (e.code == 'user-not-found') {
+        errorMessage = "Hemos enviado un correo para restablecer la contraseña. Revisa tu bandeja de entrada y spam.";
+      } else {
+        errorMessage = "Ocurrió un error inesperado al solicitar la recuperación: ${e.message}";
+      }
+
+      _errorMessage = errorMessage;
+      notifyListeners();
+      // Lanzamos la excepción para que el widget (card_login) pueda mostrar el SnackBar de error
+      throw Exception(errorMessage); 
+      
+    } catch (e) {
+      _status = AuthStatus.noAutenticado;
+      _usuarioLogueado = null;
+      _errorMessage = "Error desconocido al solicitar recuperación: $e";
+      notifyListeners();
+      throw Exception(_errorMessage);
+    }
+  }
+
   // Cerrar sesión
   Future<void> logout() async {
     // Cerrar sesión de Firebase Auth
@@ -306,7 +344,9 @@ class LoginProvider extends ChangeNotifier {
       final UserCredential userCredential = await _auth.signInWithPopup(
         googleProvider,
       );
+      
       if (userCredential.user == null) {
+        // En caso de un fallo que no lance excepción
         _status = AuthStatus.noAutenticado;
         _usuarioLogueado = null;
         _errorMessage = 'Error de autenticación con Google:';
@@ -336,9 +376,21 @@ class LoginProvider extends ChangeNotifier {
       }
 
       // El authStateChanges listener se encargará de cargar los datos del usuario
-      // PERO para asegurar que no haya condiciones de carrera con usuarios nuevos,
-      // llamamos explícitamente a cargar datos aquí también.
       await _cargarDatosUsuario(userCredential.user!.uid);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'popup-closed-by-user' || e.code == 'auth/cancelled-popup-request') {
+        print('[DEBUG LoginProvider] Login Google Web cancelado por el usuario.');
+        _status = AuthStatus.noAutenticado;
+        _usuarioLogueado = null;
+        notifyListeners();
+        return;
+      }
+      
+      _status = AuthStatus.noAutenticado;
+      _usuarioLogueado = null;
+      _errorMessage = 'Error de autenticación con Google: ${e.message}';
+      notifyListeners();
+      throw Exception(_errorMessage);
     } catch (e) {
       _status = AuthStatus.noAutenticado;
       _usuarioLogueado = null;
@@ -355,36 +407,26 @@ class LoginProvider extends ChangeNotifier {
       notifyListeners();
       final GoogleSignIn googleSignIn = GoogleSignIn.instance;
       await googleSignIn.initialize();
-
-      // Intentar autenticación lightweight primero (silenciosa)
-      GoogleSignInAccount? googleUser = await googleSignIn
-          .attemptLightweightAuthentication();
-
-      // Si el lightweight no funciona, usar authenticate (muestra diálogo)
-      googleUser ??= await googleSignIn.authenticate();
-
-      // Aqui da error de deadCode, pero googleUser puede ser nulo perfectamente.
-      if (googleUser == null) {
-        _status = AuthStatus.noAutenticado;
-        _usuarioLogueado = null;
-        _errorMessage =
-            'Error de autenticación con Google: No se pudo obtener la cuenta de Google.';
-        notifyListeners();
-        throw Exception('Error al autenticar usuario con Google');
+      GoogleSignInAccount? googleUser; 
+      try {
+        googleUser = await googleSignIn.attemptLightweightAuthentication();
+        googleUser ??= await googleSignIn.authenticate(); 
+      } catch (e) {
       }
-
-      // Obtener credenciales de autenticación
+      if (googleUser == null) {
+        _usuarioLogueado = null;
+        _status = AuthStatus.noAutenticado;
+        notifyListeners();
+        return;
+      }
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
       final credenciales = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );
-
       UserCredential userCredential = await _auth.signInWithCredential(
         credenciales,
       );
-
       if (userCredential.user == null) {
         _status = AuthStatus.noAutenticado;
         _usuarioLogueado = null;
@@ -392,8 +434,6 @@ class LoginProvider extends ChangeNotifier {
         notifyListeners();
         throw Exception('Error al autenticar usuario con Google');
       }
-
-      // Si el usuario no existe en la base de datos, lo creamos
       final DocumentSnapshot userDoc = await _firestore
           .collection("usuarios")
           .doc(userCredential.user!.uid)
@@ -413,12 +453,15 @@ class LoginProvider extends ChangeNotifier {
           ),
         );
       }
-
-      // El authStateChanges listener se encargara de cargar los datos del usuario
-      // PERO para asegurar que no haya condiciones de carrera con usuarios nuevos,
-      // llamamos explícitamente a cargar datos aquí también.
       await _cargarDatosUsuario(userCredential.user!.uid);
     } catch (e) {
+      if (e.toString().contains('cancelled') || e.toString().contains('sign_in_failed')) {
+          print('[DEBUG LoginProvider] Login Google (mobile) cancelación en el bloque catch.');
+          _status = AuthStatus.noAutenticado;
+          _usuarioLogueado = null;
+          notifyListeners();
+          return;
+      }
       _status = AuthStatus.noAutenticado;
       _usuarioLogueado = null;
       _errorMessage = 'Error de autenticación con Google: $e';
@@ -426,11 +469,8 @@ class LoginProvider extends ChangeNotifier {
       throw Exception(_errorMessage);
     }
   }
-
-  // Actualizar nick
   Future<void> actualizarNick(String nuevoNick) async {
     if (_usuarioLogueado == null || _auth.currentUser == null) return;
-
     try {
       await ApiService().cambiarNick(_auth.currentUser!.uid, nuevoNick);
       _usuarioLogueado = _usuarioLogueado!.copyWith(nick: nuevoNick);

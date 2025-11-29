@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "152779337859-jcju0tie1d5u4anugdj59q5rke1tghrb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.front_flixscore",
+            "certificate_hash": "af5c3e93f5af4ad30a355f226896b630e752da50"
+          }
+        },
+        {
+          "client_id": "152779337859-pudrluirnc6pmbdc2mtau704d50j0brr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.front_flixscore",
+            "certificate_hash": "de758746b3e04c36a12c5774dd3dda2276a8486a"
+          }
+        },
+        {
           "client_id": "152779337859-7kdebd9c7rjhl77la9c1shn8t0kbrnh3.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -84,17 +84,16 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: const Color(0xFF111827),
           title: Row(
             children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.blueAccent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.local_movies_outlined,
-                  color: Colors.white,
-                  size: 28,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8), // <-- Aquí se define el radio
+                child: Container(
+                  width: 45,
+                  height: 45,
+                  child: Image.asset(
+                    'assets/icon/icon.png',
+                    fit: BoxFit.cover, 
+                    cacheWidth: 150, 
+                  ),
                 ),
               ),
               const SizedBox(width: 15),
