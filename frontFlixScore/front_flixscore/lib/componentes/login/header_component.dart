@@ -7,14 +7,18 @@ class HeaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.blueAccent,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          padding: const EdgeInsets.all(6),
-          child: Icon(Icons.local_movies_outlined, color: Colors.white, size: 36),
-        ),
+        ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: 45,
+                  height: 45,
+                  child: Image.asset(
+                    'assets/icon/icon.png',
+                    fit: BoxFit.cover, 
+                    cacheWidth: 150, 
+                  ),
+                ),
+              ),
         const SizedBox(height: 18),
         Text(
           "FlixScore",

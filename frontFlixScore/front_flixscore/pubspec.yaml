@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_svg: ^2.0.9
+  flutter_svg: ^2.2.3
   http: ^1.5.0
   cached_network_image: ^3.4.1
   image_picker: ^1.2.0
@@ -46,6 +46,7 @@ dependencies:
   lottie: ^3.3.2
   logging: ^1.3.0
   flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -81,6 +82,7 @@ flutter:
     - assets/images/google_icon.png
     - assets/images/animacion-splash.json
     - assets/images/google-icon.svg
+    - assets/icon/icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -99,9 +101,17 @@ flutter:
         - asset: assets/fonts/Inter/static/Inter_18pt-Regular.ttf
         - asset: assets/fonts/Inter/static/Inter_18pt-Bold.ttf
         - asset: assets/fonts/Inter/static/Inter_18pt-Italic.ttf
+        - asset: assets/fonts/Inter/static/Poppins-LightItalic.ttf
+        - asset: assets/fonts/Inter/static/Poppins-ThinItalic.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 flutter_native_splash:
-  color: "#0a031a"
-  image: null
+  color: "#0a0e1a"
+  image: assets/images/flixscore_mobile_.png
+  fullscreen: true 
+
+  android_12:
+    color: "#0a0e1a"
+    image: assets/images/flixscore_icon_only.png
+    branding: assets/images/flixscore_branding.png

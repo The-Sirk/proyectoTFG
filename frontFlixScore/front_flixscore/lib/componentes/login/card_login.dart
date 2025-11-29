@@ -98,6 +98,117 @@ class _LoginCardState extends State<LoginCard> {
     }
   }
 
+  // Método para la recuperación de contraseña del usuario
+  void _recuperarContrasena() async {
+    final recuperacionEmailController = TextEditingController();
+    final bool? confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1C25),
+        title: const Text(
+          'Recuperar Contraseña',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Ingresa el correo electrónico de tu cuenta para recibir el email de restablecimiento.',
+              style: TextStyle(color: Color(0xFFAAAAAA)),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: recuperacionEmailController,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => Navigator.of(context).pop(true),
+              key: Key('correoARecuperar'),
+              decoration: const InputDecoration(
+                labelText: 'Tu correo electrónico',
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
+              ),
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'Cancelar',
+              key: Key('cancelarRecuperacion'),
+              style: TextStyle(color: Color(0xFFAAAAAA)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'Enviar Enlace',
+              key: Key('enviarRecuperacion'),
+              style: TextStyle(color: Colors.blueAccent),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmar == true) {
+      final email = recuperacionEmailController.text.trim();
+      //recuperacionEmailController.dispose();
+      if (email.isEmpty) {
+        if (mounted) {
+          mostrarSnackBarError(context, "El correo no puede estar vacío.");
+        }
+        return;
+      }
+      try {
+        final LoginProvider loginProvider = Provider.of<LoginProvider>(
+          context,
+          listen: false,
+        );
+        print('[LOGGER 4] Llamando a Firebase para enviar correo a: $email');
+        await loginProvider.solicitarRecuperacionContrasena(email: email);
+        print('[LOGGER 5] Correo enviado con éxito. Preparando SnackBar.');
+        if (mounted) {
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) { 
+              print('[LOGGER 6a] Mostrando SnackBar de ÉXITO.');
+              mostrarSnackBarExito(
+                context,
+                "Se ha enviado un correo... Revisa tu bandeja de entrada.",
+              );
+            } else {
+              print('[LOGGER 6b] Falló el segundo chequeo mounted dentro del delay. No se muestra SnackBar.');
+            }
+          });
+        } else {
+          print('[LOGGER 6c] Falló el primer chequeo mounted. Correo enviado, pero no se muestra SnackBar.');
+        }
+      } catch (e) {
+        print('[LOGGER 7] Excepción atrapada: $e');
+        if (mounted) {
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              print('[LOGGER 8a] Mostrando SnackBar de ERROR.');
+              mostrarSnackBarError(
+                context,
+                "Error: ${e.toString().replaceAll('Exception: ', '')}",
+              );
+            } else {
+              print('[LOGGER 8b] Falló el segundo chequeo mounted dentro del delay. No se muestra SnackBar.');
+            }
+          });
+        } else {
+          print('[LOGGER 8c] Falló el primer chequeo mounted. Error ocurrido, pero no se muestra SnackBar.');
+        }
+      }
+    } else {
+      print('[LOGGER 9] Usuario canceló el diálogo.');
+    }
+    recuperacionEmailController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final _loginProvider = Provider.of<LoginProvider>(context);
@@ -208,7 +319,7 @@ class _LoginCardState extends State<LoginCard> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Text(
-                    "O continúa con",
+                    "O",
                     style: TextStyle(color: Colors.white54),
                   ),
                 ),
@@ -240,7 +351,7 @@ class _LoginCardState extends State<LoginCard> {
                   }
                 },
                 icon: SvgPicture.asset(
-                  "images/google-icon.svg",
+                  "assets/images/google-icon.svg",
                   //"assets/images/google_icon.png",
                   width: 35,
                   height: 35,
@@ -271,26 +382,52 @@ class _LoginCardState extends State<LoginCard> {
         return Column(
           children: [
             const SizedBox(height: 24),
-            Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               key: const Key('textfield_email_login'),
               controller: emailController,
-              decoration: InputDecoration(
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
-                hintText: "tu@email.com",
+                labelText: "tu@email.com",
+                floatingLabelBehavior: FloatingLabelBehavior.never, 
               ),
             ),
             const SizedBox(height: 16),
-            Text("Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text("Contraseña",
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               key: const Key('textfield_password_login'),
               controller: passwordController,
               obscureText: true,
-              decoration: InputDecoration(
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _iniciarSesion(),
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
-                hintText: "••••••••",
+                labelText: "••••••••",
+                floatingLabelBehavior: FloatingLabelBehavior.never, 
+              ),
+            ),
+            const SizedBox(height: 8), 
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _recuperarContrasena,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  "¿Olvidaste tu contraseña?",
+                  style: TextStyle(
+                    color: Colors.blueAccent, 
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12, 
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -300,7 +437,7 @@ class _LoginCardState extends State<LoginCard> {
         return Column(
           children: [
             const SizedBox(height: 24),
-            Text(
+            const Text(
               "Nombre de Usuario",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -308,36 +445,43 @@ class _LoginCardState extends State<LoginCard> {
             TextField(
               key: const Key('textfield_username_registro'),
               controller: usernameController,
-              decoration: InputDecoration(
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.person, color: Colors.white54),
-                hintText: "Nombre de Usuario",
+                labelText: "Nombre de Usuario",
+                floatingLabelBehavior: FloatingLabelBehavior.never, 
               ),
             ),
             const SizedBox(height: 16),
-            Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text("Email", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               key: const Key('textfield_email_registro'),
               controller: emailController,
-              decoration: InputDecoration(
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
-                hintText: "tu@email.com",
+                labelText: "tu@email.com",
+                floatingLabelBehavior: FloatingLabelBehavior.never, 
               ),
             ),
             const SizedBox(height: 16),
-            Text("Contraseña", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text("Contraseña",
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               key: const Key('textfield_password_registro'),
               obscureText: true,
               controller: passwordController,
-              decoration: InputDecoration(
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
-                hintText: "••••••••",
+                labelText: "••••••••",
+                floatingLabelBehavior: FloatingLabelBehavior.never, 
               ),
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               "Repetir Contraseña",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -345,10 +489,13 @@ class _LoginCardState extends State<LoginCard> {
             TextField(
               key: const Key('textfield_repeatPassword_registro'),
               controller: repeatPasswordController,
+              textInputAction: TextInputAction.done,
               obscureText: true,
-              decoration: InputDecoration(
+              onSubmitted: (_) => _registrarUsuario(),
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.lock_reset, color: Colors.white54),
-                hintText: "••••••••",
+                labelText: "••••••••",
+                floatingLabelBehavior: FloatingLabelBehavior.never, 
               ),
             ),
             const SizedBox(height: 24),

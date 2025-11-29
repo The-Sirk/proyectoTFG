@@ -138,7 +138,7 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
   }
 
   // ======================================================================
-  // ⬆Subida de Imagen a Storage y Eliminación de Anterior
+  // Subida de Imagen a Storage y Eliminación de Anterior
   // ======================================================================
 
   Future<String> _subirImagen(
