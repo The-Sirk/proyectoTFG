@@ -140,7 +140,7 @@ class _ListaAmigosCardState extends State<ListaAmigosCard> {
                     itemBuilder: (_, i) {
                       final a = _amigos[i];
                       return GestureDetector(
-                        key: ValueKey(a.documentID),
+                        key: Key('ListaAmigos'),
                         child: AmigoListItem(
                           key: ValueKey(a.documentID),
                           nombre: a.nombre,
