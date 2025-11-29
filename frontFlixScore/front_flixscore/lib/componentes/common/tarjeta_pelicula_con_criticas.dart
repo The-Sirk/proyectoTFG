@@ -26,6 +26,7 @@ class _TarjetaPeliculaConCriticasState
   bool mostrarCritica = false;
   int puntuacion = 0;
   int hoverStar = 0;
+  bool _guardando = false;
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +364,6 @@ class _TarjetaPeliculaConCriticasState
   }
 
   Widget widgetCrearCritica(CriticasProvider criticasProvider) {
-    final usuarioUID = criticasProvider.usuarioLogueado?.documentID ?? '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -453,36 +453,51 @@ class _TarjetaPeliculaConCriticasState
                 ),
               ),
               ElevatedButton(
-                key: Key('buttonGuardarCritica'),
-                onPressed: () async {
-                  try {
-                    await criticasProvider.crearCritica(
-                      ModeloCritica(
-                        usuarioUID: usuarioUID,
-                        peliculaID: widget.pelicula.id,
-                        puntuacion: puntuacion,
-                        comentario: comentarioController.text,
-                        fechaCreacion: DateTime.now().millisecondsSinceEpoch,
-                      ),
-                    );
-                  } catch (e) {
-                    // Manejar error
-                  }
-                  if (mounted) {
-                    setState(() {
-                      mostrarCritica = false;
-                      comentarioController.clear();
-                      puntuacion = 0;
-                      Navigator.pop(context);
-                    });
-                  }
-                },
-                child: const Text("Enviar critica"),
-              ),
+                key: const Key('buttonGuardarCritica'),
+                onPressed: _guardando ? null : () => _guardarCritica(criticasProvider), 
+                child: Text(_guardando ? "Enviando..." : "Enviar crítica"),
+              )
             ],
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _guardarCritica(CriticasProvider criticasProvider) async {
+    if (_guardando) {
+        return; 
+    }
+    final usuarioUID = criticasProvider.usuarioLogueado?.documentID ?? '';
+    setState(() {
+        _guardando = true;
+    });
+    try {
+        await criticasProvider.crearCritica(
+            ModeloCritica(
+                usuarioUID: usuarioUID,
+                peliculaID: widget.pelicula.id,
+                puntuacion: puntuacion,
+                comentario: comentarioController.text,
+                fechaCreacion: DateTime.now().millisecondsSinceEpoch,
+            ),
+        );
+        if (mounted) {
+            setState(() {
+                mostrarCritica = false;
+                comentarioController.clear();
+                puntuacion = 0;
+            });
+            Navigator.pop(context);
+        }
+    } catch (e) {
+        print('Error al guardar crítica: $e');
+    } finally {
+        if (mounted && _guardando) {
+             setState(() {
+                _guardando = false;
+            });
+        }
+    }
   }
 }
