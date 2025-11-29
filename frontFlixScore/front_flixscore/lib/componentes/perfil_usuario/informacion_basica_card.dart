@@ -47,12 +47,12 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
     super.dispose();
   }
 
-    String _formatearFecha(DateTime? fecha) {
-      if (fecha == null) return 'Desconocida';
-      return '${fecha.day.toString().padLeft(2, '0')}-'
-            '${fecha.month.toString().padLeft(2, '0')}-'
-            '${fecha.year}';
-    }
+  String _formatearFecha(DateTime? fecha) {
+    if (fecha == null) return 'Desconocida';
+    return '${fecha.day.toString().padLeft(2, '0')}-'
+        '${fecha.month.toString().padLeft(2, '0')}-'
+        '${fecha.year}';
+  }
 
   Future<void> _guardarCambios() async {
     final nuevoNick = _nickController.text.trim();
@@ -62,7 +62,10 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
     }
 
     try {
-      await Provider.of<LoginProvider>(context, listen: false).actualizarNick(nuevoNick);
+      await Provider.of<LoginProvider>(
+        context,
+        listen: false,
+      ).actualizarNick(nuevoNick);
       if (!mounted) return;
       mostrarSnackBarExito(context, "Nick actualizado con éxito");
       widget.onNickActualizado(nuevoNick);
@@ -102,10 +105,7 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
           const SizedBox(height: 4),
           const Text(
             "Consulta tu información personal",
-            style: TextStyle(
-              color: _subtitleColor,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: _subtitleColor, fontSize: 14),
           ),
           const SizedBox(height: 23),
 
@@ -137,13 +137,17 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ElevatedButton(
-                key: Key('EliminarCuenta'),
+                key: const Key('botonEliminarCuenta'),
                 onPressed: () async {
-                  final provider = Provider.of<LoginProvider>(context, listen: false);
-                  final bool success = await provider.eliminarCuentaDefinitivamente(context);
+                  final provider = Provider.of<LoginProvider>(
+                    context,
+                    listen: false,
+                  );
+                  final bool success = await provider
+                      .eliminarCuentaDefinitivamente(context);
 
                   if (success) {
-                    widget.onCuentaEliminada(); 
+                    widget.onCuentaEliminada();
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -167,6 +171,7 @@ class _InformacionBasicaCardState extends State<InformacionBasicaCard> {
                       ),
               ),
               ElevatedButton.icon(
+                key: const Key('botonGuardarCambios'),
                 onPressed: _guardarCambios,
                 icon: const Icon(Icons.save),
                 label: const Text("Guardar cambios"),
@@ -218,6 +223,7 @@ class _TextoEditable extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
+          key: const Key('campoNick'),
           controller: controller,
           style: const TextStyle(color: _primaryTextColor),
           decoration: InputDecoration(
@@ -229,7 +235,10 @@ class _TextoEditable extends StatelessWidget {
               borderSide: BorderSide.none,
             ),
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 12,
+              horizontal: 10,
+            ),
           ),
         ),
         if (textoAyuda != null)
@@ -286,7 +295,10 @@ class _TextoNoEditable extends StatelessWidget {
               borderSide: BorderSide.none,
             ),
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 12,
+              horizontal: 10,
+            ),
           ),
         ),
         if (textoAyuda != null)

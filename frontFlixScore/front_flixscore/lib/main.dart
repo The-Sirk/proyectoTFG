@@ -8,6 +8,8 @@ import 'package:flixscore/controllers/login_provider.dart';
 import 'package:flixscore/controllers/register_provider.dart';
 import 'package:flixscore/paginas/home_page.dart';
 import 'package:flixscore/paginas/login_page.dart';
+import 'package:flixscore/paginas/perfil_usuario_page.dart';
+import 'package:flixscore/paginas/perfil_amigo_page.dart';
 import 'package:flixscore/firebase_options.dart';
 
 void main() async {
@@ -74,28 +76,67 @@ class MyApp extends StatelessWidget {
               borderSide: BorderSide.none,
             ),
           ),
+          pageTransitionsTheme: PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: NoTransitionsBuilder(),
+              TargetPlatform.iOS: NoTransitionsBuilder(),
+              TargetPlatform.macOS: NoTransitionsBuilder(),
+              TargetPlatform.windows: NoTransitionsBuilder(),
+              TargetPlatform.linux: NoTransitionsBuilder(),
+              TargetPlatform.fuchsia: NoTransitionsBuilder(),
+            },
+          ),
         ),
         navigatorObservers: [routeObserver],
         initialRoute: "/",
         routes: {
           '/': (context) => const SplashScreen(),
+          "/login": (context) => const SafeArea(
+            child: Scaffold(
+              backgroundColor: Color(0xFF000000),
+              body: Center(child: LoginScreen()),
+            ),
+          ),
           "/home": (context) => Consumer2<LoginProvider, RegisterProvider>(
             builder: (context, loginProvider, registerProvider, _) {
               if (loginProvider.status == AuthStatus.autenticado ||
                   registerProvider.status == RegisterStatus.registrado) {
                 return const HomePage();
               } else {
-                return const SafeArea(
-                  child: Scaffold(
-                    backgroundColor: Color(0xFF000000),
-                    body: Center(child: LoginScreen()),
-                  ),
-                );
+                // Si no está autenticado, redirigir a login
+                // Usamos un microtask para evitar errores de construcción
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Navigator.of(context).pushReplacementNamed('/login');
+                });
+                return const SizedBox.shrink(); // Retornar widget vacío mientras redirige
               }
             },
           ),
+          "/perfil-usuario": (context) => const PerfilUsuario(),
+          "/perfil-amigo": (context) {
+            final args =
+                ModalRoute.of(context)!.settings.arguments
+                    as Map<String, dynamic>;
+            return PerfilAmigoPage(
+              usuarioId: args['usuarioId'],
+              nickUsuario: args['nickUsuario'],
+            );
+          },
         },
       ),
     );
+  }
+}
+
+class NoTransitionsBuilder extends PageTransitionsBuilder {
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return child;
   }
 }

@@ -1,0 +1,52 @@
+# Flutter/Dart - archivos generados y caché
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+
+# Plataformas específicas que no necesitamos para web
+android/
+ios/
+linux/
+macos/
+windows/
+
+# Archivos de prueba
+test/
+coverage/
+
+# Documentación
+README.md
+CHANGELOG.md
+LICENSE
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Node modules (si hubiera)
+node_modules/
+
+# Archivos de configuración local
+.env
+.env.local

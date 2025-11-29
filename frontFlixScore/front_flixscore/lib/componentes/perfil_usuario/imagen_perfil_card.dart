@@ -25,11 +25,12 @@ class ImagenPerfilUsuarioCard extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ImagenPerfilUsuarioCard> createState() => _ImagenPerfilUsuarioCardState();
+  State<ImagenPerfilUsuarioCard> createState() =>
+      _ImagenPerfilUsuarioCardState();
 }
 
 class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
-  String? _urlImagen; 
+  String? _urlImagen;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -37,7 +38,7 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
     super.initState();
     _urlImagen = widget.urlImagenInicial;
   }
-  
+
   // ======================================================================
   // Lógica de cambio de imagen
   // ======================================================================
@@ -46,7 +47,7 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
     if (fileData == null) return;
 
     // Actualiza la URL antigua del estado antes de subir la nueva
-    final urlAntigua = _urlImagen; 
+    final urlAntigua = _urlImagen;
 
     OverlayEntry? subiendoImagen;
     try {
@@ -82,15 +83,15 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
       });
       widget.onImagenActualizada(nuevaUrl);
 
-      if (mounted) mostrarSnackBarExito(context, "Imagen de perfil actualizada.");
-
+      if (mounted)
+        mostrarSnackBarExito(context, "Imagen de perfil actualizada.");
     } catch (e) {
       if (mounted) mostrarSnackBarError(context, _obtenerMensajeError(e));
     } finally {
       subiendoImagen?.remove();
     }
   }
-  
+
   // ======================================================================
   // Selección de Imagen
   // ======================================================================
@@ -126,11 +127,12 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
 
       return {
         'bytes': bytes,
-        'fileNameBase': 'avatar_${widget.usuarioId}', 
+        'fileNameBase': 'avatar_${widget.usuarioId}',
         'extension': extension,
       };
     } catch (e) {
-      if (mounted) mostrarSnackBarError(context, "Error al seleccionar imagen.");
+      if (mounted)
+        mostrarSnackBarError(context, "Error al seleccionar imagen.");
       return null;
     }
   }
@@ -148,65 +150,68 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
         app: Firebase.app(),
         bucket: Firebase.app().options.storageBucket,
       );
-      
+
       final fileNameBase = fileData['fileNameBase'] as String;
       final extension = fileData['extension'] as String;
-      
-      final rutaCompleta = 'profile_images/${widget.usuarioId}/$fileNameBase.$extension';
-      final ref = storage.ref(rutaCompleta); 
-      
+
+      final rutaCompleta =
+          'profile_images/${widget.usuarioId}/$fileNameBase.$extension';
+      final ref = storage.ref(rutaCompleta);
+
       // Ejecutamos la subida. Si la ruta ya existe, se sobreescribe
       final uploadTask = ref.putData(
         fileData['bytes'] as Uint8List,
         SettableMetadata(
-          contentType: 'image/$extension', 
+          contentType: 'image/$extension',
           cacheControl: 'public, max-age=3600',
         ),
       );
 
       final snapshot = await uploadTask;
       final nuevaUrl = await snapshot.ref.getDownloadURL();
-      
+
       // Eliminamos la imagen anterior si la extensión ha cambiado
       if (urlAntigua != null && urlAntigua.isNotEmpty) {
         await _eliminarImagenAnterior(urlAntigua, nuevaUrl);
       }
-      
+
       return nuevaUrl;
-      
     } catch (e) {
       throw _obtenerMensajeError(e);
     }
   }
-  
+
   // ======================================================================
   // Lógica de Eliminación
   // ======================================================================
-  Future<void> _eliminarImagenAnterior(String urlAntigua, String nuevaUrl) async {
-    if (urlAntigua == nuevaUrl) return; 
+  Future<void> _eliminarImagenAnterior(
+    String urlAntigua,
+    String nuevaUrl,
+  ) async {
+    if (urlAntigua == nuevaUrl) return;
     try {
       final storage = FirebaseStorage.instanceFor(
         app: Firebase.app(),
         bucket: Firebase.app().options.storageBucket,
       );
       final refAntigua = storage.refFromURL(urlAntigua);
-      if (urlAntigua.contains('dummyimage')) { 
-        return; 
+      if (urlAntigua.contains('dummyimage')) {
+        return;
       }
       final refNueva = storage.refFromURL(nuevaUrl);
       if (refAntigua.fullPath != refNueva.fullPath) {
-          await refAntigua.delete();
-          print('Imagen anterior eliminada: ${refAntigua.fullPath}');
+        await refAntigua.delete();
+        print('Imagen anterior eliminada: ${refAntigua.fullPath}');
       }
     } on FirebaseException catch (e) {
       if (e.code == 'object-not-found') {
-         print('El archivo anterior no existe, no se pudo eliminar.');
+        print('El archivo anterior no existe, no se pudo eliminar.');
       } else {
         print('Error al intentar eliminar la imagen anterior: ${e.message}');
       }
     }
   }
-  
+
   // ======================================================================
   // Manejo de Errores
   // ======================================================================
@@ -251,11 +256,19 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Imagen de Perfil",
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Imagen de Perfil",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 6),
-          const Text("Cambia aquí como te ven tus amigos.",
-              style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14)),
+          const Text(
+            "Cambia aquí como te ven tus amigos.",
+            style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+          ),
           const SizedBox(height: 10),
           const Divider(height: 20, color: Color(0xFF333333)),
           const SizedBox(height: 10),
@@ -264,6 +277,7 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
             children: [
               GestureDetector(
                 onTap: _cambiarImagen,
+                key: const Key('botonCambiarImagen'),
                 child: SizedBox(
                   width: 108,
                   height: 108,
@@ -273,7 +287,10 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF333333), width: 2),
+                          border: Border.all(
+                            color: const Color(0xFF333333),
+                            width: 2,
+                          ),
                         ),
                         child: CircleAvatar(
                           radius: 52,
@@ -284,8 +301,8 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
                                 // Usa la URL del provider si está disponible
                                 final urlActual =
                                     provider.usuarioLogueado?.imagenPerfil ??
-                                        widget.urlImagenInicial ??
-                                        "https://dummyimage.com/100x100/333333/aaaaaa.png&text=F";
+                                    widget.urlImagenInicial ??
+                                    "https://dummyimage.com/100x100/333333/aaaaaa.png&text=F";
                                 return CachedNetworkImage(
                                   imageUrl: urlActual,
                                   width: 104,
@@ -296,7 +313,9 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
                                       width: 50,
                                       height: 50,
                                       child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: Colors.cyan),
+                                        strokeWidth: 2,
+                                        color: Colors.cyan,
+                                      ),
                                     ),
                                   ),
                                   errorWidget: (_, __, ___) => Center(
@@ -305,9 +324,10 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
                                           ? widget.nickUsuario[0].toUpperCase()
                                           : '?',
                                       style: const TextStyle(
-                                          fontSize: 55,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white),
+                                        fontSize: 55,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 );
@@ -325,9 +345,15 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
                             color: const Color(0xFF333333),
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: const Color(0xFFAAAAAA), width: 1),
+                              color: const Color(0xFFAAAAAA),
+                              width: 1,
+                            ),
                           ),
-                          child: const Icon(Icons.edit, size: 12, color: Colors.white),
+                          child: const Icon(
+                            Icons.edit,
+                            size: 12,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -338,15 +364,22 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.nickUsuario,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
+                  Text(
+                    widget.nickUsuario,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(widget.emailUsuario,
-                      style: const TextStyle(
-                          color: Color(0xFFAAAAAA), fontSize: 14)),
+                  Text(
+                    widget.emailUsuario,
+                    style: const TextStyle(
+                      color: Color(0xFFAAAAAA),
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
             ],

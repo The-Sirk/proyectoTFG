@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flixscore/controllers/login_provider.dart';
@@ -16,74 +17,92 @@ class AmigoDeOtroItem extends StatelessWidget {
     final loginProvider = Provider.of<LoginProvider>(context, listen: false);
     final miId = loginProvider.usuarioLogueado?.documentID;
     final esMiPerfil = amigo.documentID == miId;
-    final yaEsAmigo = loginProvider.usuarioLogueado?.amigosId.contains(amigo.documentID) ?? false;
+    final yaEsAmigo =
+        loginProvider.usuarioLogueado?.amigosId.contains(amigo.documentID) ??
+        false;
+
+    final avatar = CircleAvatar(
+      backgroundColor: Colors.grey.shade700,
+      backgroundImage: (amigo.imagenPerfil?.isNotEmpty ?? false)
+          ? CachedNetworkImageProvider(amigo.imagenPerfil!)
+          : null,
+      child: (amigo.imagenPerfil?.isEmpty ?? true)
+          ? Text(
+              amigo.nombre.isNotEmpty ? amigo.nombre[0].toUpperCase() : '?',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w100,
+                fontSize: 20,
+              ),
+            )
+          : null,
+    );
+
+    final info = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          amigo.nombre,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          esMiPerfil
+              ? 'Tú'
+              : yaEsAmigo
+              ? 'Ya es tu amigo'
+              : 'Aún no lo sigues',
+          style: const TextStyle(color: secondaryTextColor, fontSize: 12),
+        ),
+      ],
+    );
+
+    final acciones = (!esMiPerfil && !yaEsAmigo)
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                key: const Key('botonAgregarAmigo'),
+                icon: const Icon(
+                  Icons.person_add_outlined,
+                  color: secondaryTextColor,
+                ),
+                tooltip: 'Agregar amigo',
+                onPressed: () => _agregar(context),
+              ),
+              const SizedBox(width: 8),
+            ],
+          )
+        : const SizedBox.shrink();
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: (esMiPerfil) ? null : () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => PerfilAmigoPage(
-              usuarioId: amigo.documentID!,
-              nickUsuario: amigo.nombre,
-            ),
-          ),
-        ),
+        key: const Key('amigoDeOtroItem'),
+        onTap: (esMiPerfil)
+            ? null
+            : () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PerfilAmigoPage(
+                    usuarioId: amigo.documentID!,
+                    nickUsuario: amigo.nombre,
+                  ),
+                ),
+              ),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Row(
             children: [
               const SizedBox(width: 8),
-              CircleAvatar(
-                backgroundColor: Colors.grey.shade700,
-                backgroundImage: (amigo.imagenPerfil?.isNotEmpty ?? false)
-                    ? CachedNetworkImageProvider(amigo.imagenPerfil!)
-                    : null,
-                child: (amigo.imagenPerfil?.isEmpty ?? true)
-                    ? Text(
-                        amigo.nombre.isNotEmpty ? amigo.nombre[0].toUpperCase() : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w100,
-                          fontSize: 20,
-                        ),
-                      )
-                    : null,
-              ),
+              avatar,
               const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      amigo.nombre,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      esMiPerfil
-                          ? 'Tú'
-                          : yaEsAmigo
-                              ? 'Ya es tu amigo'
-                              : 'Aún lo lo sigues',
-                      style: const TextStyle(color: secondaryTextColor, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              if (!esMiPerfil && !yaEsAmigo) ...[
-                IconButton(
-                  icon: const Icon(Icons.person_add_outlined, color: secondaryTextColor),
-                  tooltip: 'Agregar amigo',
-                  onPressed: () => _agregar(context),
-                ),
-                const SizedBox(width: 8),
-              ],
+              Expanded(child: info),
+              acciones,
             ],
           ),
         ),
@@ -92,7 +111,9 @@ class AmigoDeOtroItem extends StatelessWidget {
   }
 
   Future<void> _agregar(BuildContext context) async {
-    await Provider.of<LoginProvider>(context, listen: false)
-        .buscarYAgregarAmigo(context, amigo.nombre);
+    await Provider.of<LoginProvider>(
+      context,
+      listen: false,
+    ).buscarYAgregarAmigo(context, amigo.nombre);
   }
 }

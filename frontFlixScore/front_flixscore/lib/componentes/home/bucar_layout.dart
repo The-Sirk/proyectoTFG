@@ -63,6 +63,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
         children: [
           // Barra de búsqueda
           TextField(
+            key: const Key('textfield_buscar'),
             controller: _buscarController,
             decoration: InputDecoration(
               hintText: "Buscar películas...",
@@ -70,6 +71,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
               prefixIcon: const Icon(Icons.search, color: Colors.white54),
               suffixIcon: _buscarController.text.isNotEmpty
                   ? IconButton(
+                      key: const Key('icon_limpiarBusqueda'),
                       icon: const Icon(Icons.clear, color: Colors.white54),
                       onPressed: () {
                         _buscarController.clear();
@@ -93,7 +95,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
           ),
           const SizedBox(height: 20),
 
-          Expanded(child: mostrarContenido()),
+          mostrarContenido(),
         ],
       ),
     );
@@ -123,6 +125,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
+              key: const Key('boton_reintentar'),
               onPressed: () => _buscarPeliculas(_buscarController.text),
               child: const Text('Reintentar'),
             ),
@@ -180,6 +183,8 @@ class _BuscarLayoutState extends State<BuscarLayout> {
   //
   Widget _mostrarMovil() {
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       itemCount: _peliculas.length,
       itemBuilder: (context, index) {
@@ -201,6 +206,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
             critica: miCritica,
             usuario: provider.usuarioLogueado,
             criticasAmigos: criticasAmigos,
+            mostrarEtiquetaAmigo: criticasAmigos.isNotEmpty,
           ),
         );
       },
@@ -239,6 +245,7 @@ class _BuscarLayoutState extends State<BuscarLayout> {
               critica: miCritica,
               usuario: provider.usuarioLogueado,
               criticasAmigos: criticasAmigos,
+              mostrarEtiquetaAmigo: criticasAmigos.isNotEmpty,
             ),
           );
         }).toList(),

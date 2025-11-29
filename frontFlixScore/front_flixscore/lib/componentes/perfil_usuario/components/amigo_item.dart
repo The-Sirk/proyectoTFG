@@ -22,10 +22,11 @@ class AmigoListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material( 
+    return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTapPerfil,
+        key: const Key('navegarPerfilAmigo'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -70,7 +71,7 @@ class AmigoListItem extends StatelessWidget {
                         color: secondaryTextColor,
                         fontSize: 12,
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -78,6 +79,7 @@ class AmigoListItem extends StatelessWidget {
               IconButton(
                 key: Key('QuitarAmigo'),
                 onPressed: onQuitarAmigo,
+                key: const Key('botonEliminarAmigoUsuario'),
                 icon: const Icon(
                   Icons.person_remove_outlined,
                   color: secondaryTextColor,
