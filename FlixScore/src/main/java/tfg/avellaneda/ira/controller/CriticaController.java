@@ -272,9 +272,9 @@ public class CriticaController {
                         @ApiResponse(responseCode = "400", description = "No se ha especificado el UID del usuario."),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
         })
-        @DeleteMapping("/usuario/{userId}")
+        @DeleteMapping("/usuario")
         public Mono<ResponseEntity<String>> eliminarCriticasPorUsuario(
-                        @Parameter(description = "UID del usuario cuyas críticas se van a eliminar.") @PathVariable String userId) {
+                        @Parameter(description = "UID del usuario cuyas críticas se van a eliminar.") @RequestParam(name = "userId", required = true) String userId) {
 
                 if (userId == null || userId.trim().isEmpty()) {
                         return Mono.error(new ResponseStatusException(
