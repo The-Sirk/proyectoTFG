@@ -37,9 +37,9 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     // Pulsar en icono de perfil
     
-    await tester.tap(find.byKey(Key("Navegación")));
+    await tester.tap(find.byKey(Key("menu_perfil")));
     await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.byKey(Key("Ver mi perfil")));
+    await tester.tap(find.byKey(Key("menuitem_verPerfil")));
     
     await tester.pumpAndSettle();
 
@@ -66,13 +66,13 @@ void main() {
     await tester.pumpAndSettle();
     } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
 
-    await tester.tap(find.byKey(Key('QuitarAmigo')));  
+    await tester.tap(find.byKey(Key('botonEliminarAmigoUsuario')));  
     await tester.pumpAndSettle();
     try{
     await tester.tap(cancelar);
     await tester.pumpAndSettle();
     } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
-    await tester.tap(find.byKey(Key('QuitarAmigo')));  
+    await tester.tap(find.byKey(Key('botonEliminarAmigoUsuario')));  
     await tester.pumpAndSettle();
     try{
     await tester.tap(find.text('Confirmar'));
