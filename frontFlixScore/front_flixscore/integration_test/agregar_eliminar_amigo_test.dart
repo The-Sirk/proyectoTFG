@@ -25,7 +25,7 @@ void main() {
     });   
     // Esperar a que cargue toda la aplicacion
     await tester.pumpAndSettle();
-    // Esperar 1 segundos
+    // Esperar 1 segundos para elementos visuales
     await tester.pump(const Duration(seconds: 1));
 
     // Iniciar sesion

@@ -11,89 +11,106 @@ import 'package:flixscore/componentes/home/components/popup_menu_home.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  Future<void> safe(Future<void> Function() step) async {
+    try {
+      await step();
+    } catch (e) {
+      /* Deja de detectar el alertdialog al hacer clic y bloquea la ejecucion si no se controla con este Try/catch*/
+      fail('Error: $e');
+    }
+  }
+  Future<void> pumpUntilFoundandTap(WidgetTester tester, Finder finder,
+      {Duration timeout = const Duration(seconds: 10)}) async {
+    final end = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(end)) {
+      await tester.pump(const Duration(milliseconds: 100));
+      if (finder.evaluate().isNotEmpty){
+        await safe(() async => tester.tap(finder));
+        return;
+      }
+    }
+    fail('No se encontró el widget: $finder');
+  }
 
-
-  testWidgets('Registro con credenciales válidas y cierre de sesion', (WidgetTester tester) async {
+    Future<void> pumpUntilFound(WidgetTester tester, Finder finder,
+      {Duration timeout = const Duration(seconds: 10)}) async {
+    final end = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(end)) {
+      await tester.pump(const Duration(milliseconds: 100));
+      if (finder.evaluate().isNotEmpty)return;
+    }
+    fail('No se encontró el widget: $finder');
+  }
+  testWidgets('Registro con credenciales válidas y eliminacion de cuenta', (WidgetTester tester) async {
     // Llamado de la aplicacion que queremos ejecutar
-    app.main();
-
+    await tester.runAsync(() async {
+      app.main();
+    });   
     // Esperar a que cargue toda la aplicacion
     await tester.pumpAndSettle();
-
-    final registrarse = find.text('Registrarse');
-    await tester.tap(registrarse);
-
-    await tester.pumpAndSettle();
-    // Esperar 1 segundos
+    // Esperar 1 segundos para elementos visuales
     await tester.pump(const Duration(seconds: 1));
-    final usuario = find.widgetWithText(TextField, 'Nombre de Usuario');
-    // Introducir Texto en el campo TextField
+
+
+    // Registro de usuario 
+    await pumpUntilFoundandTap(tester, find.byKey(Key('tab_registrarse')));
+    await tester.pumpAndSettle();
+
+    // Esperar 1 segundos para elementos visuales
+    await tester.pump(const Duration(seconds: 1));
+
+    final usuario = find.byKey(Key('textfield_username_registro'));
     await tester.enterText(usuario, 'Testing2');
-    // Busqueda de campo tipo TextField sin ID por hintText
-    final usuariologin = find.widgetWithText(TextField,'tu@email.com');
-    // Introducir Texto en el campo TextField
-    await tester.enterText(usuariologin, 'Testing2@Testing.es');
-    // Busqueda de campo tipo TextField sin ID por hintText
-    final passlogin = find.widgetWithText(TextField, '••••••••').first;
+    await tester.pump(const Duration(seconds: 1));
+
+    final usuariologin = find.byKey(Key('textfield_email_registro'));
+    await tester.enterText(usuariologin, 'Testing2@Testing2.es');
+    await tester.pump(const Duration(seconds: 1));
+
+    final passlogin = find.byKey(Key('textfield_password_registro'));
     await tester.enterText(passlogin, 'Testing2');
-    final repetpasslogin = find.widgetWithText(TextField, '••••••••').last;
+    await tester.pump(const Duration(seconds: 1));
+
+    final repetpasslogin = find.byKey(Key('textfield_repeatPassword_registro'));
     await tester.enterText(repetpasslogin, 'Testing2');
-    await tester.scrollUntilVisible(
-    find.widgetWithText(ElevatedButton, 'Registrarse'),
-    200.0, // cantidad de desplazamiento por scroll
-    scrollable: find.byType(Scrollable).first, // opcional si hay varios scrollables
-  );
-
-    final btninicio = find.widgetWithText(ElevatedButton, 'Registrarse');
-    
-    // Hacer clic en el boton de inicio
-    await tester.tap(btninicio);
-    
-    await tester.pumpAndSettle();
-    // Pulsar en icono de perfil
-    try{
-    await tester.tap(find.byKey(Key("Navegación")));
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
-    await tester.pumpAndSettle();  
     await tester.pump(const Duration(seconds: 1));
-    try{
-    await tester.tap(find.byKey(Key("Ver mi perfil")));
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
 
-    
+  
+    // Enviar los datos del registro
+    final btninicio = find.byKey(Key('boton_enviar'));
+    await tester.tap(btninicio);    
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 2));
 
+    // Navegar al perfil
+    await pumpUntilFoundandTap(tester, find.byKey(Key('menu_perfil')));
     await tester.pump(const Duration(seconds: 1));
-    await tester.scrollUntilVisible(
-    find.byKey(Key('EliminarCuenta')),
-    200.0, // cantidad de desplazamiento por scroll
-    scrollable: find.byType(Scrollable).first, // opcional si hay varios scrollables
-    );
-
-
-     
-    try{
-    await tester.tap(find.byKey(Key('EliminarCuenta'))); 
-
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
+    await pumpUntilFoundandTap(tester, find.byKey(Key("menuitem_verPerfil")));
     await tester.pumpAndSettle();
 
-    print(find.text('Cancelar'));
+    await tester.pump(const Duration(seconds: 2));
 
-    try{
-    await tester.tap(find.text('Cancelar'));
+    // Eliminacion del perfil
 
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
+    await safe(() async => tester.tap(find.byKey(Key('botonEliminarCuenta')))); 
     await tester.pumpAndSettle();
-    try{
-    await tester.tap(find.byKey(Key('EliminarCuenta'))); 
+    await tester.pump(const Duration(seconds: 1));
 
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
+    await safe(() async => tester.tap(find.text('Cancelar')));
     await tester.pumpAndSettle();
-    try{
-    await tester.tap(find.text('SÍ, ELIMINAR'));
+    await tester.pump(const Duration(seconds: 1));
+
+    await safe(() async => tester.tap(find.byKey(Key('botonEliminarCuenta')))); 
     await tester.pumpAndSettle();
-    } catch (e){ print(e.toString());/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
+    await tester.pump(const Duration(seconds: 1));
+
+    await safe(() async =>tester.tap(find.text('SÍ, ELIMINAR')));
+    await tester.pumpAndSettle();
+
+    await tester.pump(const Duration(seconds: 2));
+
+
+   
     
 /*
     await tester.pumpAndSettle();
