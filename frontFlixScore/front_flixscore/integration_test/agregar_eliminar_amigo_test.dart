@@ -44,14 +44,16 @@ void main() {
     
     await tester.pumpAndSettle();
 
-    await tester.pump(const Duration(seconds: 10));
+    await tester.pump(const Duration(seconds: 2));
 
     // Buscar amigo
-    final buscarAmigo = find.byKey(Key('BuscarAmigo'));
+    final buscarAmigo = find.byKey(Key('Busqueda_Amigo'));
     await tester.enterText(buscarAmigo, 'Sirk');
+    await tester.pump(const Duration(seconds: 5));
     await tester.tap(find.byKey(Key('Buscar')));
-    
-    
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.byKey(Key('CircleAvatar')));
+    await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
     final cancelar = find.text('Cancelar');
     final Agregar = find.text('Agregar');
@@ -60,21 +62,34 @@ void main() {
     await tester.tap(cancelar);
     await tester.pumpAndSettle();
     } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
-    await tester.tap(find.byKey(Key('Buscar')));  
+    await tester.tap(buscarAmigo);
+    await tester.enterText(buscarAmigo, 'Sirk');
+    await tester.pump(const Duration(seconds: 5));
+    await tester.tap(find.byKey(Key('Buscar')));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.byKey(Key('CircleAvatar')));
+
     await tester.pumpAndSettle();
     try{
     await tester.tap(Agregar);
     await tester.pumpAndSettle();
     } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
 
+    // Esta seccion es para eliminar el amigo agregado
     await tester.tap(find.byKey(Key('botonEliminarAmigoUsuario')));  
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+
     try{
     await tester.tap(cancelar);
     await tester.pumpAndSettle();
     } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
+    await tester.pump(const Duration(seconds: 1));
+
     await tester.tap(find.byKey(Key('botonEliminarAmigoUsuario')));  
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+
     try{
     await tester.tap(find.text('Confirmar'));
     await tester.pumpAndSettle();
@@ -91,7 +106,7 @@ void main() {
     await tester.tap(find.byKey(Key('BuscarAgregar')));
     await tester.pumpAndSettle();
 */
-    await tester.pump(const Duration(seconds: 10));
+    await tester.pump(const Duration(seconds: 2));
 /*
     // Verifica que los campos estén presentes
     expect(find.text('Email'), findsOneWidget);

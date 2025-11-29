@@ -141,6 +141,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
 
                           return ListTile(
                             leading: CircleAvatar(
+                              key: Key('CircleAvatar'),
                               backgroundImage: tieneImagen
                                   ? NetworkImage(usuario.imagenPerfil!)
                                   : null,
@@ -258,6 +259,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
           CompositedTransformTarget(
             link: _layerLink,
             child: TextField(
+              key: Key('Busqueda_Amigo'),
               controller: _searchController,
               onChanged: _onSearchChanged,
               onSubmitted: (value) {
@@ -285,6 +287,7 @@ class BuscarUsuarioCardState extends State<BuscarUsuarioCard> {
                         ),
                       )
                     : IconButton(
+                        key: Key('Buscar'),
                         icon: const Icon(Icons.search, color: _subtitleColor),
                         onPressed: () {
                           _delay?.cancel();
