@@ -1,16 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:flutter/services.dart';
 import 'package:flixscore/main.dart' as app;
 import 'package:flutter/material.dart';
-import 'package:flixscore/componentes/common/tab_button.dart';
-import 'package:flixscore/componentes/home/components/popup_menu_home.dart';
+
 
 
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  Future<void> safe(Future<void> Function() step) async {
+    try {
+      await step();
+    } catch (e) {
+      /* Deja de detectar el alertdialog al hacer clic y bloquea la ejecucion si no se controla con este Try/catch*/
+      fail('Error: $e');
+    }
+  }
 
   testWidgets('Login con credenciales válidas, agregar/eliminar amigo', (WidgetTester tester) async {
     // Llamado de la aplicacion que queremos ejecutar
@@ -21,23 +27,21 @@ void main() {
     await tester.pumpAndSettle();
     // Esperar 1 segundos
     await tester.pump(const Duration(seconds: 1));
-    // Busqueda de campo tipo TextField sin ID por hintText
+
+    // Iniciar sesion
     final usuariologin = find.byKey(Key('textfield_email_login'));
-    // Introducir Texto en el campo TextField
     await tester.enterText(usuariologin, 'Testing@Testing.es');
-    // Busqueda de campo tipo TextField sin ID por hintText
     final passlogin = find.byKey(Key('textfield_password_login'));
     await tester.enterText(passlogin, 'Testing');
     final btninicio = find.byKey(Key('boton_enviar'));
     
-    // Hacer clic en el boton de inicio
     await tester.tap(btninicio);
     
     await tester.pumpAndSettle();
 
     await tester.pump(const Duration(seconds: 1));
-    // Pulsar en icono de perfil
-    
+
+    // Navegar al perfil
     await tester.tap(find.byKey(Key("menu_perfil")));
     await tester.pump(const Duration(seconds: 1));
     await tester.tap(find.byKey(Key("menuitem_verPerfil")));
@@ -58,10 +62,9 @@ void main() {
     final cancelar = find.text('Cancelar');
     final Agregar = find.text('Agregar');
 
-    try{
-    await tester.tap(cancelar);
+    await safe(() async => tester.tap(cancelar));
     await tester.pumpAndSettle();
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
+    
     await tester.tap(buscarAmigo);
     await tester.enterText(buscarAmigo, 'Sirk');
     await tester.pump(const Duration(seconds: 5));
@@ -70,32 +73,31 @@ void main() {
     await tester.tap(find.byKey(Key('CircleAvatar')));
 
     await tester.pumpAndSettle();
-    try{
-    await tester.tap(Agregar);
+  
+    await safe(() async => tester.tap(Agregar));
     await tester.pumpAndSettle();
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
+    
+    // Eliminar el amigo agregado
+    await safe(() async => tester.tap(find.byKey(Key('botonEliminarAmigoUsuario'))));  
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
-    // Esta seccion es para eliminar el amigo agregado
+    
+    await safe(() async => tester.tap(cancelar));
+    await tester.pumpAndSettle();
+    
+    await tester.pump(const Duration(seconds: 1));
+
     await tester.tap(find.byKey(Key('botonEliminarAmigoUsuario')));  
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 1));
+    await safe(() async => tester.tap(find.text('Confirmar')));
 
-    try{
-    await tester.tap(cancelar);
+    // Esperar la eliminacion
     await tester.pumpAndSettle();
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
-    await tester.pump(const Duration(seconds: 1));
-
-    await tester.tap(find.byKey(Key('botonEliminarAmigoUsuario')));  
-    await tester.pumpAndSettle();
-    await tester.pump(const Duration(seconds: 1));
-
-    try{
-    await tester.tap(find.text('Confirmar'));
-    await tester.pumpAndSettle();
-    } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
-
     await tester.pump(const Duration(seconds: 2));
+
+
 
   });
 
