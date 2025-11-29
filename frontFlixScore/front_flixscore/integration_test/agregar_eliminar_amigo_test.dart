@@ -46,7 +46,7 @@ void main() {
 
     await tester.pump(const Duration(seconds: 2));
 
-    // Buscar amigo
+    // Buscar amigo y agregar
     final buscarAmigo = find.byKey(Key('Busqueda_Amigo'));
     await tester.enterText(buscarAmigo, 'Sirk');
     await tester.pump(const Duration(seconds: 5));
@@ -95,36 +95,8 @@ void main() {
     await tester.pumpAndSettle();
     } catch (e){/* Deja de detectar el alertdialog y bloquea la ejecucion si no se controla con este Try/catch*/}
 
-    
-/*
     await tester.pump(const Duration(seconds: 2));
-    await tester.showKeyboard(find.byKey(Key('Buscar')));
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pumpAndSettle();
 
-    await tester.pump(const Duration(seconds: 2));
-    await tester.tap(find.byKey(Key('BuscarAgregar')));
-    await tester.pumpAndSettle();
-*/
-    await tester.pump(const Duration(seconds: 2));
-/*
-    // Verifica que los campos estén presentes
-    expect(find.text('Email'), findsOneWidget);
-    expect(find.text('Contraseña'), findsOneWidget);
-    expect(find.text('Iniciar Sesión'), findsWidgets);
-
-    // Ingresa email y contraseña
-    await tester.enterText(find.byType(TextFormField).at(0), 'usuario@ejemplo.com');
-    await tester.enterText(find.byType(TextFormField).at(1), '123456');
-
-    // Pulsa el botón de login
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Iniciar Sesión'));
-    await tester.pumpAndSettle();
-
-    // Verifica que se redirige al home o muestra mensaje de éxito
-    expect(find.text('Bienvenido'), findsOneWidget);
-
-*/
   });
 
 
