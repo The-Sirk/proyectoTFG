@@ -31,7 +31,7 @@ void main() {
     fail('No se encontró el widget: $finder');
   }
 
-  testWidgets('Ver el perfil de un amigo', (WidgetTester tester) async {
+  testWidgets('Poner una critica y modificarla', (WidgetTester tester) async {
     // Llamado de la aplicacion que queremos ejecutar
     await tester.runAsync(() async {
       app.main();
@@ -76,23 +76,43 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 1));
 
-///Pendiente añadir texto y guardar
+    await tester.enterText(find.byKey(Key('TextField_Critica')), "Muy buena pelicula." );
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+
+    await tester.tap(find.byKey(Key('buttonGuardarCritica')));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
     // Navegar al perfil
     await tester.tap(find.byKey(Key("menu_perfil")));
     await tester.pump(const Duration(seconds: 1));
     await tester.tap(find.byKey(Key("menuitem_verPerfil")));
-    
     await tester.pumpAndSettle();
-
     await tester.pump(const Duration(seconds: 2));
 
-/*
-    // Ver el perfil del amigo agregado
-    await safe(() async => tester.tap(find.byKey(Key('ListaAmigos'))));  
+    // Acceso a mis criticas
+    await tester.tap(find.byKey(Key('buttonMisCriticas')));
     await tester.pumpAndSettle();
-*/
-    
+    await tester.pump(const Duration(seconds: 1));
+
+    // Editar mi primera critica
+    await tester.tap(find.byKey(Key('botonEditarCritica')).first);
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+
+    await tester.tap(find.byKey(Key('estrella_8')));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+
+    await tester.enterText(find.byKey(Key('comentarioCritica')), "Es una pelicula excelente." );
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+
+    await tester.tap(find.byKey(Key('botonGuardar')));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
+
 
     // Esperar la carga
     await tester.pumpAndSettle();

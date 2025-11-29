@@ -111,10 +111,10 @@ class _EditarCriticaDialogState extends State<EditarCriticaDialog> {
                               children: List.generate(10, (index) {
                                 final value = index + 1;
                                 return GestureDetector(
+                                  key: ValueKey('estrella_$index'),
                                   onTapDown: (_) => setStateDialog(
                                     () => nuevaPuntuacion = value,
                                   ),
-                                  key: const Key('puntuacionCritica'),
                                   child: Container(
                                     width: 26,
                                     height: 26,

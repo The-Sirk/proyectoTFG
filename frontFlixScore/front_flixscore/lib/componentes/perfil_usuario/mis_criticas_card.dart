@@ -173,6 +173,7 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
                                       final c = items[index].critica;
                                       final p = items[index].pelicula;
                                       return TarjetaCritica(
+                                        key: Key('TarjetaCritica_$index'),
                                         critica: c,
                                         pelicula: p,
                                         onEditar: () => _mostrarPopupEdicion(context, c),

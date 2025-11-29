@@ -489,6 +489,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             ),
             Expanded(
               child: TabButton(
+                key: Key('buttonMisCriticas'),
                 icono: Icons.trending_up,
                 etiqueta: "Mis críticas",
                 seleccionado: tabSeleccionada == 1,
