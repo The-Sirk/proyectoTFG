@@ -228,6 +228,7 @@ class _TarjetaPeliculaConCriticasState
         // Botón para escribir crítica (solo si no tiene crítica)
         if (criticaUsuario == null)
           ElevatedButton(
+            key: Key('botonEscribirCritica'),
             style: ElevatedButton.styleFrom(
               foregroundColor: mostrarCritica ? Colors.white : Colors.black,
               backgroundColor: mostrarCritica
@@ -393,6 +394,7 @@ class _TarjetaPeliculaConCriticasState
                 children: List.generate(10, (index) {
                   final value = index + 1;
                   return GestureDetector(
+                    key: ValueKey('estrella_$index'),
                     onTapDown: (_) => setState(() {
                       puntuacion = value;
                     }),
