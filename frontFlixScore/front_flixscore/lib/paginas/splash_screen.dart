@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:flixscore/controllers/criticas_provider.dart';
+import 'package:flixscore/controllers/login_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,24 +21,20 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _cargarDatos() async {
-    final provider = Provider.of<CriticasProvider>(context, listen: false);
+    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    
+    // Esperar a que el usuario esté autenticado (máx 5 segundos)
+    int intentos = 0;
+    while (!loginProvider.isAuthenticated && intentos < 50) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      intentos++;
+    }
 
-    // Definir el tiempo mínimo de espera (ej. 4 segundos)
-    final minSplashDuration = Future.delayed(const Duration(seconds: 1));
-
-    // Definir la carga de datos
-    final dataLoading = Future(() async {
-      await provider.cargarCriticasDelUsuario();
-      await provider.cargarCriticasDeAmigos();
-      await provider.cargarUltimasCriticas();
-      await provider.servirPeliculasCard();
-    });
-
-    // Esperar a que AMBOS terminen
-    await Future.wait([minSplashDuration, dataLoading]);
+    // Esperar el splash mínimo
+    await Future.delayed(const Duration(seconds: 1));
 
     if (mounted) {
-      if (provider.usuarioLogueado != null) {
+      if (loginProvider.isAuthenticated) {
         Navigator.of(context).pushReplacementNamed('/home');
       } else {
         Navigator.of(context).pushReplacementNamed('/login');
