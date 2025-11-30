@@ -376,7 +376,9 @@ class LoginProvider extends ChangeNotifier {
       }
 
       // El authStateChanges listener se encargará de cargar los datos del usuario
-      await _cargarDatosUsuario(userCredential.user!.uid);
+      if (userCredential.user != null && userCredential.user!.uid.isNotEmpty) {
+        await _cargarDatosUsuario(userCredential.user!.uid);
+      }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'popup-closed-by-user' || e.code == 'auth/cancelled-popup-request') {
         print('[DEBUG LoginProvider] Login Google Web cancelado por el usuario.');
@@ -453,7 +455,9 @@ class LoginProvider extends ChangeNotifier {
           ),
         );
       }
-      await _cargarDatosUsuario(userCredential.user!.uid);
+      if (userCredential.user != null && userCredential.user!.uid.isNotEmpty) {
+        await _cargarDatosUsuario(userCredential.user!.uid);
+      }
     } catch (e) {
       if (e.toString().contains('cancelled') || e.toString().contains('sign_in_failed')) {
           print('[DEBUG LoginProvider] Login Google (mobile) cancelación en el bloque catch.');
