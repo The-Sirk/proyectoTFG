@@ -11,9 +11,12 @@ import 'package:flixscore/paginas/login_page.dart';
 import 'package:flixscore/paginas/perfil_usuario_page.dart';
 import 'package:flixscore/paginas/perfil_amigo_page.dart';
 import 'package:flixscore/firebase_options.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  setUrlStrategy(PathUrlStrategy());
 
   try {
     await Firebase.initializeApp(
@@ -24,7 +27,6 @@ void main() async {
     debugPrint('ERROR al inicializar Firebase: $e');
     debugPrint('Stack: $st');
   }
-
   runApp(const MyApp());
 }
 

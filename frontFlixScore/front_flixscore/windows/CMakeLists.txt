@@ -106,3 +106,7 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
+
+# Desactivar advertencia C4996 para evitar que la librería de Firebase falle.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4996")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4996")
