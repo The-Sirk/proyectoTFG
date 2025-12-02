@@ -1,6 +1,6 @@
 {
-    "name": "front_flixscore",
-    "short_name": "front_flixscore",
+    "name": "FlixScore",
+    "short_name": "FlixScore",
     "start_url": ".",
     "display": "standalone",
     "background_color": "0a0e1a",
