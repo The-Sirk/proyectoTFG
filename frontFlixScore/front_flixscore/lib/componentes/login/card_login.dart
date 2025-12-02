@@ -21,6 +21,7 @@ class _LoginCardState extends State<LoginCard> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController repeatPasswordController =
       TextEditingController();
+  bool _mostrarContrasena = false;
 
   @override
   void initState() {
@@ -172,18 +173,22 @@ class _LoginCardState extends State<LoginCard> {
         print('[LOGGER 5] Correo enviado con éxito. Preparando SnackBar.');
         if (mounted) {
           Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) { 
+            if (mounted) {
               print('[LOGGER 6a] Mostrando SnackBar de ÉXITO.');
               mostrarSnackBarExito(
                 context,
                 "Se ha enviado un correo... Revisa tu bandeja de entrada.",
               );
             } else {
-              print('[LOGGER 6b] Falló el segundo chequeo mounted dentro del delay. No se muestra SnackBar.');
+              print(
+                '[LOGGER 6b] Falló el segundo chequeo mounted dentro del delay. No se muestra SnackBar.',
+              );
             }
           });
         } else {
-          print('[LOGGER 6c] Falló el primer chequeo mounted. Correo enviado, pero no se muestra SnackBar.');
+          print(
+            '[LOGGER 6c] Falló el primer chequeo mounted. Correo enviado, pero no se muestra SnackBar.',
+          );
         }
       } catch (e) {
         print('[LOGGER 7] Excepción atrapada: $e');
@@ -196,11 +201,15 @@ class _LoginCardState extends State<LoginCard> {
                 "Error: ${e.toString().replaceAll('Exception: ', '')}",
               );
             } else {
-              print('[LOGGER 8b] Falló el segundo chequeo mounted dentro del delay. No se muestra SnackBar.');
+              print(
+                '[LOGGER 8b] Falló el segundo chequeo mounted dentro del delay. No se muestra SnackBar.',
+              );
             }
           });
         } else {
-          print('[LOGGER 8c] Falló el primer chequeo mounted. Error ocurrido, pero no se muestra SnackBar.');
+          print(
+            '[LOGGER 8c] Falló el primer chequeo mounted. Error ocurrido, pero no se muestra SnackBar.',
+          );
         }
       }
     } else {
@@ -318,10 +327,7 @@ class _LoginCardState extends State<LoginCard> {
                 Expanded(child: Divider(color: Colors.white24)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    "O",
-                    style: TextStyle(color: Colors.white54),
-                  ),
+                  child: Text("O", style: TextStyle(color: Colors.white54)),
                 ),
                 Expanded(child: Divider(color: Colors.white24)),
               ],
@@ -391,26 +397,41 @@ class _LoginCardState extends State<LoginCard> {
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
                 labelText: "tu@email.com",
-                floatingLabelBehavior: FloatingLabelBehavior.never, 
+                floatingLabelBehavior: FloatingLabelBehavior.never,
               ),
             ),
             const SizedBox(height: 16),
-            const Text("Contraseña",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              "Contraseña",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             TextField(
               key: const Key('textfield_password_login'),
               controller: passwordController,
-              obscureText: true,
+              obscureText: !_mostrarContrasena,
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _iniciarSesion(),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
                 labelText: "••••••••",
-                floatingLabelBehavior: FloatingLabelBehavior.never, 
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _mostrarContrasena
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    color: Colors.white54,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _mostrarContrasena = !_mostrarContrasena;
+                    });
+                  },
+                ),
               ),
             ),
-            const SizedBox(height: 8), 
+            const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -423,9 +444,9 @@ class _LoginCardState extends State<LoginCard> {
                 child: const Text(
                   "¿Olvidaste tu contraseña?",
                   style: TextStyle(
-                    color: Colors.blueAccent, 
+                    color: Colors.blueAccent,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12, 
+                    fontSize: 12,
                   ),
                 ),
               ),
@@ -449,7 +470,7 @@ class _LoginCardState extends State<LoginCard> {
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.person, color: Colors.white54),
                 labelText: "Nombre de Usuario",
-                floatingLabelBehavior: FloatingLabelBehavior.never, 
+                floatingLabelBehavior: FloatingLabelBehavior.never,
               ),
             ),
             const SizedBox(height: 16),
@@ -462,22 +483,37 @@ class _LoginCardState extends State<LoginCard> {
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.email_outlined, color: Colors.white54),
                 labelText: "tu@email.com",
-                floatingLabelBehavior: FloatingLabelBehavior.never, 
+                floatingLabelBehavior: FloatingLabelBehavior.never,
               ),
             ),
             const SizedBox(height: 16),
-            const Text("Contraseña",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              "Contraseña",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             TextField(
               key: const Key('textfield_password_registro'),
-              obscureText: true,
+              obscureText: !_mostrarContrasena,
               controller: passwordController,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.lock_outline, color: Colors.white54),
                 labelText: "••••••••",
-                floatingLabelBehavior: FloatingLabelBehavior.never, 
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _mostrarContrasena
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    color: Colors.white54,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _mostrarContrasena = !_mostrarContrasena;
+                    });
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -490,12 +526,25 @@ class _LoginCardState extends State<LoginCard> {
               key: const Key('textfield_repeatPassword_registro'),
               controller: repeatPasswordController,
               textInputAction: TextInputAction.done,
-              obscureText: true,
+              obscureText: !_mostrarContrasena,
               onSubmitted: (_) => _registrarUsuario(),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.lock_reset, color: Colors.white54),
                 labelText: "••••••••",
-                floatingLabelBehavior: FloatingLabelBehavior.never, 
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _mostrarContrasena
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    color: Colors.white54,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _mostrarContrasena = !_mostrarContrasena;
+                    });
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 24),

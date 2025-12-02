@@ -46,10 +46,10 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   @override
   void didChangeDependencies() {
-  super.didChangeDependencies();
-  final provider = Provider.of<LoginProvider>(context, listen: true);
-  final currentUserId = provider.usuarioLogueado?.documentID;
-  final currentAmigosObj = provider.amigosObj;
+    super.didChangeDependencies();
+    final provider = Provider.of<LoginProvider>(context, listen: true);
+    final currentUserId = provider.usuarioLogueado?.documentID;
+    final currentAmigosObj = provider.amigosObj;
 
     // Solo recargar si cambió el usuario o el número de amigos, Y si ya tenemos los objetos de amigos cargados
     if (currentUserId != null &&
@@ -371,6 +371,18 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             },
           ),
           const SizedBox(height: 10),
+          BuscarUsuarioCard(
+            key: _buscarKey,
+            onAmigoAgregado: _actualizarListaAmigosDespuesDeBusqueda,
+          ),
+          const SizedBox(height: 10),
+          ListaAmigosCard(
+            usuarioId: currentUserId,
+            amigosConComunes: amigosConComunes,
+          ),
+          const SizedBox(height: 10),
+          const EstadisticasCard(),
+          const SizedBox(height: 10),
           InformacionBasicaCard(
             nombreRecibido: _nickActual ?? '',
             emailRecibido: usuario.correo,
@@ -381,19 +393,6 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             },
             onCuentaEliminada: _manejarEliminacion,
           ),
-          const SizedBox(height: 10),
-          const EstadisticasCard(),
-          const SizedBox(height: 10),
-          ListaAmigosCard(
-            usuarioId: currentUserId,
-            amigosConComunes: amigosConComunes,
-          ),
-          const SizedBox(height: 10),
-          BuscarUsuarioCard(
-            key: _buscarKey,
-            onAmigoAgregado: _actualizarListaAmigosDespuesDeBusqueda,
-          ),
-          const SizedBox(height: 10),
         ] else
           MisCriticasCard(usuarioId: currentUserId, editable: true),
       ],
