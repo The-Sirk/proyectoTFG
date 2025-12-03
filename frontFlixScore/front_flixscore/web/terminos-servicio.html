@@ -13,18 +13,21 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos Globales (mismos que la política de privacidad) */
+        /* Estilos Globales */
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background-color: #0A0E1A;
-            /* Fondo oscuro */
             color: #FFFFFF;
-            /* Letras blancas */
             font-family: 'Open Sans', sans-serif;
             margin: 0;
             padding: 0;
             line-height: 1.6;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
 
         /* Contenedor principal */
@@ -49,7 +52,6 @@
             margin-top: 2em;
             margin-bottom: 0.8em;
             color: #9EC0FF;
-            /* Color sutil para destacar títulos de sección */
         }
 
         h3 {
@@ -65,6 +67,18 @@
             font-size: 1em;
             font-weight: 400;
             margin-bottom: 1em;
+            text-align: justify;
+        }
+
+        /* Fecha de vigencia */
+        .date {
+            font-size: 1.1em;
+            color: #9EC0FF;
+            margin-bottom: 2em;
+            padding: 10px 15px;
+            background-color: rgba(30, 35, 50, 0.5);
+            border-left: 4px solid #9EC0FF;
+            border-radius: 4px;
         }
 
         /* Listas */
@@ -86,10 +100,203 @@
         a {
             color: #9EC0FF;
             text-decoration: none;
+            transition: color 0.2s ease;
         }
 
         a:hover {
+            color: #c2d8ff;
             text-decoration: underline;
+        }
+
+        /* Advertencia/Nota importante */
+        .note {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        /* Limitación de responsabilidad (sección 5) */
+        .disclaimer {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        /* Pie de página */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.8em;
+            color: #a0a0a0;
+        }
+
+        /* Media Queries para Responsive Design */
+
+        /* Para tablets y pantallas medianas (768px - 1024px) */
+        @media (max-width: 1024px) {
+            h1 {
+                font-size: 2.2em;
+            }
+
+            h2 {
+                font-size: 1.6em;
+            }
+
+            h3 {
+                font-size: 1.2em;
+            }
+
+            .container {
+                width: 95%;
+                padding: 30px 15px;
+            }
+
+            p,
+            li {
+                text-align: left;
+            }
+        }
+
+        /* Para tablets pequeñas (600px - 768px) */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.9em;
+            }
+
+            h2 {
+                font-size: 1.4em;
+                margin-top: 1.5em;
+            }
+
+            h3 {
+                font-size: 1.1em;
+            }
+
+            .container {
+                padding: 25px 10px;
+            }
+
+            .date {
+                font-size: 1em;
+                padding: 8px 12px;
+            }
+
+            .note,
+            .disclaimer {
+                padding: 12px;
+            }
+        }
+
+        /* Para móviles grandes (480px - 600px) */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.7em;
+                padding-bottom: 8px;
+            }
+
+            h2 {
+                font-size: 1.3em;
+                margin-top: 1.2em;
+            }
+
+            h3 {
+                font-size: 1.05em;
+            }
+
+            p,
+            li {
+                font-size: 0.95em;
+            }
+
+            .container {
+                padding: 20px 10px;
+            }
+
+            ul {
+                padding-left: 15px;
+            }
+
+            .date {
+                font-size: 0.95em;
+            }
+        }
+
+        /* Para móviles pequeños (hasta 480px) */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.2em;
+            }
+
+            h3 {
+                font-size: 1em;
+            }
+
+            p,
+            li {
+                font-size: 0.9em;
+            }
+
+            .container {
+                width: 100%;
+                padding: 15px 10px;
+            }
+
+            .footer {
+                margin-top: 30px;
+                font-size: 0.75em;
+            }
+
+            .date {
+                font-size: 0.9em;
+                padding: 8px 10px;
+            }
+        }
+
+        /* Para pantallas muy pequeñas (hasta 360px) */
+        @media (max-width: 360px) {
+            h1 {
+                font-size: 1.3em;
+            }
+
+            h2 {
+                font-size: 1.1em;
+            }
+
+            p,
+            li {
+                font-size: 0.85em;
+            }
+
+            ul {
+                padding-left: 10px;
+            }
+
+            .date {
+                font-size: 0.85em;
+                border-left-width: 3px;
+            }
+        }
+
+        /* Ajuste para mejor legibilidad en pantallas muy anchas */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1000px;
+            }
+
+            p,
+            li {
+                font-size: 1.05em;
+                line-height: 1.7;
+            }
         }
     </style>
 </head>
@@ -98,7 +305,12 @@
     <div class="container">
         <h1>Términos de Servicio y Condiciones de Uso</h1>
 
-        <p><strong>Fecha de Vigencia:</strong> 03 de Diciembre de 2025</p>
+        <p class="date"><strong>Fecha de Vigencia:</strong> 03 de Diciembre de 2025</p>
+
+        <div class="note">
+            <p><strong>Importante:</strong> Al usar FlixScore, aceptas cumplir con estos términos. Te recomendamos
+                leerlos detenidamente.</p>
+        </div>
 
         <h2>1. Aceptación de los Términos</h2>
         <p>
@@ -163,14 +375,18 @@
         </p>
 
         <h2>5. Limitación de Responsabilidad</h2>
-        <p>
-            EL SERVICIO SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍAS DE NINGÚN TIPO. EN NINGÚN
-            CASO, ISRAEL VALDEOLIVAS, ADRIÁN RODRÍGUEZ Y RICARDO HERRADÓN, NI SUS EMPLEADOS O AFILIADOS, SERÁN
-            RESPONSABLES DE CUALQUIER DAÑO
-            INDIRECTO, INCIDENTAL, ESPECIAL, CONSECUENTE O PUNITIVO, INCLUYENDO, SIN LIMITACIÓN, PÉRDIDA DE GANANCIAS,
-            DATOS, USO, BUENA VOLUNTAD U OTRAS PÉRDIDAS INTANGIBLES, RESULTANTES DE (I) SU ACCESO O USO O INCAPACIDAD
-            PARA ACCEDER O UTILIZAR EL SERVICIO; (II) CUALQUIER CONDUCTA O CONTENIDO DE TERCEROS EN EL SERVICIO.
-        </p>
+        <div class="disclaimer">
+            <p>
+                EL SERVICIO SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍAS DE NINGÚN TIPO. EN NINGÚN
+                CASO, ISRAEL VALDEOLIVAS, ADRIÁN RODRÍGUEZ Y RICARDO HERRADÓN, NI SUS EMPLEADOS O AFILIADOS, SERÁN
+                RESPONSABLES DE CUALQUIER DAÑO
+                INDIRECTO, INCIDENTAL, ESPECIAL, CONSECUENTE O PUNITIVO, INCLUYENDO, SIN LIMITACIÓN, PÉRDIDA DE
+                GANANCIAS,
+                DATOS, USO, BUENA VOLUNTAD U OTRAS PÉRDIDAS INTANGIBLES, RESULTANTES DE (I) SU ACCESO O USO O
+                INCAPACIDAD
+                PARA ACCEDER O UTILIZAR EL SERVICIO; (II) CUALQUIER CONDUCTO O CONTENIDO DE TERCEROS EN EL SERVICIO.
+            </p>
+        </div>
 
         <h2>6. Terminación</h2>
         <p>
@@ -195,13 +411,12 @@
         <h2>9. Contacto</h2>
         <p>Si tiene alguna pregunta sobre estos Términos, por favor contáctenos:</p>
         <ul>
-            <li><strong>Por correo electrónico:</strong> <a href="mailto:flixscore.es@gmail.com"
-                    style="color: #9EC0FF;">flixscore.es@gmail.com</a>
+            <li><strong>Por correo electrónico:</strong> <a
+                    href="mailto:flixscore.es@gmail.com">flixscore.es@gmail.com</a>
             </li>
         </ul>
 
-        <p style="text-align: center; margin-top: 50px; font-size: 0.8em;">&copy; [Año] TFG-FlixScore. Todos los
-            derechos reservados.</p>
+        <p class="footer">&copy; 2025 - FlixScore. Todos los derechos reservados.</p>
     </div>
 </body>
 

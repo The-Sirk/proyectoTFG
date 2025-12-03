@@ -14,17 +14,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         /* Estilos Globales */
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background-color: #0A0E1A;
-            /* Fondo oscuro especificado */
             color: #FFFFFF;
-            /* Letras blancas */
             font-family: 'Open Sans', sans-serif;
             margin: 0;
             padding: 0;
             line-height: 1.6;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
 
         /* Contenedor principal */
@@ -40,7 +43,6 @@
             font-weight: 700;
             margin-bottom: 0.5em;
             border-bottom: 2px solid #3B4050;
-            /* Línea de separación sutil */
             padding-bottom: 10px;
         }
 
@@ -50,7 +52,6 @@
             margin-top: 2em;
             margin-bottom: 0.8em;
             color: #9EC0FF;
-            /* Color sutil para destacar títulos de sección */
         }
 
         h3 {
@@ -83,13 +84,19 @@
             color: #FFFFFF;
         }
 
-        /* Tablas */
+        /* Tabla responsive */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
         table {
             width: 100%;
+            min-width: 600px;
             border-collapse: collapse;
-            margin: 20px 0;
             background-color: #1A1F30;
-            /* Fondo más oscuro para la tabla */
         }
 
         th,
@@ -104,6 +111,163 @@
             font-weight: 600;
             color: #FFFFFF;
         }
+
+        /* Enlaces */
+        a {
+            color: #9EC0FF;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Pie de página */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.8em;
+            color: #a0a0a0;
+        }
+
+        /* Media Queries para Responsive Design */
+
+        /* Para tablets y pantallas medianas (768px - 1024px) */
+        @media (max-width: 1024px) {
+            h1 {
+                font-size: 2.2em;
+            }
+
+            h2 {
+                font-size: 1.6em;
+            }
+
+            h3 {
+                font-size: 1.2em;
+            }
+
+            .container {
+                width: 95%;
+                padding: 30px 15px;
+            }
+        }
+
+        /* Para tablets pequeñas (600px - 768px) */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.9em;
+            }
+
+            h2 {
+                font-size: 1.4em;
+                margin-top: 1.5em;
+            }
+
+            h3 {
+                font-size: 1.1em;
+            }
+
+            .container {
+                padding: 25px 10px;
+            }
+
+            th,
+            td {
+                padding: 10px 8px;
+            }
+        }
+
+        /* Para móviles grandes (480px - 600px) */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.7em;
+                padding-bottom: 8px;
+            }
+
+            h2 {
+                font-size: 1.3em;
+                margin-top: 1.2em;
+            }
+
+            h3 {
+                font-size: 1.05em;
+            }
+
+            p,
+            li {
+                font-size: 0.95em;
+            }
+
+            .container {
+                padding: 20px 10px;
+            }
+
+            ul {
+                padding-left: 15px;
+            }
+
+            th,
+            td {
+                padding: 8px 6px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* Para móviles pequeños (hasta 480px) */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.2em;
+            }
+
+            h3 {
+                font-size: 1em;
+            }
+
+            p,
+            li {
+                font-size: 0.9em;
+            }
+
+            .container {
+                width: 100%;
+                padding: 15px 10px;
+            }
+
+            .footer {
+                margin-top: 30px;
+                font-size: 0.75em;
+            }
+        }
+
+        /* Para pantallas muy pequeñas (hasta 360px) */
+        @media (max-width: 360px) {
+            h1 {
+                font-size: 1.3em;
+            }
+
+            h2 {
+                font-size: 1.1em;
+            }
+
+            p,
+            li {
+                font-size: 0.85em;
+            }
+
+            ul {
+                padding-left: 10px;
+            }
+
+            th,
+            td {
+                padding: 6px 4px;
+                font-size: 0.85em;
+            }
+        }
     </style>
 </head>
 
@@ -111,38 +275,40 @@
     <div class="container">
         <h1>Política de Privacidad - FlixScore</h1>
 
-        <table>
-            <tr>
-                <th>Campo</th>
-                <th>Detalle</th>
-                <th></th>
-                <th></th>
-            </tr>
-            <tr>
-                <td><strong>Nombre de la Aplicación</strong></td>
-                <td>FlixScore</td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td><strong>Desarrolladores</strong></td>
-                <td>Israel Valdeolivas</td>
-                <td>Adrián Rodríguez</td>
-                <td>Ricardo Herradón</td>
-            </tr>
-            <tr>
-                <td><strong>Contacto del Desarrollador</strong></td>
-                <td>flixscore.es@gmail.com</td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td><strong>Fecha de Vigencia</strong></td>
-                <td>03 Diciembre de 2025</td>
-                <td></td>
-                <td></td>
-            </tr>
-        </table>
+        <div class="table-container">
+            <table>
+                <tr>
+                    <th>Campo</th>
+                    <th>Detalle</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td><strong>Nombre de la Aplicación</strong></td>
+                    <td>FlixScore</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><strong>Desarrolladores</strong></td>
+                    <td>Israel Valdeolivas</td>
+                    <td>Adrián Rodríguez</td>
+                    <td>Ricardo Herradón</td>
+                </tr>
+                <tr>
+                    <td><strong>Contacto del Desarrollador</strong></td>
+                    <td>flixscore.es@gmail.com</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><strong>Fecha de Vigencia</strong></td>
+                    <td>03 Diciembre de 2025</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
 
         <h2>Introducción</h2>
         <p>
@@ -242,13 +408,12 @@
         <h2>9. Contacto</h2>
         <p>Si tiene alguna pregunta sobre esta Política de Privacidad, póngase en contacto con nosotros:</p>
         <ul>
-            <li><strong>Por correo electrónico:</strong> <a href="mailto:flixscore.es@gmail.com"
-                    style="color: #9EC0FF;">flixscore.es@gmail.com</a>
+            <li><strong>Por correo electrónico:</strong> <a
+                    href="mailto:flixscore.es@gmail.com">flixscore.es@gmail.com</a>
             </li>
         </ul>
 
-        <p style="text-align: center; margin-top: 50px; font-size: 0.8em;">&copy; 2025 - FlixScore. Todos los
-            derechos reservados.</p>
+        <p class="footer">&copy; 2025 - FlixScore. Todos los derechos reservados.</p>
     </div>
 </body>
 
