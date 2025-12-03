@@ -73,6 +73,9 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
 
       final nuevaUrl = await _subirImagen(fileData, urlAntigua);
 
+      final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      await loginProvider.actualizarImagenPerfil(nuevaUrl);
+
       if (urlAntigua != null) {
         await CachedNetworkImage.evictFromCache(urlAntigua);
       }
@@ -171,7 +174,9 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
       final nuevaUrl = await snapshot.ref.getDownloadURL();
 
       // Eliminamos la imagen anterior si la extensión ha cambiado
-      if (urlAntigua != null && urlAntigua.isNotEmpty) {
+      if (urlAntigua != null &&
+          urlAntigua.isNotEmpty &&
+          (urlAntigua.contains('firebasestorage.googleapis.com'))) {
         await _eliminarImagenAnterior(urlAntigua, nuevaUrl);
       }
 
@@ -189,6 +194,14 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
     String nuevaUrl,
   ) async {
     if (urlAntigua == nuevaUrl) return;
+
+    if ((urlAntigua.contains('firebasestorage.googleapis.com'))) {
+      print(
+        'La imagen anterior no es de Firebase Storage, se omite eliminación.',
+      );
+      return;
+    }
+
     try {
       final storage = FirebaseStorage.instanceFor(
         app: Firebase.app(),
