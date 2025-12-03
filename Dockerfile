@@ -26,8 +26,8 @@ RUN apk add --no-cache gettext
 COPY --from=build /app/build/web /usr/share/nginx/html
 
 # Copiar los archivos HTML de términos y privacidad
-COPY --from=build /app/frontFlixScore/front_flixscore/web/politica-privacidad.html /usr/share/nginx/html/
-COPY --from=build /app/frontFlixScore/front_flixscore/web/terminos-servicio.html /usr/share/nginx/html/
+COPY --from=build /app/web/politica-privacidad.html /usr/share/nginx/html/
+COPY --from=build /app/web/terminos-servicio.html /usr/share/nginx/html/
 
 # Crear configuración de nginx para Cloud Run
 RUN echo 'server { \
