@@ -25,6 +25,10 @@ RUN apk add --no-cache gettext
 # Copiar los archivos construidos desde la etapa anterior
 COPY --from=build /app/build/web /usr/share/nginx/html
 
+# Copiar los archivos HTML de términos y privacidad
+COPY --from=build /app/frontFlixScore/front_flixscore/web/politica-privacidad.html /usr/share/nginx/html/
+COPY --from=build /app/frontFlixScore/front_flixscore/web/terminos-servicio.html /usr/share/nginx/html/
+
 # Crear configuración de nginx para Cloud Run
 RUN echo 'server { \
     listen ${PORT}; \
@@ -33,13 +37,13 @@ RUN echo 'server { \
     index index.html; \
     \
     location / { \
-        try_files $uri $uri/ /index.html; \
+    try_files $uri $uri/ /index.html; \
     } \
     \
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
-        expires 1y; \
-        add_header Cache-Control "public, immutable"; \
-        try_files $uri =404; \
+    expires 1y; \
+    add_header Cache-Control "public, immutable"; \
+    try_files $uri =404; \
     } \
     \
     add_header X-Frame-Options "SAMEORIGIN" always; \
@@ -49,7 +53,7 @@ RUN echo 'server { \
     gzip_vary on; \
     gzip_min_length 1024; \
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript; \
-}' > /etc/nginx/conf.d/default.conf.template
+    }' > /etc/nginx/conf.d/default.conf.template
 
 EXPOSE 8080
 
