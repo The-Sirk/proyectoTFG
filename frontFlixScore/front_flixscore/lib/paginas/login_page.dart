@@ -1,9 +1,8 @@
-
+import 'package:flixscore/componentes/login/legal_links_widget.dart';
 import 'package:flutter/material.dart';
 
 import '../componentes/login/card_login.dart';
 import '../componentes/login/header_component.dart';
-
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -29,6 +28,9 @@ class LoginScreen extends StatelessWidget {
                   child: const LoginCard(),
                 ),
               ),
+              const SizedBox(height: 48.0),
+              const LegalLinksWidget(),
+              const SizedBox(height: 24.0),
             ],
           ),
         ),
