@@ -90,8 +90,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
         navigatorObservers: [routeObserver],
-        // initialRoute: "/",
-        initialRoute: "/login",
+         initialRoute: "/",
+        //initialRoute: "/login",
         routes: {
           '/': (context) => const SplashScreen(),
           "/login": (context) => const SafeArea(
