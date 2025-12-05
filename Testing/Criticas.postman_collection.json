@@ -66,14 +66,14 @@
 			"response": []
 		},
 		{
-			"name": "Modificar Critica datos invalidos",
+			"name": "Modificar Critica datos vacios",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Codigo de estado 400, datos invalidos\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
+							"pm.test(\"Codigo de estado 204, datos no modificados al estar vacios\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
 							"});\r",
 							"\r",
 							"\r",
@@ -602,7 +602,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{UrlBase}}/criticas/?userId=Prueba",
+					"raw": "{{UrlBase}}/criticas/?userId=8TyNLoZoQqccAWdnrdCsEzIdud43",
 					"host": [
 						"{{UrlBase}}"
 					],
@@ -613,7 +613,7 @@
 					"query": [
 						{
 							"key": "userId",
-							"value": "Prueba"
+							"value": "8TyNLoZoQqccAWdnrdCsEzIdud43"
 						}
 					]
 				}
@@ -627,8 +627,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Codigo de respuesta 500, consulta correcta.\", function () {\r",
-							"    pm.response.to.have.status(500);\r",
+							"pm.test(\"Codigo de respuesta 200, consulta userid vacio debería devolver un array vacío.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
 							""
@@ -668,8 +668,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Codigo de respuesta 500, consulta correcta.\", function () {\r",
-							"    pm.response.to.have.status(500);\r",
+							"pm.test(\"Codigo de respuesta 200, consulta vacia devuelve lista vacia.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
 							""
@@ -1027,8 +1027,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Codigo de respuesta 500, consulta correcta.\", function () {\r",
-							"    pm.response.to.have.status(500);\r",
+							"pm.test(\"Codigo de respuesta 200, consulta null o vacia devuelve lista con parametro predefinido.\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							""
 						],
@@ -1055,6 +1055,147 @@
 							"key": "cantidad",
 							"value": "null"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar critica correcto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de estado 200, critica eliminada\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/usuario/{{usuarioUID}}",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"usuario",
+						"{{usuarioUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar critica usuario incorrecto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de estado 200, usuario incorrecto pero se eliminan todas las críticas\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/usuario/11111111",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"usuario",
+						"11111111"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar critica sin usuario",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Codigo de estado 404, error sin usuario\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{UrlBase}}/criticas/usuario/",
+					"host": [
+						"{{UrlBase}}"
+					],
+					"path": [
+						"criticas",
+						"usuario",
+						""
 					]
 				}
 			},

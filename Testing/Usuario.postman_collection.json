@@ -522,15 +522,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{UrlBase}}/usuarios/agregarAmigo/23l4EPjjy0MpY4l4oeU6AGDOS8S2/23l4EPjjy0MpY4l4oeU6AGDOS8S2",
+					"raw": "{{UrlBase}}/usuarios/agregarAmigo/8TyNLoZoQqccAWdnrdCsEzIdud43/8TyNLoZoQqccAWdnrdCsEzIdud43",
 					"host": [
 						"{{UrlBase}}"
 					],
 					"path": [
 						"usuarios",
 						"agregarAmigo",
-						"23l4EPjjy0MpY4l4oeU6AGDOS8S2",
-						"23l4EPjjy0MpY4l4oeU6AGDOS8S2"
+						"8TyNLoZoQqccAWdnrdCsEzIdud43",
+						"8TyNLoZoQqccAWdnrdCsEzIdud43"
 					]
 				}
 			},
@@ -711,9 +711,9 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Codigo de estado 404, Url incorrecta\", function () {\r",
+							"pm.test(\"Codigo de estado 400, Url vacia bad request\", function () {\r",
 							"\r",
-							"     pm.response.to.have.status(404);\r",
+							"     pm.response.to.have.status(400);\r",
 							"\r",
 							"});\r",
 							""
@@ -866,9 +866,9 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Codigo de estado 500, nick vacio\", function () {\r",
+							"pm.test(\"Codigo de estado 400, nick vacio bad request\", function () {\r",
 							"\r",
-							"     pm.response.to.have.status(500);\r",
+							"     pm.response.to.have.status(400);\r",
 							"\r",
 							"});\r",
 							""

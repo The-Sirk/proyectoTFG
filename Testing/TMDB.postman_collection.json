@@ -19,9 +19,9 @@
 							"});\r",
 							"\r",
 							"var json = pm.response.json();\r",
-							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].documentID , function(){\r",
+							"pm.test(\"Se obtiene almenos un elemento id de criticas, id: \" + json[0].titulo , function(){\r",
 							"    if(typeof json[0].peliculas_vistas == \"array\"){\r",
-							"    pm.expect(typeof json[0].documentID).to.be.equal(\"string\");}\r",
+							"    pm.expect(typeof json[0].titulo).to.be.equal(\"string\");}\r",
 							"});"
 						],
 						"type": "text/javascript",
@@ -142,8 +142,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Codigo de respuesta 200, consulta correcta vacia.\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
+							"pm.test(\"Codigo de respuesta 400, consulta vacia.\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
 							"});\r",
 							"\r",
 							""
