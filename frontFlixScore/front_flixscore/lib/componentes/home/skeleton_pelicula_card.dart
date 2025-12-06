@@ -46,7 +46,7 @@ class _SkeletonPeliculaCardState extends State<SkeletonPeliculaCard>
               Container(
                 height: 200,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(_animation.value * 0.1),
+                  color: Colors.white.withValues(alpha: _animation.value * 0.1),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(12),
                     topRight: Radius.circular(12),
@@ -56,7 +56,7 @@ class _SkeletonPeliculaCardState extends State<SkeletonPeliculaCard>
                   child: Icon(
                     Icons.movie,
                     size: 64,
-                    color: Colors.white.withOpacity(_animation.value * 0.2),
+                    color: Colors.white.withValues(alpha: _animation.value * 0.1),
                   ),
                 ),
               ),
@@ -70,7 +70,7 @@ class _SkeletonPeliculaCardState extends State<SkeletonPeliculaCard>
                       height: 20,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(_animation.value * 0.1),
+                        color: Colors.white.withValues(alpha: _animation.value * 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -80,7 +80,7 @@ class _SkeletonPeliculaCardState extends State<SkeletonPeliculaCard>
                       height: 16,
                       width: 150,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(_animation.value * 0.1),
+                        color: Colors.white.withValues(alpha: _animation.value * 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -93,7 +93,7 @@ class _SkeletonPeliculaCardState extends State<SkeletonPeliculaCard>
                           width: 60,
                           decoration: BoxDecoration(
                             color:
-                                Colors.white.withOpacity(_animation.value * 0.1),
+                                Colors.white.withValues(alpha: _animation.value * 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -103,7 +103,7 @@ class _SkeletonPeliculaCardState extends State<SkeletonPeliculaCard>
                           width: 100,
                           decoration: BoxDecoration(
                             color:
-                                Colors.white.withOpacity(_animation.value * 0.1),
+                                Colors.white.withValues(alpha: _animation.value * 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
