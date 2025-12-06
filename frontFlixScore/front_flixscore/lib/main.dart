@@ -1,5 +1,4 @@
 import 'package:flixscore/controllers/criticas_provider.dart';
-import 'package:flixscore/paginas/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -90,10 +89,9 @@ class MyApp extends StatelessWidget {
           ),
         ),
         navigatorObservers: [routeObserver],
-         initialRoute: "/",
-        //initialRoute: "/login",
+        initialRoute: "/",
         routes: {
-          '/': (context) => const SplashScreen(),
+          '/': (context) => const GestorNavegacion(),
           "/login": (context) => const SafeArea(
             child: Scaffold(
               backgroundColor: Color(0xFF000000),
@@ -127,6 +125,42 @@ class MyApp extends StatelessWidget {
           },
         },
       ),
+    );
+  }
+}
+
+/// Widget que redirige según el estado de autenticación
+class GestorNavegacion extends StatelessWidget {
+  const GestorNavegacion({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<LoginProvider>(
+      builder: (context, loginProvider, _) {
+        // Mientras está verificando la sesión
+        if (loginProvider.status == AuthStatus.autenticando) {
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(
+              child: CircularProgressIndicator(color: Colors.cyan),
+            ),
+          );
+        }
+        
+        // Si está autenticado, ir a home
+        if (loginProvider.status == AuthStatus.autenticado) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.of(context).pushReplacementNamed('/home');
+          });
+          return const SizedBox.shrink();
+        }
+        
+        // Si no está autenticado, ir a login
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.of(context).pushReplacementNamed('/login');
+        });
+        return const SizedBox.shrink();
+      },
     );
   }
 }

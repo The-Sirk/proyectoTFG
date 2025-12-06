@@ -1,3 +1,4 @@
+import 'package:flixscore/componentes/home/skeleton_pelicula_card.dart';
 import 'package:flixscore/controllers/criticas_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +14,15 @@ class UltimasLayout extends StatelessWidget {
     final cargando = provider.cargando;
 
     if (cargando) {
-      return const Center(child: CircularProgressIndicator(color: Colors.cyan));
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          bool esMovil = constraints.maxWidth < 800;
+          return SkeletonPeliculasList(
+            esMovil: esMovil,
+            cantidad: 6,
+          );
+        },
+      );
     }
 
     if (error != null) {

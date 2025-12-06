@@ -1,5 +1,6 @@
 import 'package:flixscore/componentes/home/card_pelicula.dart';
 import 'package:flixscore/modelos/critica_modelo.dart';
+import 'package:flixscore/modelos/pelicula_modelo.dart';
 import 'package:flixscore/modelos/usuario_modelo.dart';
 import 'package:flixscore/service/api_service.dart';
 import 'package:flutter/foundation.dart';
@@ -45,11 +46,30 @@ class CriticasProvider extends ChangeNotifier {
       '_recargarUsuario',
       message: 'usuarioLogueado: $_usuarioLogueado',
     );
-    await cargarCriticasDelUsuario();
-    await cargarCriticasDeAmigos();
-    await servirPeliculasCard();
-    await cargarUltimasCriticas();
+    
+    // Indicar que estamos cargando
+    _cargando = true;
     notifyListeners();
+    
+    try {
+      // PARALELIZACIÓN: Cargar críticas del usuario y de amigos simultáneamente
+      await Future.wait([
+        cargarCriticasDelUsuario(),
+        cargarCriticasDeAmigos(),
+      ]);
+      
+      // Después de tener las críticas, cargar las tarjetas y últimas críticas en paralelo
+      await Future.wait([
+        servirPeliculasCard(),
+        cargarUltimasCriticas(),
+      ]);
+    } catch (e) {
+      AppLogger.logError('Error en recargarUsuario: $e');
+      _errorMessage = 'Error al cargar datos: $e';
+    } finally {
+      _cargando = false;
+      notifyListeners();
+    }
   }
 
   Future<void> cargarCriticasDelUsuario() async {
@@ -60,7 +80,6 @@ class CriticasProvider extends ChangeNotifier {
     if (_usuarioLogueado == null) {
       _errorMessage = "Usuario no logueado";
       AppLogger.logError(_errorMessage!);
-      notifyListeners();
       return;
     }
 
@@ -74,7 +93,6 @@ class CriticasProvider extends ChangeNotifier {
       _errorMessage = "Error al cargar críticas del usuario desde Provider $e";
       AppLogger.logError(_errorMessage!);
     }
-    notifyListeners();
   }
 
   Future<void> cargarCriticasDeAmigos() async {
@@ -85,65 +103,80 @@ class CriticasProvider extends ChangeNotifier {
     if (_usuarioLogueado == null) {
       _errorMessage = "Usuario no logueado";
       AppLogger.logError(_errorMessage!);
-      notifyListeners();
       return;
     }
 
-    List<ModeloCritica> criticasAmigosTemp = [];
-
     try {
-      for (var amigoId in _usuarioLogueado!.amigosId) {
-        AppLogger.logVar('amigoId', amigoId);
-        List<ModeloCritica> criticasAmigo = await apiService
-            .getCriticasByUserId(amigoId);
-        AppLogger.logVar('criticasAmigo', criticasAmigo);
-        criticasAmigosTemp.addAll(criticasAmigo);
-
-        // Cargar datos del amigo si no están en caché
-        if (!_amigosCache.containsKey(amigoId)) {
-          try {
-            final amigoUsuario = await apiService.getUsuarioByID(amigoId);
-            _amigosCache[amigoId] = amigoUsuario;
-          } catch (e) {
-            AppLogger.logError("Error cargando datos de amigo $amigoId: $e");
-          }
-        }
-      }
-      _criticasAmigos = criticasAmigosTemp;
-      AppLogger.logVar('criticasAmigos', _criticasAmigos);
+      // PARALELIZACIÓN: Cargar críticas de TODOS los amigos simultáneamente
+      final futures = _usuarioLogueado!.amigosId.map((amigoId) async {
+        AppLogger.logVar('amigoId (paralelo)', amigoId);
+        
+        // Cargar críticas y datos del amigo en paralelo
+        final results = await Future.wait([
+          apiService.getCriticasByUserId(amigoId),
+          // Solo cargar usuario si no está en caché
+          if (!_amigosCache.containsKey(amigoId))
+            apiService.getUsuarioByID(amigoId)
+          else
+            Future.value(_amigosCache[amigoId]),
+        ]);
+        
+        final criticasAmigo = results[0] as List<ModeloCritica>;
+        final amigoUsuario = results[1] as ModeloUsuario;
+        
+        AppLogger.logVar('criticasAmigo (paralelo)', criticasAmigo);
+        
+        // Actualizar caché
+        _amigosCache[amigoId] = amigoUsuario;
+        
+        return criticasAmigo;
+      }).toList();
+      
+      // Esperar a que todas las peticiones terminen
+      final todasLasCriticas = await Future.wait(futures);
+      
+      // Aplanar la lista de listas
+      _criticasAmigos = todasLasCriticas.expand((lista) => lista).toList();
+      
+      AppLogger.logVar('criticasAmigos (total)', _criticasAmigos);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = "Error al cargar críticas de amigos desde Provider: $e";
       AppLogger.logError(_errorMessage!);
     }
-    notifyListeners();
   }
 
   Future<void> cargarUltimasCriticas() async {
     AppLogger.logMethod('cargarUltimasCriticas');
-    _cargando = true;
-    notifyListeners();
     try {
       List<ModeloCritica> ultimasCriticas = await apiService
           .getCriticasRecientes(10);
       AppLogger.logVar('ultimasCriticas', ultimasCriticas);
 
-      // Cargar perfiles de usuarios desconocidos
-      for (var critica in ultimasCriticas) {
-        if (!_amigosCache.containsKey(critica.usuarioUID)) {
+      // PARALELIZACIÓN: Cargar usuarios desconocidos en paralelo
+      final usuariosDesconocidos = ultimasCriticas
+          .where((c) => !_amigosCache.containsKey(c.usuarioUID))
+          .map((c) => c.usuarioUID)
+          .toSet(); // Usar Set para evitar duplicados
+      
+      if (usuariosDesconocidos.isNotEmpty) {
+        final usuariosFutures = usuariosDesconocidos.map((uid) async {
           try {
-            final usuario = await apiService.getUsuarioByID(critica.usuarioUID);
-            _amigosCache[critica.usuarioUID] = usuario;
+            final usuario = await apiService.getUsuarioByID(uid);
+            return MapEntry(uid, usuario);
           } catch (e) {
-            AppLogger.logError(
-              "Error cargando usuario ${critica.usuarioUID} en ultimas: $e",
-            );
+            AppLogger.logError("Error cargando usuario $uid en ultimas: $e");
+            return null;
+          }
+        }).toList();
+        
+        final usuariosResultados = await Future.wait(usuariosFutures);
+        for (var entry in usuariosResultados) {
+          if (entry != null) {
+            _amigosCache[entry.key] = entry.value;
           }
         }
       }
-
-      // Usamos una lista local para evitar duplicados por condiciones de carrera
-      List<PeliculaCard> nuevasPeliculasUltimas = [];
 
       // Agrupa críticas por película para evitar duplicados
       final Map<String, List<ModeloCritica>> criticasPorPelicula = {};
@@ -153,68 +186,88 @@ class CriticasProvider extends ChangeNotifier {
         criticasPorPelicula[key]!.add(critica);
       }
 
-      for (var entry in criticasPorPelicula.entries) {
+      // PARALELIZACIÓN: Cargar todas las películas y sus críticas en paralelo
+      final peliculasFutures = criticasPorPelicula.entries.map((entry) async {
         final peliculaID = entry.key;
-        final pelicula = await apiService.getMovieByID(peliculaID);
-
-        // Cargar TODAS las críticas de esa película (no solo las recientes)
-        List<ModeloCritica> todasLasCriticas = [];
+        
         try {
-          todasLasCriticas = await apiService.getCriticasByPeliculaId(
-            pelicula.id,
+          // Cargar película y todas sus críticas en paralelo
+          final results = await Future.wait([
+            apiService.getMovieByID(peliculaID),
+            apiService.getCriticasByPeliculaId(int.parse(peliculaID)),
+          ]);
+          
+          final pelicula = results[0] as ModeloPelicula;
+          var todasLasCriticas = results[1] as List<ModeloCritica>;
+          
+          // Si falló la carga de críticas, usar las que ya teníamos
+          if (todasLasCriticas.isEmpty) {
+            todasLasCriticas = entry.value;
+          }
+          
+          // PARALELIZACIÓN: Cargar usuarios de críticas en paralelo
+          final usuariosNuevos = todasLasCriticas
+              .where((c) => 
+                  !_amigosCache.containsKey(c.usuarioUID) &&
+                  c.usuarioUID != _usuarioLogueado?.documentID)
+              .map((c) => c.usuarioUID)
+              .toSet();
+          
+          if (usuariosNuevos.isNotEmpty) {
+            final usuariosFutures = usuariosNuevos.map((uid) async {
+              try {
+                final usuario = await apiService.getUsuarioByID(uid);
+                return MapEntry(uid, usuario);
+              } catch (e) {
+                AppLogger.logError(
+                  "Error cargando usuario $uid en ultimas (full): $e",
+                );
+                return null;
+              }
+            }).toList();
+            
+            final usuariosResultados = await Future.wait(usuariosFutures);
+            for (var entry in usuariosResultados) {
+              if (entry != null) {
+                _amigosCache[entry.key] = entry.value;
+              }
+            }
+          }
+
+          // Filtrar solo las críticas de amigos
+          final criticasDeAmigos = todasLasCriticas.where((critica) {
+            final esAmigo =
+                _usuarioLogueado?.amigosId.contains(critica.usuarioUID) ?? false;
+            return esAmigo;
+          }).toList();
+
+          return PeliculaCard(
+            pelicula: pelicula,
+            criticasAmigos: todasLasCriticas,
+            mostrarEtiquetaAmigo: criticasDeAmigos.isNotEmpty,
           );
         } catch (e) {
           AppLogger.logError(
-            "Error cargando todas las criticas para pelicula $peliculaID: $e",
+            "Error cargando datos para película $peliculaID: $e",
           );
-          // Si falla, usamos al menos las que ya teniamos
-          todasLasCriticas = entry.value;
+          return null;
         }
-
-        // Cargar perfiles de usuarios de TODAS las críticas
-        for (var critica in todasLasCriticas) {
-          if (!_amigosCache.containsKey(critica.usuarioUID) &&
-              critica.usuarioUID != _usuarioLogueado?.documentID) {
-            try {
-              final usuario = await apiService.getUsuarioByID(
-                critica.usuarioUID,
-              );
-              _amigosCache[critica.usuarioUID] = usuario;
-            } catch (e) {
-              AppLogger.logError(
-                "Error cargando usuario ${critica.usuarioUID} en ultimas (full): $e",
-              );
-            }
-          }
-        }
-
-        // Filtrar solo las críticas de amigos (no incluir la del usuario logueado ni de desconocidos)
-        final criticasDeAmigos = todasLasCriticas.where((critica) {
-          final esAmigo =
-              _usuarioLogueado?.amigosId.contains(critica.usuarioUID) ?? false;
-          return esAmigo;
-        }).toList();
-
-        nuevasPeliculasUltimas.add(
-          PeliculaCard(
-            pelicula: pelicula,
-            criticasAmigos:
-                todasLasCriticas, // Todas las críticas para calcular la media
-            mostrarEtiquetaAmigo: criticasDeAmigos
-                .isNotEmpty, // Solo mostrar si hay críticas de amigos
-          ),
-        );
-      }
-
-      _peliculasCardUltimas = nuevasPeliculasUltimas;
+      }).toList();
+      
+      // Esperar todas las películas
+      final peliculasResultados = await Future.wait(peliculasFutures);
+      
+      // Filtrar nulls
+      _peliculasCardUltimas = peliculasResultados
+          .where((p) => p != null)
+          .cast<PeliculaCard>()
+          .toList();
       AppLogger.logVar('peliculasCardUltimas', _peliculasCardUltimas);
       _errorMessage = null;
     } catch (e) {
       _errorMessage = "Error al cargar últimas críticas desde Provider: $e";
       AppLogger.logError(_errorMessage!);
     }
-    _cargando = false;
-    notifyListeners();
   }
 
   Future<void> servirPeliculasCard() async {
@@ -222,35 +275,45 @@ class CriticasProvider extends ChangeNotifier {
       '_servirPeliculasCard',
       message: 'criticasAmigos: $_criticasAmigos',
     );
-    // Usamos una lista local para evitar duplicados
-    List<PeliculaCard> nuevasPeliculasCard = [];
 
     try {
       final criticasPorPelicula = _agruparCriticasPorPelicula(_criticasAmigos);
-      for (var entry in criticasPorPelicula.entries) {
+      
+      // PARALELIZACIÓN: Cargar TODAS las películas simultáneamente
+      final peliculasFutures = criticasPorPelicula.entries.map((entry) async {
         final peliculaID = entry.key;
         final criticas = entry.value;
-        var pelicula = await apiService.getMovieByID(peliculaID);
+        
+        try {
+          final pelicula = await apiService.getMovieByID(peliculaID);
 
-        // Busca tu crítica para esta película
-        final miCriticaList = _criticasUsuario
-            .where((c) => c.peliculaID.toString() == peliculaID)
-            .toList();
+          // Busca tu crítica para esta película
+          final miCriticaList = _criticasUsuario
+              .where((c) => c.peliculaID.toString() == peliculaID)
+              .toList();
 
-        // Crea una lista combinada: primero tu crítica (si existe), luego las de amigos
-        final todasCriticas = [...miCriticaList, ...criticas];
+          // Crea una lista combinada: primero tu crítica (si existe), luego las de amigos
+          final todasCriticas = [...miCriticaList, ...criticas];
 
-        nuevasPeliculasCard.add(
-          PeliculaCard(
+          return PeliculaCard(
             pelicula: pelicula,
             criticasAmigos: todasCriticas,
             mostrarEtiquetaAmigo: false, // Ocultar etiqueta en Popular
-          ),
-        );
-      }
-
-      // Asignamos la lista completa al final
-      _peliculasCardAmigos = nuevasPeliculasCard;
+          );
+        } catch (e) {
+          AppLogger.logError('Error cargando película $peliculaID: $e');
+          return null;
+        }
+      }).toList();
+      
+      // Esperar a que todas las películas se carguen
+      final peliculasResultados = await Future.wait(peliculasFutures);
+      
+      // Filtrar nulls (películas que fallaron)
+      _peliculasCardAmigos = peliculasResultados
+          .where((p) => p != null)
+          .cast<PeliculaCard>()
+          .toList();
 
       AppLogger.logVar('peliculasCardAmigos', _peliculasCardAmigos);
       _errorMessage = null;
