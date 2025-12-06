@@ -436,6 +436,8 @@ class LoginProvider extends ChangeNotifier {
         notifyListeners();
         throw Exception('Error al autenticar usuario con Google');
       }
+      
+      // Si el usuario no existe en la base de datos, lo creamos
       final DocumentSnapshot userDoc = await _firestore
           .collection("usuarios")
           .doc(userCredential.user!.uid)
@@ -455,6 +457,7 @@ class LoginProvider extends ChangeNotifier {
           ),
         );
       }
+      
       if (userCredential.user != null && userCredential.user!.uid.isNotEmpty) {
         await _cargarDatosUsuario(userCredential.user!.uid);
       }

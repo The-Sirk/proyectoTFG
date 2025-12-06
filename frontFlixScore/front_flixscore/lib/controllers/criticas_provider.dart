@@ -150,7 +150,7 @@ class CriticasProvider extends ChangeNotifier {
     AppLogger.logMethod('cargarUltimasCriticas');
     try {
       List<ModeloCritica> ultimasCriticas = await apiService
-          .getCriticasRecientes(10);
+          .getCriticasRecientes(20);
       AppLogger.logVar('ultimasCriticas', ultimasCriticas);
 
       // PARALELIZACIÓN: Cargar usuarios desconocidos en paralelo

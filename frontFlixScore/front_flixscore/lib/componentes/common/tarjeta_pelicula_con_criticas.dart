@@ -308,15 +308,28 @@ class _TarjetaPeliculaConCriticasState
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
-                    child: CircleAvatar(
-                      radius: 20,
-                      backgroundImage: NetworkImage(
-                        criticasProvider
-                                .getUsuarioAmigo(critica.usuarioUID)
-                                ?.imagenPerfil ??
-                            "",
-                      ),
-                    ),
+                    child: () {
+                      final usuario = criticasProvider.getUsuarioAmigo(critica.usuarioUID);
+                      final imagenUrl = usuario?.imagenPerfil;
+                      final nick = usuario?.nick ?? "U";
+                      final tieneImagen = imagenUrl != null && imagenUrl.isNotEmpty;
+                      
+                      return CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.grey[800],
+                        backgroundImage: tieneImagen ? NetworkImage(imagenUrl) : null,
+                        child: !tieneImagen
+                            ? Text(
+                                nick.isNotEmpty ? nick[0].toUpperCase() : "U",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : null,
+                      );
+                    }(),
                   ),
                 ),
                 const SizedBox(width: 8),
