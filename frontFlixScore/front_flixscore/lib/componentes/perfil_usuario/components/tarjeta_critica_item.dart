@@ -35,8 +35,8 @@ class TarjetaCritica extends StatelessWidget {
         imageUrl: posterUrl.isNotEmpty
             ? posterUrl
             : 'https://dummyimage.com/100x150/333333/ffffff.png&text=Sin+Cartel',
-        width: 123,
-        height: 185,
+        width: 160,
+        height: 260,
         fit: BoxFit.cover,
         placeholder: (_, __) => Container(
           color: Colors.grey.shade800,
@@ -73,6 +73,16 @@ class TarjetaCritica extends StatelessWidget {
         Text(
           pelicula?.fechaEstreno ?? 'Fecha no disponible',
           style: const TextStyle(color: Colors.white70),
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: 68,
+          child: Text(
+            pelicula?.resumen ?? 'Resumen no disponible',
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
