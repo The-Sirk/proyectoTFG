@@ -1,0 +1,23 @@
+Incompatibilidad con Herramienta Selenium para el testing web, android o MaOS del frontend
+Debido a que no tiene elementos HTML pregenerados y los va creando en tiempo real no es posible controlar las acciones con Selenium. También no es funcional para otros SO como Android.
+Solucion: Se ha optado de la Herramienta Integration Test incuida en Flutter para las pruebas de automatización de pruebas en todos los entornos de la aplicación.
+
+Duplicidad de creaciones de criticas
+Al pulsar rápidamente en algunos elementos de creación de criticas estas se duplican generando multiples.
+Solucion: Deshabilitar el botón en el primer clic realizado.
+
+Incompatibilidad con Jenkins local y conexion con Github.
+Al intentar comunicarse Github con Jenkins este no recibe la conexion debido a que no tiene salida a red externas.
+Solucion: Se ha integrado la Api de NGROK que habilita un DNS dinamico para la conexiones desde red externa.
+Tú, 6 min, Editado
+eso me gustaria incorporarlo en el de problemas encontrados
+Tú, Ahora
+En el de propuestas de mejora
+
+Integrar Jenkins en Google Cloud Run
+No se ha realizado debido a los costes en la ejecución automatizada de Jenkins.
+Se configuraría un agente desde Jenkins mediante un paquete de integración con Google Cloud Run para que estuviera a la escucha de eventos de Backend o caídas de los EndPoints.
+Generar Integration Test Avanzados
+Actualmente solo tenemos los integration test que prueba las funcionalidades basicas, login, creacion de critica, registro, agregar amigos. Pero esta herramienta permite forzar múltiples conexiones simultáneamente, saturar la pagina para ver como responde en equipos/dispositivos con pocos recursos, aplicar inyecciones de código para ver como actúa ante presencia de ataques externos.
+En costes
+Jenkins es open source y de libre uso. Los gastos estarian incluidos en Cloud Run

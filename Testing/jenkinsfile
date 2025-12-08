@@ -9,34 +9,13 @@ pipeline {
         stage('Clonar repositorio') {
             steps {
                 git branch: "${BRANCH}", url: "${REPO_URL}", credentialsId: 'github-token-id'
+                echo  env.BRANCH_NAME 
             }
         }
         
-        stage('Guardar último commit en archivo') {
-            steps {
-                bat "git log -1 --pretty=%%s > ${COMMIT_FILE}"
-            }
-        }
-        
-    stage('Verificar último commit') {
-        steps {
-                script {
-                    def commitMsg = readFile("${COMMIT_FILE}").trim()
-                    echo "Último commit leído: '${commitMsg}'"
-
-                    // Generamos el booleano
-                    if (commitMsg == "Generado nuevo newman automatico") {
-                        env.SKIP_TESTS = "true"
-                    } else {
-                        env.SKIP_TESTS = "false"
-                    }
-                    echo "¿Debemos saltar tests? ${env.SKIP_TESTS}"
-                }
-            }
-        }
         stage('Ejecutar Test Usuario') {
-             when {
-                expression { env.SKIP_TESTS == "false" }
+            when {
+                expression { env.BRANCH_NAME == 'Backend' }
             }
             steps {
                 bat '\\Users\\RICK\\AppData\\Roaming\\npm\\newman run Testing\\Usuario.postman_collection.json -e Testing\\ENV-TFG-Usuario.postman_environment.json -d Testing\\CSV-Iterador-Test-usuario.csv -r htmlExtra --insecure --reporter-htmlExtra-export Testing\\newman\\Usuario\\ --suppress-exit-code'
@@ -44,7 +23,7 @@ pipeline {
         }
         stage('Ejecutar Test Criticas') {
             when {
-                expression { env.SKIP_TESTS == "false" }
+                expression { env.BRANCH_NAME == 'Backend' }
             }
             steps {
                 bat '\\Users\\RICK\\AppData\\Roaming\\npm\\newman run Testing\\criticas.postman_collection.json -e Testing\\ENV-TFG-criticas.postman_environment.json -r htmlExtra --insecure --reporter-htmlExtra-export Testing\\newman\\critica\\ --suppress-exit-code'
@@ -52,7 +31,7 @@ pipeline {
         }
         stage('Ejecutar Test TMDB') {
             when {
-                expression { env.SKIP_TESTS == "false" }
+                expression { env.BRANCH_NAME == 'Backend' }
             }
             steps {
                 bat '\\Users\\RICK\\AppData\\Roaming\\npm\\newman run Testing\\TMDB.postman_collection.json -e Testing\\ENV-TFG-TMDB.postman_environment.json -r htmlExtra --insecure --reporter-htmlExtra-export Testing\\newman\\TMDB\\ --suppress-exit-code'
@@ -60,7 +39,7 @@ pipeline {
         }
         stage('Ejecutar push') {
             when {
-                expression { env.SKIP_TESTS == "false" }
+                expression { env.BRANCH_NAME == 'Backend' }
             }
             steps {
                 bat '''
