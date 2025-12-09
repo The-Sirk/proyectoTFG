@@ -11,11 +11,15 @@ import 'package:flixscore/paginas/perfil_usuario_page.dart';
 import 'package:flixscore/paginas/perfil_amigo_page.dart';
 import 'package:flixscore/firebase_options.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   setUrlStrategy(PathUrlStrategy());
+
+  // Restringir orientación, solo se verá en vertical
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   try {
     await Firebase.initializeApp(
@@ -141,12 +145,10 @@ class GestorNavegacion extends StatelessWidget {
         if (loginProvider.status == AuthStatus.autenticando) {
           return const Scaffold(
             backgroundColor: Colors.black,
-            body: Center(
-              child: CircularProgressIndicator(color: Colors.cyan),
-            ),
+            body: Center(child: CircularProgressIndicator(color: Colors.cyan)),
           );
         }
-        
+
         // Si está autenticado, ir a home
         if (loginProvider.status == AuthStatus.autenticado) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -154,7 +156,7 @@ class GestorNavegacion extends StatelessWidget {
           });
           return const SizedBox.shrink();
         }
-        
+
         // Si no está autenticado, ir a login
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Navigator.of(context).pushReplacementNamed('/login');
