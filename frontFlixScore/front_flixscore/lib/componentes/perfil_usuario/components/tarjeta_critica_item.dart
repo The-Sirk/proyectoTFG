@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import 'package:flixscore/controllers/criticas_provider.dart';
+import 'package:flixscore/componentes/common/tarjeta_pelicula_con_criticas.dart';
 import 'package:flixscore/modelos/critica_modelo.dart';
 import 'package:flixscore/modelos/pelicula_modelo.dart';
 
@@ -27,7 +30,19 @@ class TarjetaCritica extends StatelessWidget {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 
-  Widget _buildPoster() {
+  Widget _buildPoster(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const double mobileBreakpoint = 600.0; 
+    final double posterWidth;
+    final double posterHeight;
+    if (screenWidth < mobileBreakpoint) {
+        posterWidth = screenWidth * 0.3; 
+        posterHeight = posterWidth * (260 / 160); 
+    } else {
+        posterWidth = 160.0;
+        posterHeight = 260.0;
+    }
+
     final posterUrl = (pelicula?.rutaPoster ?? '').trim();
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
@@ -35,8 +50,8 @@ class TarjetaCritica extends StatelessWidget {
         imageUrl: posterUrl.isNotEmpty
             ? posterUrl
             : 'https://dummyimage.com/100x150/333333/ffffff.png&text=Sin+Cartel',
-        width: 160,
-        height: 260,
+        width: posterWidth,
+        height: posterHeight,
         fit: BoxFit.cover,
         placeholder: (_, __) => Container(
           color: Colors.grey.shade800,
@@ -57,7 +72,7 @@ class TarjetaCritica extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoHeader() {
+  Widget _buildInfoHeader(context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -75,22 +90,14 @@ class TarjetaCritica extends StatelessWidget {
           style: const TextStyle(color: Colors.white70),
         ),
         const SizedBox(height: 4),
-        SizedBox(
-          height: 68,
-          child: Text(
-            pelicula?.resumen ?? 'Resumen no disponible',
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        _buildResumenPelicula(context, pelicula!.resumen),
       ],
     );
   }
 
   Widget _buildCriticaBox() {
     return SizedBox(
-      height: 130,
+      height: 170,
       width: double.infinity,
       child: Container(
         padding: const EdgeInsets.only(bottom: 8, left: 10, right: 10),
@@ -149,58 +156,101 @@ class TarjetaCritica extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: _cardBackgroundColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(12),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isSmall = constraints.maxWidth < 600;
-          return isSmall
-              // ---------- MÓVIL ----------
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildPoster(),
-                        const SizedBox(width: 12),
-                        Expanded(child: _buildInfoHeader()),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildCriticaBox(),
-                  ],
-                )
-              // ---------- PC ----------
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPoster(),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
+    return GestureDetector(
+      onTap: editable
+          ? null
+          : () {
+              final pelicula = this.pelicula;
+              if (pelicula == null) return;
+
+              final criticasProvider =
+                  Provider.of<CriticasProvider>(context, listen: false);
+              final criticasAmigos =
+                  criticasProvider.getCriticasAmigosPorPelicula(pelicula.id);
+              final miCritica = criticasProvider.criticasUsuario
+                  .where((c) => c.peliculaID == pelicula.id)
+                  .firstOrNull;
+
+              showDialog(
+                context: context,
+                builder: (_) => Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: TarjetaPeliculaConCriticas(
+                    pelicula: pelicula,
+                    criticasAmigos: criticasAmigos,
+                  ),
+                ),
+              );
+            },
+      child: Container(
+        decoration: BoxDecoration(
+          color: _cardBackgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmall = constraints.maxWidth < 600;
+            return isSmall
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildInfoHeader(),
-                          const SizedBox(height: 8),
-                          _buildCriticaBox(),
+                          _buildPoster(context),
+                          const SizedBox(width: 12),
+                          Expanded(child: _buildInfoHeader(context)),
                         ],
                       ),
-                    ),
-                  ],
-                );
-        },
+                      const SizedBox(height: 12),
+                      _buildCriticaBox(),
+                    ],
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPoster(context),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildInfoHeader(context),
+                            const SizedBox(height: 8),
+                            _buildCriticaBox(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResumenPelicula(BuildContext context, String resumen) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const double mobileBreakpoint = 600.0;
+    final int maxLinesLimit = screenWidth < mobileBreakpoint ? 6 : 12;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0.0),
+      child: Text(
+        resumen,
+        maxLines: maxLinesLimit,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.bodyMedium,
       ),
     );
   }

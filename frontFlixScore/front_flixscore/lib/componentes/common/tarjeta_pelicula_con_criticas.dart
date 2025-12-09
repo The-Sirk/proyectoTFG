@@ -24,9 +24,11 @@ class _TarjetaPeliculaConCriticasState
   TextEditingController comentarioController = TextEditingController();
   String nuevaCritica = "";
   bool mostrarCritica = false;
-  int puntuacion = 0;
+  int puntuacion = 5;
   int hoverStar = 0;
   bool _guardando = false;
+
+  bool get _comentarioVacio => comentarioController.text.trim().isEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,6 @@ class _TarjetaPeliculaConCriticasState
         ? criticasUsuarioList.first
         : null;
 
-    // Usar las críticas de amigos recibidas por parámetro
     final criticasAmigos = widget.criticasAmigos;
 
     return ConstrainedBox(
@@ -59,7 +60,6 @@ class _TarjetaPeliculaConCriticasState
                 ),
               ),
             ),
-            // Botón de cierre en esquina superior derecha
             Positioned(
               top: 8,
               right: 8,
@@ -80,20 +80,16 @@ class _TarjetaPeliculaConCriticasState
     ModeloCritica? criticaUsuario,
     CriticasProvider criticasProvider,
   ) {
-    // Usar MediaQuery para detectar el ancho de la pantalla
     final screenWidth = MediaQuery.of(context).size.width;
     final esMovil = screenWidth < 800;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Layout responsive: Column para móvil, Row para web
         if (esMovil)
-          // Layout móvil: póster arriba, contenido abajo
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Póster de la película
               Container(
                 width: 200,
                 height: 280,
@@ -123,11 +119,9 @@ class _TarjetaPeliculaConCriticasState
             ],
           )
         else
-          // Layout web: póster a la izquierda, info a la derecha
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Póster de la película
               Container(
                 width: 200,
                 height: 280,
@@ -157,7 +151,6 @@ class _TarjetaPeliculaConCriticasState
             ],
           ),
 
-        // Puntuación y críticas
         const SizedBox(height: 20),
         _seccionPuntuacionYCriticas(
           criticasAmigos,
@@ -168,12 +161,10 @@ class _TarjetaPeliculaConCriticasState
     );
   }
 
-  // Widget con título, fecha y resumen
   Widget _informacionPrincipal() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Título
         Text(
           widget.pelicula.titulo,
           style: const TextStyle(
@@ -183,15 +174,11 @@ class _TarjetaPeliculaConCriticasState
           ),
         ),
         const SizedBox(height: 8),
-
-        // Fecha de estreno
         Text(
           widget.pelicula.fechaEstreno,
           style: const TextStyle(color: Colors.grey, fontSize: 16),
         ),
         const SizedBox(height: 12),
-
-        // Resumen
         Text(
           widget.pelicula.resumen,
           style: const TextStyle(color: Colors.white70, fontSize: 14),
@@ -201,7 +188,6 @@ class _TarjetaPeliculaConCriticasState
     );
   }
 
-  // Widget con puntuación, botón de crítica y lista de críticas
   Widget _seccionPuntuacionYCriticas(
     List<ModeloCritica> criticasAmigos,
     ModeloCritica? criticaUsuario,
@@ -210,7 +196,6 @@ class _TarjetaPeliculaConCriticasState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Puntuación media
         Row(
           children: [
             const Icon(Icons.star, color: Colors.orange, size: 14),
@@ -226,15 +211,13 @@ class _TarjetaPeliculaConCriticasState
         ),
         const SizedBox(height: 20),
 
-        // Botón para escribir crítica (solo si no tiene crítica)
         if (criticaUsuario == null)
           ElevatedButton(
-            key: Key('botonEscribirCritica'),
+            key: const Key('botonEscribirCritica'),
             style: ElevatedButton.styleFrom(
               foregroundColor: mostrarCritica ? Colors.white : Colors.black,
-              backgroundColor: mostrarCritica
-                  ? Colors.redAccent
-                  : Colors.blueAccent,
+              backgroundColor:
+                  mostrarCritica ? Colors.redAccent : Colors.blueAccent,
             ),
             onPressed: () {
               setState(() {
@@ -247,12 +230,10 @@ class _TarjetaPeliculaConCriticasState
           ),
         const SizedBox(height: 12),
 
-        // Formulario para crear crítica
         if (mostrarCritica && criticaUsuario == null)
           widgetCrearCritica(criticasProvider),
         const SizedBox(height: 16),
 
-        // Título de sección de críticas
         if (criticasAmigos.isNotEmpty)
           const Text(
             "Críticas",
@@ -264,7 +245,6 @@ class _TarjetaPeliculaConCriticasState
           ),
         const SizedBox(height: 12),
 
-        // Lista de críticas
         ...criticasAmigos.map((critica) {
           return Container(
             width: double.infinity,
@@ -278,16 +258,11 @@ class _TarjetaPeliculaConCriticasState
               children: [
                 GestureDetector(
                   onTap: () {
-                    // Cerrar el diálogo actual
                     Navigator.of(context).pop();
-
-                    // Navegar al perfil del usuario
                     if (critica.usuarioUID ==
                         criticasProvider.usuarioLogueado?.documentID) {
-                      // Es el usuario logueado, ir a su perfil
                       Navigator.pushNamed(context, '/perfil-usuario');
                     } else {
-                      // Es otro usuario, ir al perfil de amigo
                       final usuario = criticasProvider.getUsuarioAmigo(
                         critica.usuarioUID,
                       );
@@ -313,7 +288,6 @@ class _TarjetaPeliculaConCriticasState
                       final imagenUrl = usuario?.imagenPerfil;
                       final nick = usuario?.nick ?? "U";
                       final tieneImagen = imagenUrl != null && imagenUrl.isNotEmpty;
-                      
                       return CircleAvatar(
                         radius: 20,
                         backgroundColor: Colors.grey[800],
@@ -443,9 +417,10 @@ class _TarjetaPeliculaConCriticasState
               ),
               const SizedBox(height: 15),
               TextField(
-                key: Key('TextField_Critica'),
+                key: const Key('TextField_Critica'),
                 controller: comentarioController,
                 maxLines: 3,
+                onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: 'Escribe tu crítica aquí...',
                   hintStyle: const TextStyle(color: Colors.white38),
@@ -465,11 +440,14 @@ class _TarjetaPeliculaConCriticasState
                   fontStyle: FontStyle.italic,
                 ),
               ),
+              const SizedBox(height: 10),
               ElevatedButton(
                 key: const Key('buttonGuardarCritica'),
-                onPressed: _guardando ? null : () => _guardarCritica(criticasProvider), 
+                onPressed: (_guardando || _comentarioVacio)
+                    ? null
+                    : () => _guardarCritica(criticasProvider),
                 child: Text(_guardando ? "Enviando..." : "Enviar crítica"),
-              )
+              ),
             ],
           ),
         ),
@@ -478,39 +456,37 @@ class _TarjetaPeliculaConCriticasState
   }
 
   Future<void> _guardarCritica(CriticasProvider criticasProvider) async {
-    if (_guardando) {
-        return; 
-    }
+    if (_guardando) return;
     final usuarioUID = criticasProvider.usuarioLogueado?.documentID ?? '';
     setState(() {
-        _guardando = true;
+      _guardando = true;
     });
     try {
-        await criticasProvider.crearCritica(
-            ModeloCritica(
-                usuarioUID: usuarioUID,
-                peliculaID: widget.pelicula.id,
-                puntuacion: puntuacion,
-                comentario: comentarioController.text,
-                fechaCreacion: DateTime.now().millisecondsSinceEpoch,
-            ),
-        );
-        if (mounted) {
-            setState(() {
-                mostrarCritica = false;
-                comentarioController.clear();
-                puntuacion = 0;
-            });
-            Navigator.pop(context);
-        }
+      await criticasProvider.crearCritica(
+        ModeloCritica(
+          usuarioUID: usuarioUID,
+          peliculaID: widget.pelicula.id,
+          puntuacion: puntuacion,
+          comentario: comentarioController.text,
+          fechaCreacion: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+      if (mounted) {
+        setState(() {
+          mostrarCritica = false;
+          comentarioController.clear();
+          puntuacion = 0;
+        });
+        Navigator.pop(context);
+      }
     } catch (e) {
-        print('Error al guardar crítica: $e');
+      print('Error al guardar crítica: $e');
     } finally {
-        if (mounted && _guardando) {
-             setState(() {
-                _guardando = false;
-            });
-        }
+      if (mounted && _guardando) {
+        setState(() {
+          _guardando = false;
+        });
+      }
     }
   }
 }

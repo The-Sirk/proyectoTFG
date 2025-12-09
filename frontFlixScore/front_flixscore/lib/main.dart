@@ -97,26 +97,26 @@ class MyApp extends StatelessWidget {
         routes: {
           '/': (context) => const GestorNavegacion(),
           "/login": (context) => const SafeArea(
-            child: Scaffold(
-              backgroundColor: Color(0xFF000000),
-              body: Center(child: LoginScreen()),
-            ),
-          ),
+                child: Scaffold(
+                  backgroundColor: Color(0xFF000000),
+                  body: Center(child: LoginScreen()),
+                ),
+              ),
           "/home": (context) => Consumer2<LoginProvider, RegisterProvider>(
-            builder: (context, loginProvider, registerProvider, _) {
-              if (loginProvider.status == AuthStatus.autenticado ||
-                  registerProvider.status == RegisterStatus.registrado) {
-                return const HomePage();
-              } else {
-                // Si no está autenticado, redirigir a login
-                // Usamos un microtask para evitar errores de construcción
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Navigator.of(context).pushReplacementNamed('/login');
-                });
-                return const SizedBox.shrink(); // Retornar widget vacío mientras redirige
-              }
-            },
-          ),
+                builder: (context, loginProvider, registerProvider, _) {
+                  if (loginProvider.status == AuthStatus.autenticado ||
+                      registerProvider.status == RegisterStatus.registrado) {
+                    return const HomePage();
+                  } else {
+                    // Si no está autenticado, redirigir a login
+                    // Usamos un microtask para evitar errores de construcción
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Navigator.of(context).pushReplacementNamed('/login');
+                    });
+                    return const SizedBox.shrink(); // Retornar widget vacío mientras redirige
+                  }
+                },
+              ),
           "/perfil-usuario": (context) => const PerfilUsuario(),
           "/perfil-amigo": (context) {
             final args =
@@ -152,16 +152,15 @@ class GestorNavegacion extends StatelessWidget {
         // Si está autenticado, ir a home
         if (loginProvider.status == AuthStatus.autenticado) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.of(context).pushReplacementNamed('/home');
+            if (ModalRoute.of(context)?.settings.name != '/home') {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
           });
           return const SizedBox.shrink();
         }
 
-        // Si no está autenticado, ir a login
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacementNamed('/login');
-        });
-        return const SizedBox.shrink();
+        // Si no está autenticado, mostrar login
+        return const LoginScreen();
       },
     );
   }
