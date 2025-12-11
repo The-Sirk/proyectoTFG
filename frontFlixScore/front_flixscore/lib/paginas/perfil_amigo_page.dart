@@ -174,7 +174,6 @@ class PerfilAmigoPage extends StatelessWidget {
     return Column(
       children: [
         FotoPerfilCualquierUsuario(usuarioId: usuarioId),
-        const SizedBox(height: 10),
         EstadisticasAmigoCard(idAmigo: usuarioId),
         AmigosDeOtroCard(userId: usuarioId),
         MisCriticasCard(usuarioId: usuarioId, editable: false),

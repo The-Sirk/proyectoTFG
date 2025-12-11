@@ -37,7 +37,9 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
 
     for (final critica in criticas) {
       try {
-        final pelicula = await _apiService.getMovieByID(critica.peliculaID.toString());
+        final pelicula = await _apiService.getMovieByID(
+          critica.peliculaID.toString(),
+        );
         lista.add(_CriticaConPelicula(critica: critica, pelicula: pelicula));
       } catch (e) {
         // Si falla, añadimos la crítica pero sin película
@@ -55,8 +57,10 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
       builder: (_) => EditarCriticaDialog(
         critica: critica,
         onGuardar: () async {
-          await Provider.of<LoginProvider>(context, listen: false)
-              .recargarPuntuaciones();
+          await Provider.of<LoginProvider>(
+            context,
+            listen: false,
+          ).recargarPuntuaciones();
           setState(() {
             _criticasConPeliculasFuture = _cargarCriticasConPeliculas();
           });
@@ -72,7 +76,8 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-              child: CircularProgressIndicator(color: Colors.cyanAccent));
+            child: CircularProgressIndicator(color: Colors.cyanAccent),
+          );
         }
 
         if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
@@ -88,6 +93,7 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
 
         final items = snapshot.data!;
         final bool isMobile = MediaQuery.of(context).size.width < 700;
+        final maximo = widget.editable ? 725.0 : 580.0;
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -96,100 +102,115 @@ class _MisCriticasCardState extends State<MisCriticasCard> {
             children: [
               const SizedBox(height: 10),
               isMobile
-              ? Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    ...items.map((item) {
-                      final c = item.critica;
-                      final p = item.pelicula;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 5),
-                        child: TarjetaCritica(
-                          critica: c,
-                          pelicula: p,
-                          onEditar: () => _mostrarPopupEdicion(context, c),
-                          editable: widget.editable,
-                        ),
-                      );
-                    }).toList(),
-                  ],
-                )
-              : LayoutBuilder(
-                  builder: (context, constraints) {
-                    final maxHeight = constraints.maxHeight - 60;
-                    double sombraSuperior = 0.0;
-                    double sombraInferior = 0.85;
-                    return StatefulBuilder(
-                      builder: (context, setState) {
-                        return ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: maxHeight.clamp(200, 725),
-                          ),
-                          child: NotificationListener<ScrollNotification>(
-                            onNotification: (scrollInfo) {
-                              final atStart = scrollInfo.metrics.pixels <= 2;
-                              final atEnd = scrollInfo.metrics.pixels >=
-                                  scrollInfo.metrics.maxScrollExtent - 2;
-                              final sombreadoSuperior = atStart ? 0.0 : 1.0;
-                              final sombreadoInferior = atEnd ? 0.0 : 1.0;
-                              if (sombreadoSuperior != sombraSuperior ||
-                                  sombreadoInferior != sombraInferior) {
-                                setState(() {
-                                  sombraSuperior = sombreadoSuperior;
-                                  sombraInferior = sombreadoInferior;
-                                });
-                              }
-                              return false;
-                            },
-                            child: ShaderMask(
-                              shaderCallback: (Rect rect) {
-                                return LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(sombraSuperior),
-                                    Colors.transparent,
-                                    Colors.transparent,
-                                    Colors.black.withOpacity(sombraInferior),
-                                  ],
-                                  stops: const [0.0, 0.05, 0.95, 1.0],
-                                ).createShader(rect);
-                              },
-                              blendMode: BlendMode.dstOut,
-                              child: ClipRRect(
-                                borderRadius:
-                                    const BorderRadius.vertical(bottom: Radius.circular(12)),
-                                child: ScrollConfiguration(
-                                  behavior: ScrollConfiguration.of(context).copyWith(
-                                    physics: const BouncingScrollPhysics(),
-                                  ),
-                                  child: ListView.separated(
-                                    shrinkWrap: true,
-                                    padding: const EdgeInsets.only(bottom: 5.0),
-                                    itemCount: items.length,
-                                    separatorBuilder: (_, __) =>
-                                        const SizedBox(height: 5),
-                                    itemBuilder: (context, index) {
-                                      final c = items[index].critica;
-                                      final p = items[index].pelicula;
-                                      return TarjetaCritica(
-                                        key: Key('TarjetaCritica_$index'),
-                                        critica: c,
-                                        pelicula: p,
-                                        onEditar: () => _mostrarPopupEdicion(context, c),
-                                        editable: widget.editable,
-                                      );
-                                    },
+                  ? Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        ...items.map((item) {
+                          final c = item.critica;
+                          final p = item.pelicula;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 5),
+                            child: TarjetaCritica(
+                              critica: c,
+                              pelicula: p,
+                              onEditar: () => _mostrarPopupEdicion(context, c),
+                              editable: widget.editable,
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    )
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final maxHeight = constraints.maxHeight - 60;
+                        double sombraSuperior = 0.0;
+                        double sombraInferior = 0.85;
+                        return StatefulBuilder(
+                          builder: (context, setState) {
+                            return ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight: maxHeight.clamp(200, maximo),
+                              ),
+                              child: NotificationListener<ScrollNotification>(
+                                onNotification: (scrollInfo) {
+                                  final atStart =
+                                      scrollInfo.metrics.pixels <= 2;
+                                  final atEnd =
+                                      scrollInfo.metrics.pixels >=
+                                      scrollInfo.metrics.maxScrollExtent - 2;
+                                  final sombreadoSuperior = atStart ? 0.0 : 1.0;
+                                  final sombreadoInferior = atEnd ? 0.0 : 1.0;
+                                  if (sombreadoSuperior != sombraSuperior ||
+                                      sombreadoInferior != sombraInferior) {
+                                    setState(() {
+                                      sombraSuperior = sombreadoSuperior;
+                                      sombraInferior = sombreadoInferior;
+                                    });
+                                  }
+                                  return false;
+                                },
+                                child: ShaderMask(
+                                  shaderCallback: (Rect rect) {
+                                    return LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.black.withOpacity(
+                                          sombraSuperior,
+                                        ),
+                                        Colors.transparent,
+                                        Colors.transparent,
+                                        Colors.black.withOpacity(
+                                          sombraInferior,
+                                        ),
+                                      ],
+                                      stops: const [0.0, 0.05, 0.95, 1.0],
+                                    ).createShader(rect);
+                                  },
+                                  blendMode: BlendMode.dstOut,
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(
+                                      bottom: Radius.circular(12),
+                                    ),
+                                    child: ScrollConfiguration(
+                                      behavior: ScrollConfiguration.of(context)
+                                          .copyWith(
+                                            physics:
+                                                const BouncingScrollPhysics(),
+                                          ),
+                                      child: ListView.separated(
+                                        shrinkWrap: true,
+                                        padding: const EdgeInsets.only(
+                                          bottom: 5.0,
+                                        ),
+                                        itemCount: items.length,
+                                        separatorBuilder: (_, __) =>
+                                            const SizedBox(height: 5),
+                                        itemBuilder: (context, index) {
+                                          final c = items[index].critica;
+                                          final p = items[index].pelicula;
+                                          return TarjetaCritica(
+                                            key: Key('TarjetaCritica_$index'),
+                                            critica: c,
+                                            pelicula: p,
+                                            onEditar: () =>
+                                                _mostrarPopupEdicion(
+                                                  context,
+                                                  c,
+                                                ),
+                                            editable: widget.editable,
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                ),
+                    ),
             ],
           ),
         );

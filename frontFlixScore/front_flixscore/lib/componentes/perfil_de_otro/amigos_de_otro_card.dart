@@ -5,9 +5,9 @@ import 'package:flixscore/modelos/amigo_modelo.dart';
 import 'package:flixscore/controllers/login_provider.dart';
 import 'components/amigo_de_otro_item.dart';
 
-const Color cardBackgroundColor = Color(0xFF1A1C25); 
+const Color cardBackgroundColor = Color(0xFF1A1C25);
 const Color primaryTextColor = Colors.white;
-const Color secondaryTextColor = Color(0xFFAAAAAA); 
+const Color secondaryTextColor = Color(0xFFAAAAAA);
 const Color dividerColor = Color(0xFF333333);
 const Color errorColor = Colors.redAccent;
 const Color colorResaltado = Colors.cyanAccent;
@@ -34,9 +34,16 @@ class _AmigosDeOtroCardState extends State<AmigosDeOtroCard> {
   Future<_Datos> _cargarDatos() async {
     final usuario = await _api.getUsuarioByID(widget.userId);
     final ids = usuario.amigosId;
-    final misIds = Provider.of<LoginProvider>(context, listen: false).usuarioLogueado?.amigosId.toSet() ?? {};
+    final misIds =
+        Provider.of<LoginProvider>(
+          context,
+          listen: false,
+        ).usuarioLogueado?.amigosId.toSet() ??
+        {};
 
-    final usuarios = await Future.wait(ids.map((id) => _api.getUsuarioByID(id)));
+    final usuarios = await Future.wait(
+      ids.map((id) => _api.getUsuarioByID(id)),
+    );
     final amigos = usuarios.map((u) {
       return Amigo(
         nombre: u.nick,
@@ -52,16 +59,22 @@ class _AmigosDeOtroCardState extends State<AmigosDeOtroCard> {
 
   @override
   Widget build(BuildContext context) {
-
     return Consumer<LoginProvider>(
       builder: (_, __, ___) => FutureBuilder<_Datos>(
         future: _datosFuture,
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: colorResaltado));
+            return const Center(
+              child: CircularProgressIndicator(color: colorResaltado),
+            );
           }
           if (snap.hasError) {
-            return Center(child: Text('Error al cargar amigos', style: TextStyle(color: errorColor)));
+            return Center(
+              child: Text(
+                'Error al cargar amigos',
+                style: TextStyle(color: errorColor),
+              ),
+            );
           }
           final datos = snap.data!;
           return Container(
@@ -69,33 +82,55 @@ class _AmigosDeOtroCardState extends State<AmigosDeOtroCard> {
             decoration: BoxDecoration(
               color: cardBackgroundColor,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(.2), blurRadius: 10, offset: const Offset(0, 5))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Amigos de ${datos.nick}', style: const TextStyle(color: primaryTextColor, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  'Amigos de ${datos.nick}',
+                  style: const TextStyle(
+                    color: primaryTextColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                const Text('Pulsa + para agregarlos tu también', style: TextStyle(color: secondaryTextColor, fontSize: 14)),
+                const Text(
+                  'Pulsa + para agregarlos tu también',
+                  style: TextStyle(color: secondaryTextColor, fontSize: 14),
+                ),
                 const Divider(height: 20, color: dividerColor),
                 if (datos.amigos.isEmpty)
                   const Center(
                     child: Text(
                       'Sin amigos todavía',
-                      style: TextStyle(
-                        color: secondaryTextColor
-                      )
-                    )
+                      style: TextStyle(color: secondaryTextColor),
+                    ),
                   )
                 else
-                  SizedBox(
-                    height: 508,
-                    child: ListView.separated(
-                      itemCount: datos.amigos.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (_, i) => AmigoDeOtroItem(amigo: datos.amigos[i]),
-                    ),
+                  LayoutBuilder(
+                    builder: (_, constraints) {
+                      final ancho = constraints.maxWidth;
+                      final alto = ancho < 600 ? 290.0 : 506.0;
+                      return SizedBox(
+                        height: alto,
+                        child: ListView.separated(
+                          itemCount: datos.amigos.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (_, i) =>
+                              AmigoDeOtroItem(amigo: datos.amigos[i]),
+                        ),
+                      );
+                    },
                   ),
               ],
             ),
