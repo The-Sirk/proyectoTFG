@@ -374,26 +374,38 @@ class _ImagenPerfilUsuarioCardState extends State<ImagenPerfilUsuarioCard> {
                 ),
               ),
               const SizedBox(width: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.nickUsuario,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  // Este Column ahora ocupará el espacio restante
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.nickUsuario, // **Texto que podría ser largo**
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      // **Añadir overflow para manejar el desbordamiento si es extremo**
+                      overflow: TextOverflow
+                          .ellipsis, // Opcional: añade puntos suspensivos
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    widget.emailUsuario,
-                    style: const TextStyle(
-                      color: Color(0xFFAAAAAA),
-                      fontSize: 14,
+                    const SizedBox(height: 4),
+                    Text(
+                      widget
+                          .emailUsuario, // **Texto que podría ser muy largo (email)**
+                      style: const TextStyle(
+                        color: Color(0xFFAAAAAA),
+                        fontSize: 14,
+                      ),
+                      // **La clave es decirle al Row que ajuste el texto:**
+                      maxLines:
+                          2, // Opcional: Limita a 2 líneas si lo prefieres
+                      overflow: TextOverflow
+                          .ellipsis, // Opcional: añade puntos suspensivos
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
